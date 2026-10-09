@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Na Hora Ceilândia — O Jogo do Salão</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  :root{
+    --bg:#1a1423; --panel:#2a2038; --panel2:#352947; --line:#5a4778; --ink:#f4ecff; --mute:#a99bc4;
+    --emissor:#2fae6a; --telefone:#1fb5d4; --auto:#8a5bd6; --orient:#3b6fe0; --painel:#f08a24; --pesq:#e0508a; --pausa:#6b7280;
+    --px:'Press Start 2P', 'Courier New', monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif;padding:10px;min-height:100vh}
+  .wrap{max-width:1380px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+
+  .box{background:var(--panel);border:3px solid var(--line);box-shadow:0 4px 0 #0e0a14, inset 0 0 0 2px #1d1529;border-radius:6px}
+
+  header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px}
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo .ico{width:42px;height:42px;background:#f4b942;border:3px solid #fff3c4;box-shadow:0 3px 0 #8a5a12;display:grid;place-items:center;font-size:22px;border-radius:6px}
+  .logo h1{font-family:var(--px);font-size:13px;color:#ffd75e;text-shadow:2px 2px 0 #000;line-height:1.5}
+  .logo p{font-size:12px;color:var(--mute);margin-top:2px}
+  .hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .chip{background:#150f1e;border:2px solid var(--line);border-radius:6px;padding:6px 10px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
+  .chip b{font-family:var(--px);font-size:12px}
+  .chip.pe b{color:#ff8a8a}.chip.sent b{color:#7dffb0}.chip.pa b{color:#c1c7d4}.chip.al b{color:#ffd75e}
+  .chip.al.on{border-color:#ff5b5b;animation:blink 1s steps(2) infinite}
+  .chip.gs{border-color:#2a8f55;background:#0c1f14;transition:all .3s}
+  .chip.gs:hover{background:#153523;border-color:#5fdc93}
+  .chip.gs.syncing{border-color:#ffd75e;animation:blink 1s infinite}
+  .chip.gs.err{border-color:#ff5b5b;background:#2d0f17}
+  .chip.chg{border-color:#f59e0b;background:#241804}
+  .chip.chg b{color:#fbbf24}
+  .chip.fui{border-color:#64748b;background:#151d28}
+  .chip.fui b{color:#94a3b8}
+  .tabs-salao{display:flex;gap:4px;background:#150f1e;padding:3px;border-radius:6px;border:2px solid var(--line);margin-bottom:2px}
+  .tab-salao{flex:1;background:transparent;border:none;color:var(--mute);font-family:var(--px);font-size:7px;padding:6px 2px;cursor:pointer;border-radius:4px;text-align:center;transition:all .2s}
+  .tab-salao:hover{color:#fff;background:#251c33}
+  .tab-salao.active{background:#4a3a63;color:#ffd75e;font-weight:700}
+  @keyframes blink{50%{background:#4a1220}}
+  .clock{font-family:var(--px);font-size:20px;color:#7be8ff;background:#07131a;border:3px solid #2aa9c9;border-radius:6px;padding:8px 14px;text-shadow:0 0 8px #2aa9c9}
+
+  .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 12px}
+  .btn{font-family:var(--px);font-size:9px;color:#fff;background:#4a3a63;border:2px solid #8a72b3;box-shadow:0 3px 0 #1d1529;border-radius:4px;padding:9px 11px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+  .btn:active{transform:translateY(3px);box-shadow:none}
+  .btn:hover{filter:brightness(1.15)}
+  .btn.g{background:#2a8f55;border-color:#5fdc93}.btn.y{background:#b97a14;border-color:#ffd05a}.btn.b{background:#2c5fc4;border-color:#7fb0ff}.btn.p{background:#7a3fb8;border-color:#c79bff}
+  .sp{flex:1}
+  .slider-wrap{display:flex;align-items:center;gap:10px;flex:1;min-width:260px}
+  .slider-wrap input{flex:1;accent-color:#ffd75e}
+  .slot-label{font-family:var(--px);font-size:11px;color:#ffd75e;min-width:60px;text-align:right}
+
+  .main{display:grid;grid-template-columns:330px 1fr;gap:10px;align-items:start}
+  @media(max-width:1000px){.main{grid-template-columns:1fr}}
+
+  aside.side{padding:10px;display:flex;flex-direction:column;gap:8px;max-height:760px}
+  .side h2{font-family:var(--px);font-size:10px;color:#7be8ff;display:flex;gap:6px;align-items:center}
+  .search{background:#150f1e;border:2px solid var(--line);border-radius:4px;padding:8px 10px;color:#fff;font-size:13px;outline:none;width:100%}
+  .search:focus{border-color:#7be8ff}
+  .list{overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px}
+  .list::-webkit-scrollbar{width:6px}.list::-webkit-scrollbar-thumb{background:#5a4778;border-radius:3px}
+  .grp{font-family:var(--px);font-size:8px;padding:5px 7px;color:#fff;border-radius:3px;margin-top:4px;display:flex;justify-content:space-between}
+  .item{display:flex;align-items:center;gap:8px;background:var(--panel2);border:2px solid #45365e;border-left-width:6px;border-radius:4px;padding:6px 8px;cursor:pointer}
+  .item:hover{background:#42335a}
+  .item.sel{outline:3px solid #ffd75e;background:#4a3a63}
+  .item .nm{font-weight:800;font-size:13px}
+  .item .ps{font-size:11px;color:var(--mute)}
+  .item .nx{font-size:10px;color:#8fb7ff}
+  .item .st{margin-left:auto;font-size:16px}
+  .item.alerta{border-color:#ff5b5b;background:#3a1a2a}
+  .alerta-msg{font-size:10px;color:#ff9a9a;font-weight:700}
+
+  .stage{padding:8px;display:flex;flex-direction:column;gap:6px}
+  .stage-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:5px 8px;background:#150f1e;border:2px solid var(--line);border-radius:4px}
+  .stage-title{font-family:var(--px);font-size:9px;color:#ffd75e;letter-spacing:1px}
+  .zoom-controls{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+  .z-lbl{font-family:var(--px);font-size:8px;color:var(--mute);margin-right:2px}
+  .z-val{font-family:var(--px);font-size:9px;color:#7be8ff;min-width:54px;text-align:center;background:#07131a;border:1px solid #2aa9c9;border-radius:3px;padding:4px 6px}
+  .btn-z{font-family:var(--px);font-size:8px;color:#fff;background:#352947;border:1px solid #6b558c;border-radius:3px;padding:5px 8px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;justify-content:center}
+  .btn-z:hover{background:#544170;border-color:#ffd75e}
+  .btn-z:active{transform:scale(0.95)}
+  .btn-z.full{background:#2a8f55;border-color:#5fdc93;color:#fff}
+  .btn-z.full:hover{background:#3cb16e}
+  .screen{position:relative;background:#000;border:4px solid #0e0a14;border-radius:4px;overflow:auto;line-height:0;display:flex;justify-content:center;align-items:flex-start;max-height:calc(100vh - 245px);min-height:380px;scrollbar-width:thin;scrollbar-color:#5a4778 #150f1e}
+  .screen::-webkit-scrollbar{width:8px;height:8px}
+  .screen::-webkit-scrollbar-track{background:#150f1e}
+  .screen::-webkit-scrollbar-thumb{background:#5a4778;border-radius:4px}
+  .screen::-webkit-scrollbar-thumb:hover{background:#7a62a3}
+  canvas{width:auto;max-width:100%;height:auto;max-height:calc(100vh - 250px);image-rendering:pixelated;image-rendering:crisp-edges;display:block;cursor:pointer;flex-shrink:0}
+  .stage:fullscreen{background:#1a1423;padding:12px;display:flex;flex-direction:column;height:100vh;box-sizing:border-box;justify-content:center}
+  .stage:fullscreen .screen{max-height:calc(100vh - 90px);flex:1}
+  #tip{position:fixed;display:none;z-index:50;background:#fff;color:#1b1626;border:3px solid #000;border-radius:6px;padding:7px 10px;font-size:12px;line-height:1.4;box-shadow:4px 4px 0 rgba(0,0,0,.5);pointer-events:none;max-width:260px}
+  #tip b{font-size:14px}
+  #tip .t1{font-family:var(--px);font-size:8px;color:#fff;display:inline-block;padding:3px 5px;border-radius:3px;margin-bottom:4px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 12px;padding:2px 4px;font-size:12px;color:var(--mute);align-items:center}
+  .legend i{display:inline-block;width:12px;height:12px;border:2px solid #fff3;vertical-align:-2px;margin-right:5px}
+
+  #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center}
+  .mbox{width:92%;max-width:620px;padding:18px}
+  .mbox h2{font-family:var(--px);font-size:11px;color:#ffd75e;margin-bottom:8px}
+  .mbox p{font-size:12px;color:var(--mute);margin-bottom:10px}
+  .mbox textarea{width:100%;height:170px;background:#0e0a14;border:2px solid var(--line);color:#7dffb0;font-family:monospace;font-size:12px;padding:10px;border-radius:4px;resize:vertical}
+  .mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+  /* ---- login / perfis ---- */
+  body.role-viewer .admin-only{display:none !important}
+  body:not(.logado) .wrap{visibility:hidden}
+  #login{position:fixed;inset:0;z-index:1000;background:radial-gradient(circle at 50% 30%,#2a2038,#0e0a14);display:flex;align-items:center;justify-content:center}
+  body.logado #login{display:none}
+  .lbox{width:92%;max-width:380px;padding:22px;text-align:center}
+  .lbox .ico{font-size:40px;margin-bottom:6px}
+  .lbox h2{font-family:var(--px);font-size:12px;color:#ffd75e;line-height:1.6;margin-bottom:6px;text-shadow:2px 2px 0 #000}
+  .lbox p{font-size:12px;color:var(--mute);margin-bottom:14px}
+  .lbox input{width:100%;background:#150f1e;border:3px solid var(--line);border-radius:6px;padding:11px;color:#fff;font-size:16px;text-align:center;outline:none;letter-spacing:2px}
+  .lbox input:focus{border-color:#7be8ff}
+  .lbox .btn{width:100%;justify-content:center;margin-top:12px;padding:12px}
+  #lerro{color:#ff8a8a;font-size:12px;min-height:16px;margin-top:8px;font-weight:700}
+  .badge-perfil{font-family:var(--px);font-size:8px;padding:6px 8px;border-radius:4px;border:2px solid #8a72b3;background:#150f1e;color:#ffd75e}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top box">
+    <div class="logo">
+      <div class="ico">🏢</div>
+      <div>
+        <h1>NA HORA CEILÂNDIA<br>O JOGO DO SALÃO</h1>
+        <p>Veja onde cada atendente está agora e para onde vai no próximo horário</p>
+      </div>
+    </div>
+    <div class="hud">
+      <div class="chip gs admin-only" id="chipGoogle" onclick="abrirModalGoogle()" style="cursor:pointer" title="Configurar conexão automática com o Google Planilhas"><span id="gDot">⚪</span> <span id="gTxt" style="font-size:11px">Planilha</span></div>
+      <div class="chip pe">🚶 EM PÉ <b id="cPe">0</b></div>
+      <div class="chip sent">💺 SENTADO <b id="cSent">0</b></div>
+      <div class="chip pa">☕ PAUSA <b id="cPausa">0</b></div>
+      <div class="chip chg" title="Colaboradores que ainda não entraram no horário atual">⏳ CHEGANDO <b id="cChegando">0</b></div>
+      <div class="chip fui" title="Colaboradores que já encerraram o expediente hoje">🏠 FUI <b id="cFui">0</b></div>
+      <div class="chip al" id="chipAl">⚠ ALERTAS NR-17 <b id="cAl">0</b></div>
+      <div class="clock" id="clock">08:00</div>
+      <span class="badge-perfil" id="badgePerfil"></span>
+      <button class="btn" onclick="sairPerfil()" title="Trocar de perfil">🚪 SAIR</button>
+    </div>
+  </header>
+
+  <section class="tools box">
+    <button class="btn g admin-only" onclick="abrirModalGoogle()" title="Sincronizar ao vivo com o Google Planilhas">📊 GOOGLE PLANILHAS</button>
+    <button class="btn y admin-only" onclick="copiarLinkRecepcao()" title="Gera o link pronto para compartilhar com a equipe da recepção">🔗 LINK RECEPÇÃO</button>
+    <button class="btn y admin-only" onclick="abrirModal()">📋 COLAR</button>
+    <label class="btn b admin-only">📂 .XLSX<input type="file" id="file" accept=".xlsx,.xls" style="display:none" onchange="lerExcel(event)"></label>
+    <button class="btn p admin-only" onclick="carregarDemo()">⚡ DEMO</button>
+    <span class="sp"></span>
+    <button class="btn b" onclick="passo(-1)">◀</button>
+    <button class="btn g" id="btnPlay" onclick="togglePlay()">▶ AUTO</button>
+    <button class="btn b" onclick="passo(1)">▶</button>
+    <button class="btn y" onclick="horaAtual()">⏰ AGORA</button>
+    <div class="slider-wrap"><input type="range" id="slider" min="0" max="0" value="0" oninput="irSlot(+this.value)"><span class="slot-label" id="slotLabel">--:--</span></div>
+  </section>
+
+  <div class="main">
+    <aside class="side box">
+      <h2>📡 QUEM ESTÁ ONDE</h2>
+      <div class="tabs-salao">
+        <button class="tab-salao active" id="tabTodos" onclick="setFiltroPresenca('todos')">TODOS (<span id="countTodos">0</span>)</button>
+        <button class="tab-salao" id="tabSalao" onclick="setFiltroPresenca('salao')">NO SALÃO (<span id="countSalao">0</span>)</button>
+        <button class="tab-salao" id="tabCF" onclick="setFiltroPresenca('chegando_fui')">CHEGANDO/FUI (<span id="countCF">0</span>)</button>
+      </div>
+      <input class="search" id="busca" placeholder="Buscar nome ou posto..." oninput="renderLista()">
+      <div class="list" id="lista"></div>
+    </aside>
+
+    <section class="stage box">
+      <div class="stage-bar">
+        <div class="stage-title">🎮 PLANTA BAIXA DO SALÃO</div>
+        <div class="zoom-controls">
+          <span class="z-lbl">🔍 ZOOM:</span>
+          <button class="btn-z" onclick="mudarZoom(-0.2)" title="Diminuir zoom">➖</button>
+          <span class="z-val" id="zoomVal" title="Nível atual de zoom">AJUSTE</span>
+          <button class="btn-z" onclick="mudarZoom(+0.2)" title="Aumentar zoom">➕</button>
+          <button class="btn-z" onclick="setZoom(1.0)" title="Zoom 100% (Original)">100%</button>
+          <button class="btn-z" onclick="setZoom(1.35)" title="Zoom 135% (Médio)">135%</button>
+          <button class="btn-z" onclick="setZoom(1.7)" title="Zoom 170% (Grande)">170%</button>
+          <button class="btn-z" onclick="setZoom('auto')" title="Ajustar automaticamente à janela">📐 AJUSTAR</button>
+          <button class="btn-z full" onclick="toggleFullscreen()" title="Modo Telão / Tela Cheia">⛶ TELA CHEIA</button>
+        </div>
+      </div>
+      <div class="screen" id="screen"><canvas id="game"></canvas></div>
+      <div class="legend" id="legend"></div>
+    </section>
+  </div>
+</div>
+
+<div id="tip"></div>
+
+<div id="login">
+  <div class="lbox box">
+    <div class="ico">🏢</div>
+    <h2>NA HORA CEILÂNDIA<br>ACESSO AO PAINEL</h2>
+    <p>Digite a senha do seu perfil para entrar.</p>
+    <input id="lsenha" type="password" placeholder="Senha" autocomplete="off" onkeydown="if(event.key==='Enter')entrar()">
+    <div id="lerro"></div>
+    <button class="btn g" onclick="entrar()">🔓 ENTRAR</button>
+  </div>
+</div>
+<script>
+/* Perfis: ADMIN (tudo) e VISUAL (lateral + jogo + tempo). Senhas guardadas como hash. */
+(function(){
+  var HASH_ADMIN = 'ef375917', HASH_VISUAL = 'c117175c', KEY = 'nahora_perfil';
+  function fnv(s){ var x = 0x811c9dc5; for(var i = 0; i < s.length; i++){ x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; } return x.toString(16); }
+  function aplicar(p){
+    var b = document.body;
+    b.classList.remove('role-admin', 'role-viewer'); b.classList.add('logado', p === 'admin' ? 'role-admin' : 'role-viewer');
+    var el = document.getElementById('badgePerfil'); if(el) el.textContent = p === 'admin' ? '🔧 ADMIN' : '👁 VISUAL';
+  }
+  window.entrar = function(){
+    var s = (document.getElementById('lsenha').value || '').trim(), hs = fnv(s), erro = document.getElementById('lerro');
+    var p = hs === HASH_ADMIN ? 'admin' : hs === HASH_VISUAL ? 'viewer' : null;
+    if(!p){ erro.textContent = '❌ Senha incorreta.'; document.getElementById('lsenha').select(); return; }
+    erro.textContent = ''; document.getElementById('lsenha').value = '';
+    try { localStorage.setItem(KEY, p); } catch(e){}
+    aplicar(p);
+  };
+  window.sairPerfil = function(){
+    try { localStorage.removeItem(KEY); } catch(e){}
+    document.body.classList.remove('logado', 'role-admin', 'role-viewer');
+    var i = document.getElementById('lsenha'); if(i) i.focus();
+  };
+  try { var salvo = localStorage.getItem(KEY); if(salvo === 'admin' || salvo === 'viewer') aplicar(salvo); } catch(e){}
+  if(!document.body.classList.contains('logado')) setTimeout(function(){ var i = document.getElementById('lsenha'); if(i) i.focus(); }, 50);
+})();
+</script>
+
+<div id="modal">
+  <div class="mbox box">
+    <h2>📋 COLAR A GRADE DA PLANILHA</h2>
+    <p>Copie as células da grade (com os nomes dos postos e os horários) e cole abaixo:</p>
+    <textarea id="paste" placeholder="Cole aqui (Ctrl+V)..."></textarea>
+    <div class="mfoot">
+      <button class="btn b" onclick="fecharModal()">CANCELAR</button>
+      <button class="btn g" onclick="colar()">CARREGAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Conexão com Google Planilhas -->
+<div id="modalGoogle" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center">
+  <div class="mbox box" style="max-width:680px">
+    <h2>📊 SINCRONIZAÇÃO AO VIVO — GOOGLE PLANILHAS</h2>
+    <p>Conecte diretamente à planilha do Google para que qualquer mudança feita na escala seja atualizada aqui automaticamente a cada 30 segundos!</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin:14px 0">
+      <div>
+        <label style="font-family:var(--px);font-size:9px;color:#ffd75e;display:block;margin-bottom:6px">LINK OU ID DA PLANILHA NO GOOGLE DRIVE:</label>
+        <input id="gInputUrl" type="text" class="search" style="font-size:12px;padding:8px" placeholder="Ex: https://docs.google.com/spreadsheets/d/.../edit ou o ID da planilha">
+        <small style="color:var(--mute);font-size:11px;margin-top:4px;display:block">💡 Na planilha do Google, certifique-se de configurar em <b>Compartilhar ➔ Qualquer pessoa com o link pode ver</b>.</small>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-family:var(--px);font-size:9px;color:#ffd75e;display:block;margin-bottom:6px">NOME DA ABA (OPCIONAL):</label>
+          <input id="gInputAba" type="text" class="search" style="font-size:12px;padding:8px" placeholder="Ex: ESCALA (ou deixe vazio para 1ª aba)">
+        </div>
+        <div>
+          <label style="font-family:var(--px);font-size:9px;color:#ffd75e;display:block;margin-bottom:6px">INTERVALO DE ATUALIZAÇÃO:</label>
+          <select id="gInputIntervalo" class="search" style="font-size:12px;padding:8px;background:#150f1e;color:#fff">
+            <option value="30" selected>A cada 30 segundos (Recomendado)</option>
+            <option value="60">A cada 1 minuto</option>
+            <option value="120">A cada 2 minutos</option>
+            <option value="300">A cada 5 minutos</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="gStatusBox" style="background:#150f1e;border:2px solid var(--line);border-radius:6px;padding:10px;font-size:12px;line-height:1.5">
+        <div style="font-weight:700;display:flex;align-items:center;gap:8px" id="gStatusDetalhe">
+          <span id="gStatusIcon">⚪</span> <span id="gStatusMsg">Nenhuma planilha conectada no momento (usando escala padrão).</span>
+        </div>
+        <div style="font-size:11px;color:var(--mute);margin-top:4px" id="gStatusSub">
+          Insira o link acima e clique em "Sincronizar Agora" para ativar a conexão automática ao vivo.
+        </div>
+      </div>
+    </div>
+
+    <div class="mfoot" style="flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px">
+      <div style="display:flex;gap:6px">
+        <button class="btn y" onclick="copiarLinkRecepcao()">📋 COPIAR LINK DA RECEPÇÃO</button>
+        <button class="btn" onclick="desconectarGoogle()" style="background:#5a1f2f;border-color:#a83e58">DESCONECTAR</button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn b" onclick="fecharModalGoogle()">FECHAR</button>
+        <button class="btn g" onclick="salvarEConectarGoogle()">🔄 SINCRONIZAR AGORA</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+/* =====================================================================
+   NA HORA CEILÂNDIA — JOGO DO SALÃO (pixel art, vista de cima)
+   Resolução lógica 480x320 (30x20 tiles de 16px), ampliada via CSS.
+   ===================================================================== */
+const T = 16, W = 30, H = 32;
+const cv = document.getElementById('game');
+cv.width = W * T; cv.height = H * T;
+const mainCtx = cv.getContext('2d');
+const bg = document.createElement('canvas'); bg.width = cv.width; bg.height = cv.height;
+const bgCtx = bg.getContext('2d');
+let ctx = mainCtx;
+const $ = id => document.getElementById(id);
+
+/* ---------- cores dos setores ---------- */
+const COR = { emissor:'#2fae6a', telefone:'#1fb5d4', auto:'#8a5bd6', orient:'#3b6fe0', painel:'#f08a24', pesq:'#e0508a', pausa:'#6b7280' };
+const OUT = '#2b2233';
+
+/* ---------- primitivas ---------- */
+function R(x, y, w, h, c){ ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), w, h); }
+
+/* ---------- fonte bitmap 3x5 ---------- */
+const FONT = {
+ A:'010101111101101',B:'110101110101110',C:'011100100100011',D:'110101101101110',E:'111100110100111',
+ F:'111100110100100',G:'011100101101011',H:'101101111101101',I:'111010010010111',J:'001001001101010',
+ K:'101101110101101',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'010101101101010',
+ P:'110101110100100',Q:'010101101111011',R:'110101110101101',S:'011100010001110',T:'111010010010010',
+ U:'101101101101111',V:'101101101101010',W:'101101111111101',X:'101101010101101',Y:'101101010010010',
+ Z:'111001010100111','0':'111101101101111','1':'010110010010111','2':'110001010100111','3':'110001110001110',
+ '4':'101101111001001','5':'111100110001110','6':'011100111101111','7':'111001010010010','8':'111101111101111',
+ '9':'111101111001110',':':'000010000010000','-':'000000111000000','.':'000000000000010','!':'010010010000010',
+ '?':'110001010000010','/':'001001010100100','+':'000010111010000','~':'000101010101000'
+};
+const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+const textW = s => norm(s).length * 4 - 1;
+function txt(s, x, y, col){
+  s = norm(s); let cx = Math.round(x); y = Math.round(y);
+  for(const ch of s){
+    const g = FONT[ch];
+    if(g) for(let i = 0; i < 15; i++) if(g[i] === '1') R(cx + (i % 3), y + ((i / 3) | 0), 1, 1, col);
+    cx += 4;
+  }
+}
+function plate(cx, y, s, bg, fg = '#fff'){
+  const w = textW(s) + 6, x = Math.round(cx - w / 2);
+  R(x - 1, y - 1, w + 2, 9, '#1b1626'); R(x, y, w, 7, bg); R(x, y, w, 1, 'rgba(255,255,255,.35)'); txt(s, x + 3, y + 1, fg);
+}
+
+/* ---------- mapa de colisão ---------- */
+const bloq = Array.from({length:H}, () => Array(W).fill(false));
+function bl(x, y, w = 1, h = 1){ for(let j = 0; j < h; j++) for(let i = 0; i < w; i++) bloq[y + j][x + i] = true; }
+(function(){
+  bl(0, 0, W, 2); bl(0, 2, 1, H - 2); bl(0, 31, W, 1);       // paredes: topo, esquerda, base
+  bl(29, 2, 1, 7); bl(29, 11, 1, 15); bl(29, 28, 1, 3);       // parede direita (portas em y=9..10 e y=26..27)
+  bl(23, 4, 6);                                                // bancada dos telefones atrás da recepção (x=23..28, y=4)
+  bl(11, 7, 16);                                               // balcão dos emissores na frente (x=11..26, y=7)
+  bl(2, 10, 7);                                                // bancada do autoatendimento
+  [13, 17, 21].forEach(y0 => { [12, 14, 16].forEach(x => bl(x, y0 + 1)); [13, 14, 15].forEach(x => { bl(x, y0 + 2); bl(x, y0 + 3); }); });
+  bl(4, 14); bl(7, 24); bl(3, 27, 2, 2);                       // máquina de bebidas, cafeteira, mesa da copa
+  [[1,13],[8,13],[1,22],[8,22],[21,14],[28,14],[21,20],[28,20],[9,2]].forEach(([x, y]) => bl(x, y)); // plantas
+})();
+
+/* ---------- pathfinding (Dijkstra com penalidade de curva) ---------- */
+function achar(sx, sy, gx, gy){
+  if(sx === gx && sy === gy) return [];
+  const key = (x, y, d) => (y * W + x) * 5 + d;
+  const dist = new Map(), prev = new Map(), heap = [];
+  const push = n => { heap.push(n); let i = heap.length - 1; while(i > 0){ const p = (i - 1) >> 1; if(heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
+  const pop = () => { const top = heap[0], last = heap.pop(); if(heap.length){ heap[0] = last; let i = 0; for(;;){ let l = 2*i+1, r = l+1, m = i; if(l < heap.length && heap[l][0] < heap[m][0]) m = l; if(r < heap.length && heap[r][0] < heap[m][0]) m = r; if(m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top; };
+  const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+  const k0 = key(sx, sy, 4); dist.set(k0, 0); push([0, sx, sy, 4]);
+  let fin = null;
+  while(heap.length){
+    const [c, x, y, d] = pop(), kk = key(x, y, d);
+    if(c > (dist.get(kk) ?? Infinity)) continue;
+    if(x === gx && y === gy){ fin = kk; break; }
+    for(let nd = 0; nd < 4; nd++){
+      const nx = x + DIRS[nd][0], ny = y + DIRS[nd][1];
+      if(nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+      if(bloq[ny][nx] && !(nx === gx && ny === gy)) continue;
+      const nc = c + 1 + ((d !== 4 && d !== nd) ? 0.6 : 0), nk = key(nx, ny, nd);
+      if(nc < (dist.get(nk) ?? Infinity)){ dist.set(nk, nc); prev.set(nk, kk); push([nc, nx, ny, nd]); }
+    }
+  }
+  if(fin === null) return null;
+  const path = []; let cur = fin;
+  while(cur !== k0){ const d = cur % 5, cell = (cur - d) / 5; path.push([cell % W, (cell / W) | 0]); cur = prev.get(cur); }
+  return path.reverse();
+}
+
+/* ---------- postos oficiais (todos os 22 postos da unidade) ---------- */
+const POSTOS = {};
+function addPosto(key, o){ POSTOS[key] = Object.assign({ key }, o); }
+[['EMISSOR 1',12],['EMISSOR 1.1',13],['EMISSOR 2',16],['EMISSOR 2.1',17],['EMISSOR 3',20],['EMISSOR 3.1',21],['EMISSOR 4',24],['EMISSOR 4.1',25]].forEach(([k, x]) => addPosto(k, {
+  x, y:6, sit:true, dir:'down', grupo:'RECEPÇÃO', cor:COR.emissor, tipo:'emissor',
+  desc:'Na recepção, atendendo o cidadão que chega para pegar senha.' }));
+[['TELEFONE 1',25],['TELEFONE 2',27]].forEach(([k, x]) => addPosto(k, {
+  x, y:3, sit:true, dir:'down', grupo:'TELEFONES', cor:COR.telefone, tipo:'telefone',
+  desc:'Na bancada atrás da recepção, atendendo ligações e dando informações.' }));
+addPosto('AUTO SENTADO', { x:3, y:9, sit:true, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
+  desc:'Sentado no computador do autoatendimento, auxiliando o cidadão.' });
+addPosto('AUTO 1', { x:6, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
+  desc:'Em pé no totem 1 de autoatendimento, auxiliando o cidadão.' });
+addPosto('AUTO 2', { x:8, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
+  desc:'Em pé no totem 2 de autoatendimento, auxiliando o cidadão.' });
+addPosto('AUTO', { x:6, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
+  desc:'Em pé no autoatendimento, auxiliando o cidadão.' });
+addPosto('ORIENTADOR', { x:24, y:10, sit:false, dir:'down', grupo:'ENTRADA', cor:COR.orient, tipo:'orient',
+  desc:'Na porta de entrada, com tablet em mãos, adiantando a triagem da fila.' });
+[['PAINEL 2',12,13],['PAINEL 2.1',16,13],['PAINEL 3',12,17],['PAINEL 3.1',16,17],['PAINEL 4',12,21],['PAINEL 5',16,21]].forEach(([k, x, y]) => addPosto(k, {
+  x, y, sit:false, dir:'down', grupo:'SALÃO DE ESPERA', cor:COR.painel, tipo:'painel',
+  desc:'Em pé no salão de espera, chamando senha e orientando o painel.' }));
+addPosto('PAINEL 1', { x:14, y:13, sit:false, dir:'down', grupo:'SALÃO DE ESPERA', cor:COR.painel, tipo:'painel',
+  desc:'Em pé no salão, chamando senha no painel 1.' });
+addPosto('PESQUISA', { x:27, y:25, sit:false, dir:'right', grupo:'SAÍDA / PESQUISA', cor:COR.pesq, tipo:'pesq',
+  desc:'Na porta de saída, aplicando a pesquisa de satisfação do atendimento.' });
+addPosto('PESQUISA 2', { x:27, y:28, sit:false, dir:'right', grupo:'SAÍDA / PESQUISA', cor:COR.pesq, tipo:'pesq',
+  desc:'Na porta de saída, aplicando a pesquisa de satisfação do atendimento (dupla).' });
+
+const GRUPOS = [
+  ['RECEPÇÃO', COR.emissor], ['TELEFONES', COR.telefone], ['AUTOATENDIMENTO', COR.auto],
+  ['ENTRADA', COR.orient], ['SALÃO DE ESPERA', COR.painel], ['SAÍDA / PESQUISA', COR.pesq],
+  ['☕ PAUSA (NO SALÃO)', COR.pausa],
+  ['⏳ CHEGANDO (AINDA NÃO ENTROU)', '#f59e0b'],
+  ['🏠 FUI (JÁ FOI EMBORA)', '#64748b']
+];
+
+const PAUSA_SPOTS = [];
+for(let y = 25; y <= 30; y++) for(let x = 1; x <= 8; x++){
+  if(x >= 3 && x <= 4 && y >= 27 && y <= 28) continue; // mesa da copa
+  PAUSA_SPOTS.push([x, y]);
+}
+
+/* limpeza e normalização de nomes dos atendentes */
+function limparNome(raw){
+  if(!raw) return '';
+  let s = String(raw).trim();
+  s = s.split(/[\r\n]|\\[nNrR]/)[0].replace(/^["']|["']$/g, '').trim();
+  s = s.replace(/\s*\([^)]*\)/g, '').trim();
+  s = s.replace(/\s*-\s*(?:LANCHE|15M|FOLGA|ADM).*$/i, '').trim();
+  s = s.replace(/\s+(?:LANCHE|SAIDA|VOLTA)\b.*$/i, '').trim();
+  if(s.includes('/')) s = s.split('/')[0].trim();
+  s = norm(s);
+  if(['X', '-', '--', '—', 'FOLGA', 'FERIAS', 'ATESTADO', 'LICENCA', 'ALMOCO', 'VAGO', 'LIVRE', ''].includes(s)){
+    return '';
+  }
+  return s;
+}
+
+function matchNome(a, b){
+  if(!a || !b) return false;
+  if(a === b) return true;
+  const na = norm(a).trim(), nb = norm(b).trim();
+  if(na === nb) return true;
+  const fa = na.split(/[\s/]+/)[0], fb = nb.split(/[\s/]+/)[0];
+  if(fa.length >= 3 && fa === fb) return true;
+  return false;
+}
+
+/* extrai horário em formato HH:MM (suporta 07:30, 7:30, 07h30, 0.3125 de Excel) */
+function extrairHora(val){
+  if(val === null || val === undefined) return null;
+  const s = String(val).trim();
+  if(!s) return null;
+  const m = s.match(/^(\d{1,2})[:hH](\d{2})(?::\d{2})?/);
+  if(m){
+    const hh = parseInt(m[1], 10), mm = parseInt(m[2], 10);
+    if(hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59){
+      return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+    }
+  }
+  const num = parseFloat(s.replace(',', '.'));
+  if(!isNaN(num) && num > 0 && num < 1){
+    const totalMin = Math.round(num * 24 * 60);
+    const hh = Math.floor(totalMin / 60) % 24;
+    const mm = totalMin % 60;
+    return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+  }
+  return null;
+}
+
+/* converte o nome da coluna da planilha para um posto oficial */
+function mapPosto(h){
+  if(!h) return null;
+  const n = norm(h).replace(/[\r\n]+/g, ' ').trim();
+  let m;
+
+  // EMISSOR 1, 1.1, 2, 2.1...
+  if((m = n.match(/(?:EMISSOR|GUICHE|RECEP|BALCAO)\s*(\d(?:\.\d)?)/i))){
+    const k = 'EMISSOR ' + m[1];
+    if(POSTOS[k]) return k;
+    const base = 'EMISSOR ' + parseInt(m[1], 10);
+    if(POSTOS[base]) return base;
+  }
+  // TELEFONE 1, 2
+  if((m = n.match(/(?:TELEFONE|TEL)\D*(\d)?/i))){
+    const num = m[1] ? parseInt(m[1], 10) : 1;
+    const k = 'TELEFONE ' + (num === 2 ? 2 : 1);
+    if(POSTOS[k]) return k;
+  }
+  // AUTO SENTADO
+  if(n.includes('AUTO') && (n.includes('SENTAD') || n.includes('MESA') || n.includes('PC'))){
+    return 'AUTO SENTADO';
+  }
+  // AUTO 1, 2
+  if((m = n.match(/AUTO\s*(\d)/i))){
+    const k = 'AUTO ' + m[1];
+    if(POSTOS[k]) return k;
+    return 'AUTO';
+  }
+  if(n.includes('AUTO')){
+    return 'AUTO';
+  }
+  // ORIENTADOR
+  if(n.includes('ORIENT') || n.includes('FILA') || n.includes('TABLET') || n.includes('TRIAGEM')){
+    return 'ORIENTADOR';
+  }
+  // PAINEL 2, 2.1, 3, 3.1, 4, 5
+  if((m = n.match(/(?:PAINEL|CHAMADA|TOTEM)\s*(\d(?:\.\d)?)/i))){
+    const k = 'PAINEL ' + m[1];
+    if(POSTOS[k]) return k;
+    const base = 'PAINEL ' + parseInt(m[1], 10);
+    if(POSTOS[base]) return base;
+  }
+  // Numerais romanos
+  if(/\bPAINEL\s+I\b/i.test(n)) return 'PAINEL 1';
+  if(/\bPAINEL\s+II\b/i.test(n)) return 'PAINEL 2';
+  if(/\bPAINEL\s+III\b/i.test(n)) return 'PAINEL 3';
+  if(/\bPAINEL\s+IV\b/i.test(n)) return 'PAINEL 4';
+  if(/\bPAINEL\s+V\b/i.test(n)) return 'PAINEL 5';
+  if(n.includes('PAINEL') || n.includes('CHAMADA')){
+    return 'PAINEL 2';
+  }
+  // PESQUISA 1, 2
+  if(n.includes('PESQUI') || n.includes('SAST') || n.includes('AVALIA') || n.includes('SAIDA')){
+    if(n.includes('2')) return 'PESQUISA 2';
+    return 'PESQUISA';
+  }
+  return null;
+}
+
+/* =====================================================================
+   CENÁRIO ESTÁTICO (desenhado uma vez)
+   ===================================================================== */
+const SEATS = [];
+function desenharCenario(){
+  ctx = bgCtx;
+  SEATS.length = 0;
+  const ativo = k => !estado.postosAtivos || estado.postosAtivos.has(k);
+  R(0, 0, cv.width, cv.height, '#2a1a0e');
+
+  // ----- piso -----
+  const pedra = (tx, ty) => {
+    const px = tx * T, py = ty * T;
+    R(px, py, T, T, (tx + ty) % 2 ? '#cfd4ea' : '#bfc6e2');
+    R(px, py, T, 1, '#a9b1d3'); R(px, py, 1, T, '#a9b1d3'); R(px + 2, py + 2, 5, 1, '#e8ebf8');
+    if((tx * 7 + ty * 13) % 5 === 0) R(px + 9, py + 9, 1, 1, '#a0a8cb');
+  };
+  const madeira = (tx, ty) => {
+    const px = tx * T, py = ty * T;
+    R(px, py, T, T, (tx + ty) % 2 ? '#dba96b' : '#d19b5e');
+    for(let k = 0; k < 4; k++){ R(px, py + k * 4 + 3, T, 1, '#a9703f'); R(px + (((tx + k) % 2) ? 4 : 11), py + k * 4, 1, 3, '#a9703f'); }
+  };
+  for(let ty = 2; ty <= 30; ty++) for(let tx = 1; tx <= 28; tx++){
+    const wood = (tx >= 10 && tx <= 28 && ty <= 7) || (tx <= 8 && ty >= 24 && ty <= 30);
+    wood ? madeira(tx, ty) : pedra(tx, ty);
+  }
+
+  // ----- tapetes -----
+  const tapete = (x0, y0, w, h, c1, c2, c3) => {
+    R(x0 * T, y0 * T, w * T, h * T, c1);
+    R(x0 * T, y0 * T, w * T, 2, c2); R(x0 * T, (y0 + h) * T - 2, w * T, 2, c2);
+    R(x0 * T, y0 * T, 2, h * T, c2); R((x0 + w) * T - 2, y0 * T, 2, h * T, c2);
+    for(let i = 4; i < w * T - 4; i += 8) for(let j = 4; j < h * T - 4; j += 8) R(x0 * T + i, y0 * T + j, 2, 2, c3);
+  };
+  tapete(1, 2, 8, 10, '#8a5bd6', '#5e3a9c', '#a784e8');    // autoatendimento (toda a área esquerda superior)
+  tapete(20, 9, 9, 4, '#4a73dc', '#2c4aa0', '#7a9bf0');    // hall de entrada (porta lateral)
+  tapete(21, 22, 8, 9, '#3fae72', '#237a4c', '#6fd09a');   // saída
+
+  // ----- paredes externas -----
+  R(0, 0, cv.width, T, '#3a2314');
+  R(0, T, cv.width, T, '#7a4b2a');
+  for(let x = 0; x < cv.width; x += 8) R(x, T, 1, T, '#6a3f22');
+  R(0, 2 * T, cv.width, 2, '#2a1a0e');
+  R(0, 32, T, cv.height - 32, '#4d2c15'); R(T - 2, 32, 2, cv.height - 32, '#2a1a0e');
+  R(29 * T, 32, T, cv.height - 32, '#4d2c15'); R(29 * T, 32, 2, cv.height - 32, '#2a1a0e');
+  R(0, 31 * T, cv.width, T, '#4d2c15'); R(0, 31 * T, cv.width, 2, '#2a1a0e');
+  // porta de entrada (direita, no hall)
+  R(29 * T, 9 * T, T, 2 * T, '#d8ecff'); R(29 * T, 9 * T - 2, T, 2, '#1b1008'); R(29 * T, 11 * T, T, 2, '#1b1008');
+  R(28 * T + 8, 9 * T + 2, 7, 28, '#a81f2b'); R(28 * T + 8, 9 * T + 2, 1, 28, '#d0505a');
+  // porta de saída (direita, na sala de saída)
+  R(29 * T, 26 * T, T, 2 * T, '#d8ecff'); R(29 * T, 26 * T - 2, T, 2, '#1b1008'); R(29 * T, 28 * T, T, 2, '#1b1008');
+  R(28 * T + 8, 26 * T + 2, 7, 28, '#1f9d5d'); R(28 * T + 8, 26 * T + 2, 1, 28, '#6fe0a0');
+
+  // ----- telefones: bancada atrás da recepção (canto superior direito) -----
+  R(23 * T, 4 * T, 6 * T, 18, '#c3ccdd');
+  R(23 * T, 4 * T, 6 * T, 9, '#f4f6fa'); R(23 * T, 4 * T, 6 * T, 1, '#ffffff');
+  R(23 * T, 4 * T + 9, 6 * T, 1, '#8a97ad'); R(23 * T, 4 * T + 17, 6 * T, 1, '#7d8aa0');
+  R(23 * T, 4 * T, 1, 18, '#8a97ad'); R(29 * T - 1, 4 * T, 1, 18, '#8a97ad');
+  [['TEL 1','TELEFONE 1',25],['TEL 2','TELEFONE 2',27]].forEach(([lbl, pk, x]) => {
+    if(ativo(pk)){ const cx = x * T + 8, w = textW(lbl); R(cx - w / 2 - 2, 4 * T + 11, w + 4, 7, COR.telefone); txt(lbl, cx - w / 2, 4 * T + 12, '#fff'); }
+  });
+  plate(26 * T, 2 * T + 3, 'TELEFONES', COR.telefone);
+
+  // ----- recepção: balcão dos emissores (na frente dos telefones) -----
+  R(11 * T, 7 * T, 16 * T, 20, '#c3ccdd');
+  R(11 * T, 7 * T, 16 * T, 10, '#f4f6fa'); R(11 * T, 7 * T, 16 * T, 1, '#ffffff');
+  R(11 * T, 7 * T + 10, 16 * T, 1, '#8a97ad'); R(11 * T, 7 * T + 19, 16 * T, 1, '#7d8aa0');
+  R(11 * T, 7 * T, 1, 20, '#8a97ad'); R(27 * T - 1, 7 * T, 1, 20, '#8a97ad');
+  [240, 304, 368].forEach(x => { R(x, 7 * T, 2, 14, '#9fd8f2'); R(x, 7 * T, 1, 14, '#d8f2ff'); });
+  [['E1','EMISSOR 1',12],['1.1','EMISSOR 1.1',13],['E2','EMISSOR 2',16],['2.1','EMISSOR 2.1',17],['E3','EMISSOR 3',20],['3.1','EMISSOR 3.1',21],['E4','EMISSOR 4',24],['4.1','EMISSOR 4.1',25]].forEach(([lbl, pk, x]) => {
+    if(ativo(pk)){ const cx = x * T + 8, w = textW(lbl); R(cx - w / 2 - 2, 7 * T + 12, w + 4, 7, COR.emissor); txt(lbl, cx - w / 2, 7 * T + 13, '#fff'); }
+  });
+  plate(18.5 * T, 5 * T + 3, 'RECEPCAO', COR.emissor);
+
+  // TV de senhas (no centro da parede superior)
+  R(12 * T, 1 * T, 72, 14, '#101420'); R(12 * T, 1 * T, 72, 1, '#3a4a7a');
+
+  // ----- autoatendimento: bancada -----
+  R(2 * T, 10 * T, 7 * T, 16, '#c3ccdd'); R(2 * T, 10 * T, 7 * T, 9, '#f4f6fa'); R(2 * T, 10 * T + 9, 7 * T, 1, '#8a97ad'); R(2 * T, 10 * T + 15, 7 * T, 1, '#7d8aa0');
+  if(ativo('AUTO SENTADO')) plate(3 * T + 8, 11 * T + 3, 'AUTO SENT', COR.auto);
+  if(ativo('AUTO 1') || ativo('AUTO')) plate(6 * T + 8, 11 * T + 3, 'AUTO 1', COR.auto);
+  if(ativo('AUTO 2')) plate(8 * T + 8, 11 * T + 3, 'AUTO 2', COR.auto);
+
+  // ----- bancos do salão (3 faixas de painéis) -----
+  [13, 17, 21].forEach(y0 => { for(const y of [y0 + 2, y0 + 3]) for(let x = 13; x <= 15; x++){
+    const px = x * T, py = y * T;
+    R(px + 1, py + 8, 14, 7, '#2c5fc4'); R(px + 1, py + 8, 14, 1, '#6a95ec'); R(px + 1, py + 14, 14, 1, '#1d3f88');
+    R(px + 1, py + 2, 14, 6, '#1f4aa6'); R(px + 1, py + 2, 14, 1, '#4c78d6'); R(px, py + 2, 1, 13, '#14295c'); R(px + 15, py + 2, 1, 13, '#14295c');
+    SEATS.push({ x, y, ocupado: false });
+  } });
+
+  // ----- decoração -----
+  const planta = (tx, ty) => {
+    const px = tx * T, py = ty * T;
+    R(px + 4, py + 9, 8, 6, '#b5651d'); R(px + 4, py + 9, 8, 1, '#d98a3d'); R(px + 3, py + 8, 10, 2, '#c97a2b');
+    R(px + 3, py + 2, 4, 7, '#2e9b4f'); R(px + 9, py + 3, 4, 6, '#34ad57'); R(px + 6, py, 4, 9, '#3dbd62'); R(px + 7, py + 2, 1, 5, '#7be09a');
+  };
+  [[1,13],[8,13],[1,22],[8,22],[21,14],[28,14],[21,20],[28,20],[9,2]].forEach(([x, y]) => planta(x, y));
+  // máquina de bebidas (salão, lado esquerdo)
+  R(4 * T + 1, 14 * T, 14, 16, '#c92f3a'); R(4 * T + 2, 14 * T + 2, 8, 8, '#7ad1ff'); R(4 * T + 2, 14 * T + 2, 8, 2, '#c4ecff');
+  R(4 * T + 11, 14 * T + 3, 3, 2, '#ffd75e'); R(4 * T + 11, 14 * T + 7, 3, 2, '#7dffb0'); R(4 * T + 3, 14 * T + 12, 8, 2, '#4a0e14');
+  // copa: cafeteira + mesa
+  R(7 * T + 1, 24 * T + 2, 14, 13, '#3a3f4d'); R(7 * T + 3, 24 * T + 4, 6, 4, '#101420'); R(7 * T + 10, 24 * T + 4, 3, 3, '#ff5b5b'); R(7 * T + 4, 24 * T + 10, 6, 3, '#e9eef7');
+  R(3 * T, 27 * T + 2, 32, 28, '#8a5a31'); R(3 * T + 1, 27 * T + 3, 30, 26, '#b27a45'); R(3 * T + 1, 27 * T + 3, 30, 2, '#d6a06a');
+  R(3 * T + 8, 27 * T + 10, 6, 5, '#fff'); R(3 * T + 18, 27 * T + 14, 6, 5, '#fff'); R(3 * T + 9, 27 * T + 11, 4, 1, '#7a4a21'); R(3 * T + 19, 27 * T + 15, 4, 1, '#7a4a21');
+
+  // ----- placas dos setores e postos -----
+  plate(4.5 * T, 2 * T + 3, 'AUTOATENDIMENTO', COR.auto);
+  plate(24.5 * T, 9 * T + 3, 'ENTRADA', '#a81f2b');
+  plate(15 * T, 12 * T + 4, 'SALAO DE ESPERA', '#3a4a7a');
+  plate(4.5 * T, 24 * T + 3, 'COPA / PAUSA', COR.pausa);
+  plate(25 * T, 22 * T + 3, 'SAIDA', COR.pesq);
+  if(ativo('ORIENTADOR')) plate(POSTOS['ORIENTADOR'].x * T + 8, (POSTOS['ORIENTADOR'].y + 1) * T + 4, 'ORIENTADOR', COR.orient);
+  if(ativo('ORIENTADOR')) plate(POSTOS['ORIENTADOR'].x * T + 8, (POSTOS['ORIENTADOR'].y + 1) * T + 4, 'ORIENTADOR', COR.orient);
+  if(ativo('PESQUISA')) plate(POSTOS['PESQUISA'].x * T + 8, 24 * T + 4, 'PESQ 1', COR.pesq);
+  if(ativo('PESQUISA 2')) plate(POSTOS['PESQUISA 2'].x * T + 8, 27 * T + 4, 'PESQ 2', COR.pesq);
+  ['PAINEL 1','PAINEL 2','PAINEL 2.1','PAINEL 3','PAINEL 3.1','PAINEL 4','PAINEL 5'].forEach(k => {
+    if(POSTOS[k] && ativo(k)) plate(POSTOS[k].x * T + 8, (POSTOS[k].y + 2) * T + 4, k.replace('PAINEL ', 'P.'), COR.painel);
+  });
+}
+
+/* =====================================================================
+   CAMADA FRONTAL (itens que ficam na frente das pessoas + animações)
+   ===================================================================== */
+let senhaAtual = 42, senhaTempo = 0;
+function monitor(cx, y, tela){
+  R(cx - 6, y, 12, 10, '#8c95a8'); R(cx - 5, y + 1, 10, 7, '#e3e7ef'); R(cx - 4, y + 2, 8, 5, tela); R(cx - 4, y + 2, 8, 1, 'rgba(255,255,255,.4)');
+  R(cx - 2, y + 10, 4, 2, '#aab3c5');
+}
+function frontLayer(t){
+  ctx = mainCtx;
+  const ativo = k => !estado.postosAtivos || estado.postosAtivos.has(k);
+  const tela = Math.floor(t * 1.5) % 2 ? '#59b8ff' : '#4aa6ec';
+  ['EMISSOR 1','EMISSOR 1.1','EMISSOR 2','EMISSOR 2.1','EMISSOR 3','EMISSOR 3.1','EMISSOR 4','EMISSOR 4.1'].forEach(k => {
+    if(POSTOS[k] && ativo(k)){
+      const cx = POSTOS[k].x * T + 8;
+      monitor(cx, 107, tela);
+      R(cx - 5, 120, 10, 2, '#e8ebf2'); R(cx - 5, 120, 10, 1, '#fff');
+    }
+  });
+  ['TELEFONE 1','TELEFONE 2'].forEach((k, i) => {
+    if(POSTOS[k] && ativo(k)){
+      const cx = POSTOS[k].x * T + 8;
+      monitor(cx - 3, 59, tela);
+      R(cx + 4, 63, 9, 7, '#2b2f3a'); R(cx + 5, 64, 3, 1, '#555d70'); R(cx + 5, 66, 3, 1, '#555d70');
+      R(cx + 10, 64, 2, 2, (Math.floor(t * 2 + i) % 2) ? '#ff5b5b' : '#5a1a1a');
+      R(cx - 5, 72, 10, 2, '#e8ebf2'); R(cx - 5, 72, 10, 1, '#fff');
+    }
+  });
+  // PC do autoatendimento sentado
+  if(ativo('AUTO SENTADO')){
+    monitor(POSTOS['AUTO SENTADO'].x * T + 8, 155, tela);
+  }
+  // Totens touch do autoatendimento 1 e 2 (ao lado do atendente, sobre a bancada)
+  [['AUTO 1', POSTOS['AUTO 1'].x], ['AUTO 2', POSTOS['AUTO 2'].x]].forEach(([k, tx]) => {
+    if(ativo(k) || (k === 'AUTO 1' && estado.postosAtivos && estado.postosAtivos.has('AUTO'))){
+      const cx = tx * T + 8 + (k === 'AUTO 1' ? 10 : -10);
+      R(cx - 6, 142, 12, 18, '#243a6b'); R(cx - 6, 142, 12, 1, '#5b7fc7'); R(cx - 5, 144, 10, 9, '#4fd0ff'); R(cx - 5, 144, 10, 2, '#b4efff');
+      R(cx - 3, 155, 6, 2, '#0f1a38');
+    }
+  });
+  // Totens de painel (apenas os painéis ativos), logo abaixo de cada atendente
+  ['PAINEL 1','PAINEL 2','PAINEL 2.1','PAINEL 3','PAINEL 3.1','PAINEL 4','PAINEL 5'].forEach((k, i) => {
+    if(POSTOS[k] && ativo(k)){
+      const cx = POSTOS[k].x * T + 8, ty = (POSTOS[k].y + 1) * T + 1;
+      R(cx - 7, ty, 14, 15, '#2a3550'); R(cx - 7, ty, 14, 1, '#6b7fb0'); R(cx - 6, ty + 2, 12, 7, '#0b1220');
+      txt(String(senhaAtual + i * 2).padStart(3, '0'), cx - 5, ty + 4, '#ff5a4a');
+      R(cx - 3, ty + 11, 6, 2, '#141b2e');
+    }
+  });
+  // TV de senhas (no centro da parede superior)
+  txt('SENHA A' + String(senhaAtual).padStart(3, '0'), 12 * T + 6, 21, (Math.floor(t * 2) % 2) ? '#ffd75e' : '#ffb347');
+}
+
+/* =====================================================================
+   PESSOAS (sprites procedurais)
+   ===================================================================== */
+const PELES = ['#ffdbb0','#f1c27d','#d9a066','#a86b3c','#7a4a2a'];
+const CABELOS = ['#1c1410','#3e2a1a','#6b4423','#c98f3a','#e8c25a','#8a8a92','#b3361f'];
+const CAMISAS = ['#d94b4b','#3b6fe0','#2fae6a','#8a5bd6','#e0508a','#e69a2c','#1fb5d4','#4a5368'];
+function hash(s){ let h = 0; for(let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
+function sombra(hex, f = .72){ const n = parseInt(hex.slice(1), 16); const r = (n >> 16) * f | 0, g = (n >> 8 & 255) * f | 0, b = (n & 255) * f | 0; return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1); }
+function criarLook(seed){
+  const h = typeof seed === 'string' ? hash(seed) : seed;
+  const camisa = CAMISAS[(h >> 3) % CAMISAS.length];
+  return { pele: PELES[h % PELES.length], cabelo: CABELOS[(h >> 2) % CABELOS.length], camisa, camSomb: sombra(camisa),
+           estilo: (h >> 5) % 4, oculos: (h >> 7) % 3 === 0, calca: (h >> 9) % 2 ? '#2d3550' : '#3d3a45' };
+}
+
+function desenharPessoa(p, t){
+  const L = p.look, cx = Math.round(p.x), cy = Math.round(p.y);
+  const andando = p.moving, f = Math.floor(t * 8 + p.seed) % 4, sit = p.sitting;
+  R(cx - 5, cy - 1, 10, 2, 'rgba(0,0,0,.25)');
+  let tb = sit ? cy - 3 : cy - 6;
+  if(!sit && andando && f % 2 === 1) tb -= 1;
+  if(sit){
+    R(cx - 7, cy - 8, 14, 6, '#2d3342'); R(cx - 7, cy - 8, 14, 1, '#555d70'); R(cx - 3, cy - 2, 6, 2, '#1c202b');
+  } else {
+    const a = andando && f === 1 ? 1 : 0, b = andando && f === 3 ? 1 : 0;
+    R(cx - 4, tb, 3, 4 - a, L.calca); R(cx + 1, tb, 3, 4 - b, L.calca);
+    R(cx - 4, tb + 4 - a, 3, 2 + a, '#201a24'); R(cx + 1, tb + 4 - b, 3, 2 + b, '#201a24');
+  }
+  // tronco
+  R(cx - 5, tb - 8, 10, 9, OUT); R(cx - 4, tb - 7, 8, 7, L.camisa); R(cx - 4, tb - 2, 8, 2, L.camSomb);
+  // braços
+  let a1 = 0, a2 = 0;
+  if(andando){ a1 = f % 2 ? 1 : 0; a2 = f % 2 ? 0 : 1; }
+  if(sit){ const k = Math.floor(t * 6 + p.seed) % 2; a1 = k; a2 = 1 - k; }
+  R(cx - 6, tb - 7 + a1, 2, 5, L.camisa); R(cx - 6, tb - 2 + a1, 2, 2, L.pele);
+  R(cx + 4, tb - 7 + a2, 2, 5, L.camisa); R(cx + 4, tb - 2 + a2, 2, 2, L.pele);
+  // cabeça
+  R(cx - 5, tb - 18, 10, 11, OUT); R(cx - 4, tb - 16, 8, 8, L.pele);
+  const dir = p.dir;
+  if(dir === 'up'){
+    R(cx - 4, tb - 17, 8, 9, L.cabelo);
+  } else {
+    R(cx - 4, tb - 17, 8, 3, L.cabelo);
+    if(dir === 'down'){
+      R(cx - 4, tb - 14, 1, 2, L.cabelo); R(cx + 3, tb - 14, 1, 2, L.cabelo);
+      R(cx - 3, tb - 13, 2, 2, '#1b1626'); R(cx + 1, tb - 13, 2, 2, '#1b1626');
+      R(cx - 4, tb - 11, 1, 1, '#ff9a9a'); R(cx + 3, tb - 11, 1, 1, '#ff9a9a');
+      if(L.oculos){ R(cx - 4, tb - 14, 4, 1, '#111'); R(cx, tb - 14, 4, 1, '#111'); R(cx - 4, tb - 12, 4, 1, '#111'); R(cx, tb - 12, 4, 1, '#111'); }
+      if(L.estilo === 1){ R(cx - 5, tb - 16, 1, 9, L.cabelo); R(cx + 4, tb - 16, 1, 9, L.cabelo); }
+    } else if(dir === 'left'){
+      R(cx, tb - 17, 4, 9, L.cabelo); R(cx - 3, tb - 13, 2, 2, '#1b1626'); if(L.oculos) R(cx - 4, tb - 14, 4, 1, '#111');
+    } else {
+      R(cx - 4, tb - 17, 4, 9, L.cabelo); R(cx + 1, tb - 13, 2, 2, '#1b1626'); if(L.oculos) R(cx, tb - 14, 4, 1, '#111');
+    }
+  }
+  if(L.estilo === 2) R(cx - 2, tb - 21, 4, 4, L.cabelo);
+  // crachá + adereços (somente equipe)
+  if(p.staff){
+    if(dir === 'down'){ R(cx - 1, tb - 7, 1, 4, p.cor); R(cx - 2, tb - 3, 3, 3, '#fff'); R(cx - 1, tb - 2, 1, 1, p.cor); }
+    const tp = p.tipo;
+    if(tp === 'orient' && !sit){ R(cx + 5, tb - 6, 6, 8, '#2b2f3a'); R(cx + 6, tb - 5, 4, 6, '#7ad1ff'); R(cx + 6, tb - 5, 4, 1, '#cdeeff'); }
+    if(tp === 'pesq' && !sit){ R(cx + 5, tb - 6, 6, 8, '#a8743a'); R(cx + 6, tb - 5, 4, 6, '#fff'); R(cx + 7, tb - 3, 2, 1, '#999'); }
+    if(tp === 'telefone'){ R(cx - 5, tb - 16, 1, 5, '#14161d'); R(cx - 6, tb - 13, 2, 3, '#14161d'); R(cx - 5, tb - 10, 4, 1, '#14161d'); }
+    if(tp === 'painel' && !sit){ R(cx + 5, tb - 5, 5, 3, '#ffd75e'); }
+  }
+}
+
+function bolha(x, y, s){
+  const w = textW(s) + 4;
+  R(x, y, w, 9, '#1b1626'); R(x + 1, y + 1, w - 2, 7, '#fff'); txt(s, x + 2, y + 2, '#1b1626'); R(x + 2, y + 9, 2, 2, '#1b1626'); R(x + 3, y + 8, 1, 2, '#fff');
+}
+
+/* =====================================================================
+   ESTADO, EQUIPE E CIDADÃOS
+   ===================================================================== */
+const estado = { escala:{}, slots:[], idx:0, equipe:[], pessoas:{}, auto:false, timer:null, sel:null, busca:'', info:[], alertas:{}, filtroPresenca:'todos', jornadas:{} };
+let npcs = [];
+
+function novaPessoa(nome, staff){
+  const seed = hash(nome + (staff ? '' : Math.random()));
+  return { nome, staff, look: criarLook(staff ? nome : seed), seed: (seed % 100) / 10, x: 0, y: 0, dir: 'down', sitting: false, moving: false,
+           path: [], vel: 72, espera: 0, cor: COR.pausa, tipo: null, posto: null, destino: null };
+}
+function colocar(p, tx, ty){ p.x = tx * T + 8; p.y = ty * T + 15; p.path = []; p.moving = false; }
+function tileDe(p){ return [Math.min(W - 1, Math.max(0, Math.floor(p.x / T))), Math.min(H - 1, Math.max(0, Math.floor(p.y / T)))]; }
+function irPara(p, tx, ty){
+  const [sx, sy] = tileDe(p), path = achar(sx, sy, tx, ty);
+  if(path === null){ colocar(p, tx, ty); return false; }
+  p.path = path; return true;
+}
+function chegou(p){ if(p.destino){ p.sitting = p.destino.sit; p.dir = p.destino.dir; } }
+function mover(p, dt){
+  if(p.espera > 0){ p.espera -= dt; return; }
+  if(!p.path.length){ if(p.moving){ p.moving = false; chegou(p); } return; }
+  const [tx, ty] = p.path[0], dx = tx * T + 8 - p.x, dy = ty * T + 15 - p.y, d = Math.hypot(dx, dy), step = p.vel * dt;
+  p.moving = true; p.sitting = false;
+  if(d > .01){ if(Math.abs(dx) > Math.abs(dy)) p.dir = dx > 0 ? 'right' : 'left'; else p.dir = dy > 0 ? 'down' : 'up'; }
+  if(d <= step){ p.x = tx * T + 8; p.y = ty * T + 15; p.path.shift(); }
+  else { p.x += dx / d * step; p.y += dy / d * step; }
+  if(!p.path.length){ p.moving = false; chegou(p); }
+}
+
+/* ----- cidadãos (NPCs que passam pelo fluxo real do Na Hora) ----- */
+function criarNPCs(){
+  npcs = [];
+  SEATS.forEach(s => s.ocupado = false);
+  for(let i = 0; i < 9; i++){
+    const n = novaPessoa('CID' + i, false); n.vel = 40 + Math.random() * 14; n.ativo = false; n.fase = 'nascer'; n.tempoSpawn = i * 2.5 + Math.random() * 2; n.seat = null;
+    if(i < 4){
+      const livres = SEATS.filter(s => !s.ocupado); const s = livres[Math.floor(Math.random() * livres.length)];
+      s.ocupado = true; n.seat = s; colocar(n, s.x, s.y); n.sitting = true; n.dir = 'up'; n.ativo = true; n.fase = 'levantar'; n.espera = 2 + Math.random() * 14;
+    }
+    npcs.push(n);
+  }
+}
+function atualizarNPC(n, dt){
+  if(!n.ativo){ if(n.fase === 'nascer'){ n.tempoSpawn -= dt; if(n.tempoSpawn <= 0){ colocar(n, 28, 9); n.ativo = true; n.fase = 'entrar'; n.look = criarLook(Math.floor(Math.random() * 99999)); } } return; }
+  mover(n, dt);
+  if(n.moving || n.path.length || n.espera > 0) return;
+  const R_ = (a, b) => a + Math.random() * (b - a);
+  switch(n.fase){
+    case 'entrar': { const q = [[25,9],[26,9],[25,10],[26,10],[24,10]][Math.floor(Math.random() * 5)]; irPara(n, q[0], q[1]); n.fase = 'fila'; break; }
+    case 'fila': n.espera = R_(2, 4); n.fase = 'balcao'; break;
+    case 'balcao': { const x = [12, 13, 16, 17, 20, 21, 24, 25][Math.floor(Math.random() * 8)]; irPara(n, x, 8); n.fase = 'atendido'; break; }
+    case 'atendido': n.espera = R_(4, 6); n.fase = 'sentar'; break;
+    case 'sentar': {
+      const livres = SEATS.filter(s => !s.ocupado);
+      if(!livres.length){ n.espera = 2; break; }
+      const s = livres[Math.floor(Math.random() * livres.length)]; s.ocupado = true; n.seat = s;
+      n.destino = { sit: true, dir: 'up' }; irPara(n, s.x, s.y); n.fase = 'sentado'; break;
+    }
+    case 'sentado': n.sitting = true; n.dir = 'up'; n.espera = R_(10, 22); n.fase = 'levantar'; break;
+    case 'levantar': { n.sitting = false; n.destino = null; if(n.seat){ n.seat.ocupado = false; n.seat = null; }
+      const bx = [12, 16][Math.floor(Math.random() * 2)], by = [15, 19, 23][Math.floor(Math.random() * 3)];
+      irPara(n, bx, by); n.fase = 'painel'; break; }
+    case 'painel': n.espera = R_(4, 6); n.fase = 'sair'; break;
+    case 'sair': irPara(n, 29, 26); n.fase = 'fim'; break;
+    case 'fim': n.ativo = false; n.fase = 'nascer'; n.tempoSpawn = R_(3, 12); break;
+  }
+}
+
+/* ----- equipe: aplica o horário e manda cada um caminhar ----- */
+function postoDe(idx, nome){
+  const aloc = estado.escala[estado.slots[idx]]; if(!aloc) return null;
+  for(const k in aloc){
+    if(matchNome(aloc[k], nome)) return k;
+  }
+  return null;
+}
+
+function calcularJornadas(escala, slots, equipe){
+  const jor = {};
+  equipe.forEach(nome => {
+    let minIdx = -1, maxIdx = -1;
+    slots.forEach((s, idx) => {
+      const aloc = escala[s] || {};
+      for(const pk in aloc){
+        if(matchNome(aloc[pk], nome)){
+          if(minIdx === -1) minIdx = idx;
+          maxIdx = idx;
+          break;
+        }
+      }
+    });
+    if(minIdx !== -1){
+      const entrada = slots[minIdx];
+      let saida = '';
+      if(maxIdx + 1 < slots.length){
+        saida = slots[maxIdx + 1];
+      } else {
+        const [h, m] = slots[maxIdx].split(':').map(Number);
+        const tot = h * 60 + m + 30;
+        const sh = Math.floor(tot / 60) % 24, sm = tot % 60;
+        saida = String(sh).padStart(2, '0') + ':' + String(sm).padStart(2, '0');
+      }
+      jor[nome] = { minIdx, maxIdx, entrada, saida };
+    } else {
+      jor[nome] = { minIdx: 0, maxIdx: slots.length - 1, entrada: slots[0] || '07:30', saida: '18:00' };
+    }
+  });
+  return jor;
+}
+
+function aplicarSlot(idx, animar){
+  if(!estado.slots.length) return;
+  idx = Math.max(0, Math.min(estado.slots.length - 1, idx)); estado.idx = idx;
+  $('slider').value = idx; $('slotLabel').textContent = estado.slots[idx]; $('clock').textContent = estado.slots[idx];
+  estado.info = []; estado.alertas = {};
+  let pe = 0, sent = 0, pausa = 0, chegando = 0, fui = 0, alertas = 0;
+
+  estado.equipe.forEach((nome, i) => {
+    const p = estado.pessoas[nome];
+    const j = estado.jornadas[nome] || { minIdx: 0, maxIdx: estado.slots.length - 1, entrada: '07:30', saida: '18:00' };
+    const pk = postoDe(idx, nome);
+    const proxPk = idx + 1 < estado.slots.length ? postoDe(idx + 1, nome) : null;
+    const antPk = idx > 0 ? postoDe(idx - 1, nome) : null;
+
+    let statusPresenca = 'posto';
+    if(idx < j.minIdx){
+      statusPresenca = 'chegando';
+    } else if(idx > j.maxIdx){
+      statusPresenca = 'fui';
+    } else if(!pk){
+      statusPresenca = 'pausa';
+    }
+
+    if(statusPresenca === 'chegando'){
+      chegando++;
+      p.presente = false;
+      p.x = -999; p.y = -999; p.path = []; p.moving = false; p.sitting = false;
+      p.cor = '#f59e0b'; p.tipo = null; p.posto = null; p.destino = null;
+      estado.info.push({
+        nome, pk: null, proxPk, antPk, alerta: null,
+        statusPresenca, entrada: j.entrada, saida: j.saida
+      });
+      return;
+    }
+
+    if(statusPresenca === 'fui'){
+      fui++;
+      p.presente = false;
+      p.x = -999; p.y = -999; p.path = []; p.moving = false; p.sitting = false;
+      p.cor = '#64748b'; p.tipo = null; p.posto = null; p.destino = null;
+      estado.info.push({
+        nome, pk: null, proxPk: null, antPk, alerta: null,
+        statusPresenca, entrada: j.entrada, saida: j.saida
+      });
+      return;
+    }
+
+    // Está no salão (posto de trabalho ou pausa no expediente)
+    p.presente = true;
+    let tx, ty, destino;
+    if(pk){
+      const po = POSTOS[pk]; tx = po.x; ty = po.y; destino = { sit: po.sit, dir: po.dir };
+      p.cor = po.cor; p.tipo = po.tipo; p.posto = pk; po.sit ? sent++ : pe++;
+      if(antPk && POSTOS[antPk]){
+        if(!po.sit && !POSTOS[antPk].sit){ estado.alertas[nome] = 'Ficou em pé 2 horários seguidos'; alertas++; }
+        else if(antPk === pk){ estado.alertas[nome] = 'Repetiu o mesmo posto'; alertas++; }
+      }
+    } else {
+      const sp = PAUSA_SPOTS[i % PAUSA_SPOTS.length]; tx = sp[0]; ty = sp[1]; destino = { sit: false, dir: 'down' };
+      p.cor = COR.pausa; p.tipo = null; p.posto = null; pausa++;
+    }
+    p.destino = destino;
+
+    if(!animar){
+      colocar(p, tx, ty); p.sitting = destino.sit; p.dir = destino.dir; p.espera = 0;
+    } else {
+      const [cx, cy] = tileDe(p);
+      if(p.x < 0 || p.y < 0){
+        colocar(p, tx, ty); p.sitting = destino.sit; p.dir = destino.dir; p.espera = 0;
+      } else if(!(cx === tx && cy === ty && !p.moving)){
+        p.sitting = false; p.espera = Math.random() * 1.2; irPara(p, tx, ty);
+      } else {
+        p.sitting = destino.sit; p.dir = destino.dir;
+      }
+    }
+    estado.info.push({
+      nome, pk, proxPk, antPk, alerta: estado.alertas[nome] || null,
+      statusPresenca, entrada: j.entrada, saida: j.saida
+    });
+  });
+
+  $('cPe').textContent = pe;
+  $('cSent').textContent = sent;
+  $('cPausa').textContent = pausa;
+  if($('cChegando')) $('cChegando').textContent = chegando;
+  if($('cFui')) $('cFui').textContent = fui;
+  $('cAl').textContent = alertas;
+  $('chipAl').classList.toggle('on', alertas > 0);
+
+  // Contadores das abas
+  if($('countTodos')) $('countTodos').textContent = estado.equipe.length;
+  if($('countSalao')) $('countSalao').textContent = pe + sent + pausa;
+  if($('countCF')) $('countCF').textContent = chegando + fui;
+
+  renderLista();
+}
+
+function carregarEscala(escala, manterSlot = false){
+  const slotAnterior = (manterSlot && estado.slots.length) ? estado.slots[estado.idx] : null;
+  estado.escala = escala; estado.slots = Object.keys(escala).sort();
+  const nomes = new Set();
+  estado.postosAtivos = new Set();
+  Object.values(escala).forEach(a => {
+    Object.entries(a).forEach(([pk, n]) => {
+      const limpo = limparNome(n);
+      if(limpo){
+        nomes.add(limpo);
+        estado.postosAtivos.add(pk);
+      }
+    });
+  });
+  estado.equipe = [...nomes].sort(); estado.pessoas = {};
+  estado.equipe.forEach(n => {
+    estado.pessoas[n] = Object.assign(novaPessoa(n, true), { staff: true, presente: true });
+  });
+  estado.jornadas = calcularJornadas(escala, estado.slots, estado.equipe);
+
+  $('slider').max = Math.max(0, estado.slots.length - 1);
+  estado.sel = null; criarNPCs();
+  desenharCenario();
+  let targetIdx = 0;
+  if(slotAnterior && estado.slots.includes(slotAnterior)){
+    targetIdx = estado.slots.indexOf(slotAnterior);
+  }
+  aplicarSlot(targetIdx, false);
+}
+
+function setFiltroPresenca(f){
+  estado.filtroPresenca = f;
+  ['tabTodos', 'tabSalao', 'tabCF'].forEach(id => {
+    const el = $(id); if(el) el.classList.remove('active');
+  });
+  if(f === 'todos' && $('tabTodos')) $('tabTodos').classList.add('active');
+  else if(f === 'salao' && $('tabSalao')) $('tabSalao').classList.add('active');
+  else if(f === 'chegando_fui' && $('tabCF')) $('tabCF').classList.add('active');
+  renderLista();
+}
+
+/* =====================================================================
+   LISTA LATERAL
+   ===================================================================== */
+function renderLista(){
+  const el = $('lista'); el.innerHTML = '';
+  const termo = norm($('busca').value || '').trim();
+  const porGrupo = {}; GRUPOS.forEach(g => porGrupo[g[0]] = []);
+
+  estado.info.forEach(it => {
+    // Filtro por abas
+    if(estado.filtroPresenca === 'salao' && (it.statusPresenca === 'chegando' || it.statusPresenca === 'fui')) return;
+    if(estado.filtroPresenca === 'chegando_fui' && (it.statusPresenca !== 'chegando' && it.statusPresenca !== 'fui')) return;
+
+    let grupo;
+    if(it.statusPresenca === 'chegando'){
+      grupo = '⏳ CHEGANDO (AINDA NÃO ENTROU)';
+    } else if(it.statusPresenca === 'fui'){
+      grupo = '🏠 FUI (JÁ FOI EMBORA)';
+    } else if(it.pk){
+      grupo = POSTOS[it.pk] ? POSTOS[it.pk].grupo : 'RECEPÇÃO';
+    } else {
+      grupo = '☕ PAUSA (NO SALÃO)';
+    }
+
+    if(termo && !norm(it.nome).includes(termo) && !norm(it.pk || grupo).includes(termo)) return;
+    if(!porGrupo[grupo]) porGrupo[grupo] = [];
+    porGrupo[grupo].push(it);
+  });
+
+  GRUPOS.forEach(([nome, cor]) => {
+    const itens = porGrupo[nome]; if(!itens || !itens.length) return;
+    const h = document.createElement('div'); h.className = 'grp'; h.style.background = cor;
+    h.innerHTML = `<span>${nome}</span><span>${itens.length}</span>`;
+    el.appendChild(h);
+
+    itens.forEach(it => {
+      const d = document.createElement('div');
+      d.className = 'item' + (estado.sel === it.nome ? ' sel' : '') + (it.alerta ? ' alerta' : '');
+      d.style.borderLeftColor = cor;
+
+      let subInfo = '', prox = '', icone = '';
+      if(it.statusPresenca === 'chegando'){
+        subInfo = `Entra às <b>${it.entrada || '--:--'}</b>`;
+        prox = `Turno não iniciado`;
+        icone = '⏳';
+      } else if(it.statusPresenca === 'fui'){
+        subInfo = `Expediente encerrado hoje`;
+        prox = `Saiu às <b>${it.saida || '--:--'}</b>`;
+        icone = '🏠';
+      } else {
+        const po = it.pk ? POSTOS[it.pk] : null;
+        icone = po ? (po.sit ? '💺' : '🚶') : '☕';
+        subInfo = it.pk || 'Pausa / Descanso no salão';
+        const pNome = it.proxPk ? (POSTOS[it.proxPk] ? it.proxPk : '?') : (estado.idx + 1 < estado.slots.length ? 'Pausa' : 'Fim do expediente');
+        prox = `→ depois: ${pNome}`;
+      }
+
+      d.innerHTML = `<div><div class="nm">${it.nome}</div><div class="ps">${subInfo}</div><div class="nx">${prox}</div>${it.alerta ? `<div class="alerta-msg">⚠ ${it.alerta}</div>` : ''}</div><div class="st">${icone}</div>`;
+      d.onclick = () => {
+        if(it.statusPresenca === 'chegando' || it.statusPresenca === 'fui'){
+          estado.sel = estado.sel === it.nome ? null : it.nome;
+        } else {
+          estado.sel = estado.sel === it.nome ? null : it.nome;
+        }
+        renderLista();
+      };
+      el.appendChild(d);
+    });
+  });
+  if(!el.children.length) el.innerHTML = '<div style="color:#a99bc4;font-size:12px;padding:10px">Ninguém encontrado.</div>';
+}
+
+/* =====================================================================
+   LOOP PRINCIPAL
+   ===================================================================== */
+let ultimo = performance.now();
+function frame(ts){
+  const dt = Math.min(.05, (ts - ultimo) / 1000); ultimo = ts; const t = ts / 1000;
+  senhaTempo += dt; if(senhaTempo > 4){ senhaTempo = 0; senhaAtual = (senhaAtual + 1 + Math.floor(Math.random() * 2)) % 999; }
+
+  // Apenas quem está presente no salão se move e é renderizado
+  const presentes = Object.values(estado.pessoas).filter(p => p.presente);
+  presentes.forEach(p => mover(p, dt));
+  npcs.forEach(n => atualizarNPC(n, dt));
+
+  ctx = mainCtx; mainCtx.drawImage(bg, 0, 0);
+  const todos = [...presentes, ...npcs.filter(n => n.ativo)].sort((a, b) => a.y - b.y);
+  todos.forEach(p => {
+    if(p.staff && estado.sel === p.nome){
+      const cx = Math.round(p.x), cy = Math.round(p.y), pulso = Math.floor(t * 4) % 2;
+      for(let i = -9 - pulso; i <= 9 + pulso; i++) { R(cx + i, cy - 3, 1, 1, '#ffd75e'); R(cx + i, cy + 1, 1, 1, '#ffd75e'); }
+      R(cx - 10 - pulso, cy - 2, 1, 3, '#ffd75e'); R(cx + 10 + pulso, cy - 2, 1, 3, '#ffd75e');
+    }
+    desenharPessoa(p, t);
+  });
+  frontLayer(t);
+
+  // etiquetas por cima de quem está presente no salão
+  presentes.forEach(p => {
+    const cx = Math.round(p.x), cy = Math.round(p.y), headTop = (p.sitting ? cy - 3 : cy - 6) - 18 - (p.look.estilo === 2 ? 3 : 0);
+    const nome = norm(p.nome.split(' ')[0]).slice(0, 9), alerta = estado.alertas[p.nome];
+    const cor = alerta && Math.floor(t * 2) % 2 ? '#e03131' : p.cor;
+    plate(cx, headTop - 9, (alerta ? '!' : '') + nome, cor);
+    if(estado.sel === p.nome){ const b = Math.floor(t * 4) % 2; R(cx - 2, headTop - 17 - b, 5, 1, '#ffd75e'); R(cx - 1, headTop - 16 - b, 3, 1, '#ffd75e'); R(cx, headTop - 15 - b, 1, 1, '#ffd75e'); }
+    if(p.tipo === 'telefone' && !p.moving && Math.floor(t / 3 + p.seed) % 4 === 0) bolha(cx - 8, headTop - 23, 'ALO?');
+    if(p.tipo === 'painel' && !p.moving && senhaTempo < 2 && Math.floor(senhaAtual + p.seed * 3) % 3 === 0) bolha(cx - 8, headTop - 23, 'A' + String((senhaAtual + 3) % 999).padStart(3, '0'));
+  });
+  requestAnimationFrame(frame);
+}
+
+/* =====================================================================
+   ZOOM E TELA CHEIA
+   ===================================================================== */
+let zoomAtual = 'auto';
+let isDraggingScreen = false, dragStartX = 0, dragStartY = 0, startScrollLeft = 0, startScrollTop = 0, hadDragged = false;
+
+function aplicarZoom(){
+  const cv = $('game'), sc = $('screen'), zVal = $('zoomVal');
+  if(!cv) return;
+  if(zoomAtual === 'auto'){
+    cv.style.width = 'auto';
+    cv.style.height = 'auto';
+    cv.style.maxWidth = '100%';
+    cv.style.maxHeight = 'calc(100vh - 245px)';
+    if(zVal) zVal.textContent = 'AJUSTE';
+  } else {
+    const bw = 480, bh = 512;
+    const w = Math.round(bw * zoomAtual);
+    const h = Math.round(bh * zoomAtual);
+    cv.style.width = w + 'px';
+    cv.style.height = h + 'px';
+    cv.style.maxWidth = 'none';
+    cv.style.maxHeight = 'none';
+    if(zVal) zVal.textContent = Math.round(zoomAtual * 100) + '%';
+  }
+}
+function mudarZoom(delta){
+  let cur = (zoomAtual === 'auto') ? 1.0 : zoomAtual;
+  cur = Math.max(0.6, Math.min(2.5, +(cur + delta).toFixed(2)));
+  zoomAtual = cur;
+  aplicarZoom();
+}
+function setZoom(val){
+  zoomAtual = val;
+  aplicarZoom();
+}
+function toggleFullscreen(){
+  const st = document.querySelector('.stage');
+  if(!st) return;
+  if(!document.fullscreenElement){
+    if(st.requestFullscreen) st.requestFullscreen();
+    else if(st.webkitRequestFullscreen) st.webkitRequestFullscreen();
+  } else {
+    if(document.exitFullscreen) document.exitFullscreen();
+  }
+}
+
+// Pan com clique e arrasto no salão + zoom com Ctrl + Scroll
+(function initPanZoomEvents(){
+  const sc = $('screen'); if(!sc) return;
+  sc.addEventListener('mousedown', e => {
+    if(e.button !== 0) return;
+    isDraggingScreen = true; hadDragged = false;
+    dragStartX = e.clientX; dragStartY = e.clientY;
+    startScrollLeft = sc.scrollLeft; startScrollTop = sc.scrollTop;
+  });
+  window.addEventListener('mouseup', () => {
+    if(isDraggingScreen){ isDraggingScreen = false; if(sc) sc.style.cursor = 'default'; }
+  });
+  sc.addEventListener('mousemove', e => {
+    if(!isDraggingScreen) return;
+    const dx = e.clientX - dragStartX, dy = e.clientY - dragStartY;
+    if(Math.hypot(dx, dy) > 4){ hadDragged = true; sc.style.cursor = 'grabbing'; }
+    sc.scrollLeft = startScrollLeft - dx;
+    sc.scrollTop = startScrollTop - dy;
+  });
+  sc.addEventListener('wheel', e => {
+    if(e.ctrlKey){
+      e.preventDefault();
+      mudarZoom(e.deltaY < 0 ? 0.2 : -0.2);
+    }
+  }, { passive: false });
+  window.addEventListener('resize', () => { if(zoomAtual === 'auto') aplicarZoom(); });
+})();
+
+/* =====================================================================
+   TOOLTIP
+   ===================================================================== */
+cv.addEventListener('mousemove', e => {
+  if(isDraggingScreen){ $('tip').style.display = 'none'; return; }
+  const r = cv.getBoundingClientRect(), mx = (e.clientX - r.left) * cv.width / r.width, my = (e.clientY - r.top) * cv.height / r.height;
+  let achado = null, melhor = 1e9;
+  Object.values(estado.pessoas).filter(p => p.presente).forEach(p => {
+    const dx = mx - p.x, dy = my - (p.y - 10), d = Math.abs(dx) < 9 && Math.abs(dy) < 14 ? Math.hypot(dx, dy) : 1e9;
+    if(d < melhor){ melhor = d; achado = p; }
+  });
+  const tip = $('tip');
+  if(!achado){ tip.style.display = 'none'; cv.style.cursor = 'default'; return; }
+  cv.style.cursor = 'pointer';
+  const it = estado.info.find(i => i.nome === achado.nome), po = it && it.pk ? POSTOS[it.pk] : null;
+  const grupo = po ? po.grupo : 'PAUSA';
+  tip.innerHTML = `<span class="t1" style="background:${achado.cor}">${grupo}</span><br><b>${achado.nome}</b><br>${po ? it.pk + ' • ' + (po.sit ? '💺 Sentado' : '🚶 Em pé') : '☕ Pausa no salão'}<br>${po ? po.desc + '<br>' : ''}<span style="color:#2c5fc4">Antes: ${it && it.antPk || '—'} • Depois: ${it && it.proxPk || (estado.idx + 1 < estado.slots.length ? 'PAUSA' : '—')}</span>${it && it.alerta ? '<br><span style="color:#d61f1f">⚠ ' + it.alerta + '</span>' : ''}`;
+  tip.style.display = 'block'; tip.style.left = Math.min(innerWidth - 270, e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
+});
+cv.addEventListener('mouseleave', () => $('tip').style.display = 'none');
+cv.addEventListener('click', e => {
+  if(hadDragged) return;
+  const r = cv.getBoundingClientRect(), mx = (e.clientX - r.left) * cv.width / r.width, my = (e.clientY - r.top) * cv.height / r.height;
+  let achado = null;
+  Object.values(estado.pessoas).filter(p => p.presente).forEach(p => {
+    if(Math.abs(mx - p.x) < 9 && Math.abs(my - (p.y - 10)) < 14) achado = p;
+  });
+  estado.sel = achado ? (estado.sel === achado.nome ? null : achado.nome) : null; renderLista();
+});
+
+/* =====================================================================
+   CONTROLES
+   ===================================================================== */
+function irSlot(i){ aplicarSlot(i, true); }
+function passo(d){ aplicarSlot(estado.idx + d, true); }
+function togglePlay(){
+  estado.auto = !estado.auto; const b = $('btnPlay');
+  if(estado.auto){ b.textContent = '⏸ PAUSAR'; b.className = 'btn y'; estado.timer = setInterval(() => aplicarSlot(estado.idx + 1 >= estado.slots.length ? 0 : estado.idx + 1, true), 11000); }
+  else { b.textContent = '▶ AUTO'; b.className = 'btn g'; clearInterval(estado.timer); }
+}
+function horaAtual(){
+  const a = new Date(), min = a.getHours() * 60 + (a.getMinutes() < 30 ? 0 : 30); let ix = 0;
+  estado.slots.forEach((s, i) => { const [h, m] = s.split(':').map(Number); if(h * 60 + m <= min) ix = i; });
+  aplicarSlot(ix, true);
+}
+
+/* ---------- importação e delimitadores (CSV, TSV, Google GViz) ---------- */
+function abrirModal(){ $('modal').style.display = 'flex'; $('paste').focus(); }
+function fecharModal(){ $('modal').style.display = 'none'; }
+
+function parseDelimited(text, forceDelimiter = null){
+  let delim = forceDelimiter;
+  if(!delim){
+    const firstLine = text.split(/\r?\n/)[0] || '';
+    const tabs = (firstLine.match(/\t/g) || []).length;
+    const commas = (firstLine.match(/,/g) || []).length;
+    const semis = (firstLine.match(/;/g) || []).length;
+    if(tabs >= commas && tabs >= semis) delim = '\t';
+    else if(commas >= semis) delim = ',';
+    else delim = ';';
+  }
+  const rows = [];
+  let row = [''];
+  let inQuotes = false;
+  for(let i = 0; i < text.length; i++){
+    const char = text[i];
+    const next = text[i + 1];
+    if(char === '"'){
+      if(inQuotes && next === '"'){
+        row[row.length - 1] += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if(char === delim && !inQuotes){
+      row.push('');
+    } else if((char === '\r' || char === '\n') && !inQuotes){
+      if(char === '\r' && next === '\n') i++;
+      rows.push(row);
+      row = [''];
+    } else {
+      row[row.length - 1] += char;
+    }
+  }
+  if(row.length > 1 || row[0] !== '') rows.push(row);
+  return rows;
+}
+const parseTSV = parseDelimited;
+
+function processarLinhasImportadas(lin, manterSlot = false){
+  let hi = -1, ch = -1;
+  for(let r = 0; r < Math.min(lin.length, 15) && hi < 0; r++){
+    for(let c = 0; c < lin[r].length; c++){
+      const v = norm(lin[r][c] || '').replace(/[\r\n]+/g, ' ').trim();
+      if(v.includes('HORA') || v.includes('EMISSOR') || v.includes('PAINEL') || v.includes('POSTO')){
+        hi = r;
+        if(v.includes('HORA')) ch = c;
+        break;
+      }
+    }
+  }
+  if(hi < 0){ throw new Error('Não achei a linha de cabeçalho (HORÁRIO / EMISSOR / PAINEL...).'); }
+  if(ch < 0){
+    for(let r = hi + 1; r < Math.min(lin.length, hi + 8); r++){
+      for(let c = 0; c < lin[r].length; c++){
+        if(extrairHora(lin[r][c])){ ch = c; break; }
+      }
+      if(ch >= 0) break;
+    }
+  }
+  if(ch < 0) ch = 0;
+
+  const cols = [];
+  for(let c = 0; c < lin[hi].length; c++){
+    if(c === ch) continue;
+    let k = mapPosto(lin[hi][c] || '');
+    if(k) cols.push({ c, k });
+  }
+  if(!cols.length){ throw new Error('Nenhuma coluna de posto reconhecida.'); }
+
+  const esc = {};
+  for(let r = hi + 1; r < lin.length; r++){
+    const valPrimeira = norm(lin[r][ch] || '').trim();
+    if(valPrimeira === 'ALMOCO' || valPrimeira === 'LANCHE') break;
+    let key = extrairHora(lin[r][ch]);
+    if(!key) continue;
+    if(!esc[key]) esc[key] = {};
+    cols.forEach(({ c, k }) => {
+      const v = limparNome(lin[r][c]);
+      if(v) esc[key][k] = v;
+    });
+  }
+
+  if(!Object.keys(esc).length){ throw new Error('Nenhum horário com atendentes encontrado.'); }
+  fecharModal();
+  carregarEscala(esc, manterSlot);
+  if(!manterSlot) horaAtual();
+  return esc;
+}
+
+function colar(){
+  const raw = $('paste').value; if(!raw.trim()) return;
+  try {
+    const lin = parseDelimited(raw);
+    processarLinhasImportadas(lin);
+  } catch(err) {
+    alert(err.message);
+  }
+}
+
+function lerExcel(e){
+  const f = e.target.files[0]; if(!f) return; const rd = new FileReader();
+  rd.onload = ev => {
+    try {
+      const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' }), ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
+      processarLinhasImportadas(rows);
+    } catch(err) {
+      alert(err.message);
+    }
+  };
+  rd.readAsArrayBuffer(f);
+}
+
+/* =====================================================================
+   INTEGRAÇÃO AO VIVO COM GOOGLE PLANILHAS (GViz Auto-Sync)
+   ===================================================================== */
+let googleTimer = null;
+let ultimaSyncGoogle = null;
+const GS_KEY = 'nahora_google_config';
+
+function extrairGoogleId(str){
+  if(!str) return '';
+  const m = String(str).match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  if(m) return m[1];
+  if(!String(str).includes('/')) return String(str).trim();
+  return '';
+}
+
+function carregarConfigGoogle(){
+  const defaultCfg = {
+    url: 'https://docs.google.com/spreadsheets/d/12oQZ1bxOguxmWZzNxXiKRxYv2uW8NrI9vp90YtNcZhQ/edit?usp=sharing',
+    sheetId: '12oQZ1bxOguxmWZzNxXiKRxYv2uW8NrI9vp90YtNcZhQ',
+    aba: '',
+    intervalo: 30
+  };
+  try {
+    const s = localStorage.getItem(GS_KEY);
+    return s ? JSON.parse(s) : defaultCfg;
+  } catch(e){
+    return defaultCfg;
+  }
+}
+
+function salvarConfigGoogle(cfg){
+  try { localStorage.setItem(GS_KEY, JSON.stringify(cfg)); } catch(e){}
+}
+
+function atualizarBadgeGoogle(tipo, msg){
+  const chip = $('chipGoogle'), dot = $('gDot'), txt = $('gTxt');
+  if(!chip) return;
+  chip.classList.remove('syncing', 'err');
+  if(tipo === 'ok'){
+    dot.textContent = '🟢'; txt.textContent = 'Google: Ao Vivo';
+    chip.title = msg || 'Conectado e sincronizando automaticamente com o Google Planilhas';
+  } else if(tipo === 'syncing'){
+    chip.classList.add('syncing');
+    dot.textContent = '🔄'; txt.textContent = 'Sincronizando...';
+  } else if(tipo === 'err'){
+    chip.classList.add('err');
+    dot.textContent = '⚠️'; txt.textContent = 'Aviso Google';
+    chip.title = msg || 'Falha de conexão com a planilha (usando dados locais)';
+  } else {
+    dot.textContent = '⚪'; txt.textContent = 'Planilha: Local';
+    chip.title = 'Nenhuma planilha conectada (escala padrão)';
+  }
+}
+
+function atualizarModalStatusGoogle(icone, msg, sub){
+  const iconEl = $('gStatusIcon'), msgEl = $('gStatusMsg'), subEl = $('gStatusSub');
+  if(iconEl) iconEl.textContent = icone;
+  if(msgEl) msgEl.textContent = msg;
+  if(subEl) subEl.textContent = sub;
+}
+
+function abrirModalGoogle(){
+  const cfg = carregarConfigGoogle();
+  $('gInputUrl').value = cfg.url || cfg.sheetId || '';
+  $('gInputAba').value = cfg.aba || '';
+  $('gInputIntervalo').value = cfg.intervalo || '30';
+  if(cfg.sheetId){
+    const timeStr = ultimaSyncGoogle ? ultimaSyncGoogle.toLocaleTimeString() : 'em andamento';
+    atualizarModalStatusGoogle('🟢', `Conectado à planilha (${cfg.sheetId.slice(0, 10)}...)`, `Última atualização: ${timeStr} • Atualizando a cada ${cfg.intervalo || 30}s.`);
+  } else {
+    atualizarModalStatusGoogle('⚪', 'Nenhuma planilha conectada no momento (usando escala padrão).', 'Insira o link e clique em Sincronizar Agora.');
+  }
+  $('modalGoogle').style.display = 'flex';
+}
+
+function fecharModalGoogle(){ $('modalGoogle').style.display = 'none'; }
+
+function carregarGoogleViaJSONP(sheetId, aba){
+  return new Promise((resolve, reject) => {
+    const callbackName = 'gvizCallback_' + Math.floor(Math.random() * 1e9);
+    const script = document.createElement('script');
+    let url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:${callbackName}`;
+    if(aba) url += `&sheet=${encodeURIComponent(aba)}`;
+    url += `&_cb=${Date.now()}`;
+
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Tempo limite esgotado ao conectar à planilha do Google.'));
+    }, 12000);
+
+    function cleanup(){
+      clearTimeout(timer);
+      delete window[callbackName];
+      if(script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[callbackName] = function(resp){
+      cleanup();
+      if(!resp || resp.status === 'error'){
+        const msg = (resp && resp.errors && resp.errors[0]) ? resp.errors[0].message : 'Erro ao ler dados da planilha';
+        reject(new Error(msg));
+        return;
+      }
+      resolve(resp);
+    };
+
+    script.onerror = function(){
+      cleanup();
+      reject(new Error('Falha ao carregar a planilha. Verifique se o compartilhamento está como "Qualquer pessoa com o link pode ver" (Leitor).'));
+    };
+
+    script.src = url;
+    document.head.appendChild(script);
+  });
+}
+
+function converterGvizParaMatriz(resp){
+  const matriz = [];
+  if(!resp || !resp.table || !resp.table.rows) return matriz;
+  resp.table.rows.forEach(r => {
+    const row = [];
+    if(r && r.c){
+      r.c.forEach(cell => {
+        if(!cell) row.push('');
+        else if(cell.f !== undefined && cell.f !== null) row.push(String(cell.f));
+        else if(cell.v !== undefined && cell.v !== null) row.push(String(cell.v));
+        else row.push('');
+      });
+    }
+    matriz.push(row);
+  });
+  return matriz;
+}
+
+async function sincronizarGoogle(silencioso = false){
+  const cfg = carregarConfigGoogle();
+  if(!cfg.sheetId){
+    if(!silencioso) alert('Por favor, informe o link ou ID da planilha do Google primeiro.');
+    return;
+  }
+  atualizarBadgeGoogle('syncing');
+
+  try {
+    const resp = await carregarGoogleViaJSONP(cfg.sheetId, cfg.aba);
+    const matriz = converterGvizParaMatriz(resp);
+    if(!matriz || matriz.length < 2){
+      throw new Error('A planilha retornou vazia ou com formato não reconhecido.');
+    }
+
+    processarLinhasImportadas(matriz, true);
+    ultimaSyncGoogle = new Date();
+    const horaFormatada = ultimaSyncGoogle.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    const detalhe = `Sincronizado às ${horaFormatada} • ${estado.slots.length} horários ativos`;
+    atualizarBadgeGoogle('ok', detalhe);
+    atualizarModalStatusGoogle('🟢', `Conectado e atualizado (${horaFormatada})`, `${estado.slots.length} horários carregados com sucesso. Próxima checagem automática em ${cfg.intervalo || 30}s.`);
+    if(!silencioso){
+      fecharModalGoogle();
+      alert(`✅ Conectado com sucesso!\n\n${detalhe}.\nTodas as mudanças feitas na planilha serão atualizadas automaticamente aqui a cada ${cfg.intervalo || 30} segundos!`);
+    }
+  } catch(err){
+    console.warn('Erro ao sincronizar com Google Sheets:', err);
+    atualizarBadgeGoogle('err', err.message);
+    atualizarModalStatusGoogle('⚠️', 'Aviso de sincronização', err.message);
+    if(!silencioso){
+      alert(`⚠️ Erro ao buscar dados da planilha do Google:\n\n${err.message}\n\n💡 Como resolver:\n1. Abra sua planilha no Google Planilhas.\n2. Clique no botão azul "Compartilhar" (canto superior direito).\n3. Mude o Acesso Geral para "Qualquer pessoa com o link" (Leitor).\n4. Cole novamente o link aqui.`);
+    }
+  }
+}
+
+function iniciarGooglePolling(){
+  if(googleTimer) clearInterval(googleTimer);
+  const cfg = carregarConfigGoogle();
+  if(!cfg.sheetId) return;
+  const segs = parseInt(cfg.intervalo, 10) || 30;
+  googleTimer = setInterval(() => sincronizarGoogle(true), segs * 1000);
+}
+
+function salvarEConectarGoogle(){
+  const urlVal = ($('gInputUrl').value || '').trim();
+  const id = extrairGoogleId(urlVal);
+  if(!id){
+    alert('Não foi possível identificar o ID da planilha. Cole o link completo do navegador (ex: https://docs.google.com/spreadsheets/d/.../edit).');
+    return;
+  }
+  const aba = ($('gInputAba').value || '').trim();
+  const intervalo = parseInt($('gInputIntervalo').value, 10) || 30;
+  const cfg = { url: urlVal, sheetId: id, aba, intervalo };
+  salvarConfigGoogle(cfg);
+  iniciarGooglePolling();
+  sincronizarGoogle(false);
+}
+
+function desconectarGoogle(){
+  if(googleTimer) clearInterval(googleTimer);
+  googleTimer = null;
+  localStorage.removeItem(GS_KEY);
+  atualizarBadgeGoogle('off');
+  atualizarModalStatusGoogle('⚪', 'Planilha desconectada.', 'O jogo agora está usando a escala local padrão.');
+  alert('Conexão com a planilha Google desativada. Voltando para a escala padrão.');
+  carregarDemo();
+  fecharModalGoogle();
+}
+
+function copiarLinkRecepcao(){
+  const cfg = carregarConfigGoogle();
+  let base = window.location.href.split('?')[0].split('#')[0];
+  const params = new URLSearchParams();
+  if(cfg.sheetId){
+    params.set('sheet', cfg.sheetId);
+    if(cfg.aba) params.set('aba', cfg.aba);
+    if(cfg.intervalo) params.set('int', cfg.intervalo);
+  }
+  const linkFinal = params.toString() ? `${base}?${params.toString()}` : base;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(linkFinal).then(() => {
+      alert(`📋 LINK DA RECEPÇÃO COPIADO COM SUCESSO!\n\nEnvie este link para qualquer pessoa da recepção ou abra no telão:\n\n${linkFinal}\n\nAo abrir, o jogo já carregará sincronizado com a planilha do Google automaticamente!`);
+    }).catch(() => prompt('Copie o link abaixo para compartilhar com a equipe da recepção:', linkFinal));
+  } else {
+    prompt('Copie o link abaixo para compartilhar com a equipe da recepção:', linkFinal);
+  }
+}
+
+/* ---------- grade oficial da unidade (ESCALA CLAUDIA 05/10 a 09/10) ---------- */
+const ESCALA_OFICIAL = {
+  "07:30": {"EMISSOR 1":"ADRIELLE","EMISSOR 2":"CIDA","EMISSOR 3":"DUDA","EMISSOR 4":"GABRIEL","TELEFONE 1":"LETICIA","AUTO 1":"JACQUELINE","ORIENTADOR":"LUCIANA","PAINEL 2":"VIVIANE","PAINEL 3":"CONCEICAO","PAINEL 5":"OVIDIO"},
+  "08:00": {"EMISSOR 1":"JACQUELINE","EMISSOR 2":"OVIDIO","EMISSOR 3":"VIVIANE","EMISSOR 4":"LUCIANA","TELEFONE 1":"CONCEICAO","AUTO SENTADO":"LETICIA","AUTO 1":"ADRIELLE","ORIENTADOR":"GABRIEL","PAINEL 2":"DUDA","PAINEL 5":"CIDA"},
+  "08:30": {"EMISSOR 1":"CIDA","EMISSOR 2":"ADRIELLE","EMISSOR 3":"GABRIEL","EMISSOR 4":"DUDA","TELEFONE 1":"JACQUELINE","AUTO SENTADO":"LUCIANA","AUTO 1":"LETICIA","ORIENTADOR":"CONCEICAO","PAINEL 2":"OVIDIO","PAINEL 5":"VIVIANE"},
+  "09:00": {"EMISSOR 1":"LETICIA","EMISSOR 2":"VIVIANE","EMISSOR 3":"OVIDIO","EMISSOR 4":"CONCEICAO","TELEFONE 1":"ADRIELLE","AUTO SENTADO":"GABRIEL","AUTO 1":"LUCIANA","ORIENTADOR":"DUDA","PAINEL 2":"CIDA","PAINEL 5":"JACQUELINE"},
+  "09:30": {"EMISSOR 1":"DUDA","EMISSOR 2":"LUCIANA","EMISSOR 3":"CIDA","EMISSOR 4":"JACQUELINE","TELEFONE 1":"OVIDIO","AUTO SENTADO":"CONCEICAO","AUTO 1":"GABRIEL","ORIENTADOR":"VIVIANE","PAINEL 2":"LETICIA","PAINEL 5":"ADRIELLE"},
+  "10:00": {"EMISSOR 1":"GABRIEL","EMISSOR 2":"LETICIA","EMISSOR 3":"LUCIANA","EMISSOR 4":"VIVIANE","TELEFONE 1":"CIDA","AUTO SENTADO":"ADRIELLE","AUTO 1":"DUDA","ORIENTADOR":"OVIDIO","PAINEL 2":"JACQUELINE","PAINEL 5":"CONCEICAO"},
+  "10:30": {"EMISSOR 1":"CONCEICAO","EMISSOR 2":"DUDA","EMISSOR 3":"JACQUELINE","EMISSOR 4":"OVIDIO","TELEFONE 1":"GABRIEL","AUTO SENTADO":"VIVIANE","AUTO 1":"CIDA","ORIENTADOR":"LETICIA","PAINEL 2":"ADRIELLE","PAINEL 5":"LUCIANA"},
+  "11:00": {"EMISSOR 1":"LUCIANA","EMISSOR 1.1":"WISLAINE","EMISSOR 2":"FANTINNY","EMISSOR 2.1":"GUSTAVO","EMISSOR 3":"LETICIA","EMISSOR 3.1":"JULIA","EMISSOR 4":"LUCIELE","EMISSOR 4.1":"ADRIELLE","TELEFONE 1":"MARIA","TELEFONE 2":"CIDA","AUTO SENTADO":"SONIA","AUTO 1":"VIVIANE","AUTO 2":"DVANY","ORIENTADOR":"JACQUELINE","PAINEL 2":"CONCEICAO","PAINEL 2.1":"JUAN","PAINEL 3":"DUDA","PAINEL 4":"THALITA","PAINEL 5":"GABRIEL","PESQUISA":"OVIDIO"},
+  "11:30": {"EMISSOR 1":"DVANY","EMISSOR 1.1":"GABRIEL","EMISSOR 2":"JUAN","EMISSOR 2.1":"OVIDIO","EMISSOR 3":"THALITA","EMISSOR 3.1":"CONCEICAO","EMISSOR 4":"CIDA","EMISSOR 4.1":"DUDA","TELEFONE 1":"VIVIANE","TELEFONE 2":"ADRIELLE","AUTO SENTADO":"JACQUELINE","AUTO 1":"FANTINNY","AUTO 2":"LETICIA","ORIENTADOR":"SONIA","PAINEL 2":"MARIA","PAINEL 2.1":"LUCIANA","PAINEL 3":"WISLAINE","PAINEL 4":"JULIA","PAINEL 5":"LUCIELE","PESQUISA":"GUSTAVO"},
+  "12:00": {"EMISSOR 1":"FANTINNY","EMISSOR 2":"LUCIELE","EMISSOR 3":"MARIA","EMISSOR 4":"SONIA","TELEFONE 1":"WISLAINE","AUTO SENTADO":"GUSTAVO","AUTO 1":"OVIDIO","ORIENTADOR":"DVANY","PAINEL 2":"THALITA","PAINEL 3":"VIVIANE","PAINEL 5":"JUAN"},
+  "12:30": {"EMISSOR 1":"VIVIANE","EMISSOR 1.1":"JULIA","EMISSOR 2":"DVANY","EMISSOR 3":"JUAN","EMISSOR 4":"THALITA","TELEFONE 1":"RAYANE","AUTO SENTADO":"WILLIANA","AUTO 1":"LUCIELE","ORIENTADOR":"WISLAINE","PAINEL 2":"SONIA","PAINEL 3":"GUSTAVO","PAINEL 4":"FANTINNY","PAINEL 5":"MARIA","PESQUISA":"CAMILA"},
+  "13:00": {"EMISSOR 1":"CAMILA","EMISSOR 2":"CONCEICAO","EMISSOR 3":"LUCIANA","EMISSOR 4":"LETICIA","TELEFONE 1":"DUDA","AUTO SENTADO":"VIVIANE","AUTO 1":"RAYANE","ORIENTADOR":"ADRIELLE","PAINEL 2":"GABRIEL","PAINEL 3":"JACQUELINE","PAINEL 4":"CIDA","PAINEL 5":"WILLIANA"},
+  "13:30": {"EMISSOR 1":"RAYANE","EMISSOR 2":"GABRIEL","EMISSOR 3":"ADRIELLE","EMISSOR 4":"JACQUELINE","TELEFONE 1":"WILLIANA","AUTO SENTADO":"CIDA","AUTO 1":"CONCEICAO","ORIENTADOR":"LETICIA","PAINEL 2":"CAMILA","PAINEL 3":"LUCIANA","PAINEL 4":"VIVIANE","PAINEL 5":"DUDA"},
+  "14:00": {"EMISSOR 1":"LUCIELE","EMISSOR 1.1":"LETICIA","EMISSOR 2":"CAMILA","EMISSOR 2.1":"VIVIANE","EMISSOR 3":"CONCEICAO","EMISSOR 3.1":"MARIA","EMISSOR 4":"FANTINNY","EMISSOR 4.1":"SONIA","TELEFONE 1":"LUCIANA","TELEFONE 2":"WISLAINE","AUTO SENTADO":"DUDA","AUTO 1":"WILLIANA","AUTO 2":"CIDA","ORIENTADOR":"JUAN","PAINEL 2":"DVANY","PAINEL 2.1":"GABRIEL","PAINEL 3":"THALITA","PAINEL 3.1":"JACQUELINE","PAINEL 4":"RAYANE","PAINEL 5":"JULIA","PESQUISA":"ADRIELLE","PESQUISA 2":"GUSTAVO"},
+  "14:30": {"EMISSOR 1":"WILLIANA","EMISSOR 1.1":"GUSTAVO","EMISSOR 2":"RAYANE","EMISSOR 2.1":"ADRIELLE","EMISSOR 3":"JULIA","EMISSOR 3.1":"CIDA","EMISSOR 4":"DVANY","EMISSOR 4.1":"GABRIEL","TELEFONE 1":"JUAN","TELEFONE 2":"JACQUELINE","AUTO SENTADO":"THALITA","AUTO 1":"CAMILA","AUTO 2":"LUCIANA","ORIENTADOR":"MARIA","PAINEL 2":"WISLAINE","PAINEL 2.1":"LETICIA","PAINEL 3":"SONIA","PAINEL 3.1":"CONCEICAO","PAINEL 4":"LUCIELE","PAINEL 5":"FANTINNY","PESQUISA":"DUDA","PESQUISA 2":"VIVIANE"},
+  "15:00": {"EMISSOR 1":"MARIA","EMISSOR 1.1":"DUDA","EMISSOR 2":"SONIA","EMISSOR 2.1":"LETICIA","EMISSOR 3":"FANTINNY","EMISSOR 3.1":"LUCIANA","EMISSOR 4":"WISLAINE","EMISSOR 4.1":"CONCEICAO","TELEFONE 1":"CAMILA","TELEFONE 2":"VIVIANE","AUTO SENTADO":"LUCIELE","AUTO 1":"GUSTAVO","AUTO 2":"ADRIELLE","ORIENTADOR":"THALITA","PAINEL 2":"JUAN","PAINEL 2.1":"CIDA","PAINEL 3":"DVANY","PAINEL 3.1":"GABRIEL","PAINEL 4":"WILLIANA","PAINEL 5":"RAYANE","PESQUISA":"JULIA","PESQUISA 2":"JACQUELINE"},
+  "15:30": {"EMISSOR 1":"JULIA","EMISSOR 2":"THALITA","EMISSOR 3":"RAYANE","EMISSOR 4":"JUAN","TELEFONE 1":"WILLIANA","AUTO SENTADO":"DVANY","AUTO 1":"WISLAINE","ORIENTADOR":"LUCIELE","PAINEL 2":"FANTINNY","PAINEL 3":"MARIA","PAINEL 4":"CAMILA","PAINEL 5":"SONIA"},
+  "16:00": {"EMISSOR 1":"SONIA","EMISSOR 2":"MARIA","EMISSOR 3":"CAMILA","EMISSOR 4":"FANTINNY","TELEFONE 1":"LUCIELE","AUTO SENTADO":"WISLAINE","AUTO 1":"DVANY","ORIENTADOR":"WILLIANA","PAINEL 2":"JULIA","PAINEL 3":"RAYANE","PAINEL 4":"GUSTAVO","PAINEL 5":"THALITA","PESQUISA":"JUAN"},
+  "16:30": {"EMISSOR 1":"GUSTAVO","EMISSOR 2":"WILLIANA","EMISSOR 3":"DVANY","EMISSOR 4":"RAYANE","TELEFONE 1":"JULIA","AUTO SENTADO":"JUAN","AUTO 1":"MARIA","ORIENTADOR":"FANTINNY","PAINEL 2":"LUCIELE","PAINEL 3":"CAMILA","PAINEL 4":"SONIA","PAINEL 5":"WISLAINE"},
+  "17:00": {"EMISSOR 1":"WISLAINE","EMISSOR 2":"SONIA","EMISSOR 3":"LUCIELE","EMISSOR 4":"MARIA","TELEFONE 1":"FANTINNY","AUTO SENTADO":"CAMILA","AUTO 1":"JULIA","ORIENTADOR":"RAYANE","PAINEL 2":"WILLIANA","PAINEL 3":"JUAN","PAINEL 4":"DVANY","PAINEL 5":"GUSTAVO","PESQUISA":"THALITA"},
+  "17:30": {"EMISSOR 1":"THALITA","EMISSOR 2":"GUSTAVO","EMISSOR 3":"WILLIANA","EMISSOR 4":"JULIA","TELEFONE 1":"DVANY","AUTO SENTADO":"RAYANE","AUTO 1":"SONIA","ORIENTADOR":"LUCIELE","PAINEL 2":"WISLAINE","PAINEL 3":"FANTINNY","PAINEL 4":"MARIA","PAINEL 5":"CAMILA"},
+  "18:00": {"EMISSOR 1":"LUCIELE","EMISSOR 2":"WISLAINE","EMISSOR 3":"SONIA","EMISSOR 4":"CAMILA","TELEFONE 1":"FANTINNY","AUTO SENTADO":"MARIA","AUTO 1":"THALITA","ORIENTADOR":"JULIA","PAINEL 2":"GUSTAVO","PAINEL 3":"WILLIANA","PAINEL 4":"JUAN","PAINEL 5":"DVANY","PESQUISA":"RAYANE"}
+};
+
+function carregarDemo(){
+  carregarEscala(ESCALA_OFICIAL);
+}
+
+/* ---------- legenda ---------- */
+$('legend').innerHTML = GRUPOS.map(([n, c]) => `<span><i style="background:${c}"></i>${n}</span>`).join('') + '<span>🚶 em pé &nbsp; 💺 sentado &nbsp; ☕ pausa</span><span>Clique num atendente para destacar</span>';
+
+/* ---------- início ---------- */
+desenharCenario();
+carregarDemo();
+aplicarZoom();
+
+// Inicialização inteligente: conecta à URL do Google se fornecida via link ou salva no navegador
+(function bootGoogle(){
+  const p = new URLSearchParams(window.location.search);
+  const qSheet = p.get('sheet') || p.get('id') || p.get('spreadsheet');
+  const qAba = p.get('aba') || p.get('tab');
+  const qInt = p.get('int') || p.get('interval');
+  if(qSheet){
+    const sheetId = extrairGoogleId(qSheet);
+    if(sheetId){
+      const cfg = { url: qSheet, sheetId, aba: qAba || '', intervalo: parseInt(qInt, 10) || 30 };
+      salvarConfigGoogle(cfg);
+      iniciarGooglePolling();
+      sincronizarGoogle(true);
+      return;
+    }
+  }
+  const salva = carregarConfigGoogle();
+  if(salva.sheetId){
+    iniciarGooglePolling();
+    sincronizarGoogle(true);
+  } else {
+    horaAtual();
+  }
+})();
+
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
