@@ -3,120 +3,141 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Na Hora Ceilândia — O Jogo do Salão</title>
+<title>Na Hora Ceilândia — Mapa dos Postos de Atendimento</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
   :root{
-    --bg:#1a1423; --panel:#2a2038; --panel2:#352947; --line:#5a4778; --ink:#f4ecff; --mute:#a99bc4;
-    --emissor:#2fae6a; --telefone:#1fb5d4; --auto:#8a5bd6; --orient:#3b6fe0; --painel:#f08a24; --pesq:#e0508a; --pausa:#6b7280;
-    --px:'Press Start 2P', 'Courier New', monospace;
+    --bg:#eef2f7; --panel:#ffffff; --panel2:#f8fafc; --line:#dbe3ee; --ink:#0f172a; --mute:#64748b;
+    --brand:#0b2a5b; --brand2:#1d4ed8;
+    --emissor:#2fae6a; --telefone:#1fb5d4; --auto:#8a5bd6; --orient:#3b6fe0; --painel:#f08a24; --pesq:#e0508a; --pausa:#64748b;
+    --px:'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif;padding:10px;min-height:100vh}
-  .wrap{max-width:1380px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  body{background:var(--bg);color:var(--ink);font-family:var(--px);padding:12px;min-height:100vh;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06),0 6px 18px rgba(15,23,42,.05)}
 
-  .box{background:var(--panel);border:3px solid var(--line);box-shadow:0 4px 0 #0e0a14, inset 0 0 0 2px #1d1529;border-radius:6px}
-
-  header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px}
-  .logo{display:flex;align-items:center;gap:12px}
-  .logo .ico{width:42px;height:42px;background:#f4b942;border:3px solid #fff3c4;box-shadow:0 3px 0 #8a5a12;display:grid;place-items:center;font-size:22px;border-radius:6px}
-  .logo h1{font-family:var(--px);font-size:13px;color:#ffd75e;text-shadow:2px 2px 0 #000;line-height:1.5}
-  .logo p{font-size:12px;color:var(--mute);margin-top:2px}
+  /* ---- cabeçalho ---- */
+  header.top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:8px 16px;background:linear-gradient(135deg,#0b2a5b,#14438f);border:none;color:#fff}
+  .logo{display:flex;align-items:center;gap:14px}
+  .logo .ico{width:40px;height:40px;background:#fff;border-radius:12px;display:grid;place-items:center;font-size:24px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+  .logo h1{font-size:18px;font-weight:800;letter-spacing:.02em;line-height:1.15}
+  .logo p{font-size:12.5px;color:#bfd2f5;margin-top:3px}
   .hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .chip{background:#150f1e;border:2px solid var(--line);border-radius:6px;padding:6px 10px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
-  .chip b{font-family:var(--px);font-size:12px}
-  .chip.pe b{color:#ff8a8a}.chip.sent b{color:#7dffb0}.chip.pa b{color:#c1c7d4}.chip.al b{color:#ffd75e}
-  .chip.al.on{border-color:#ff5b5b;animation:blink 1s steps(2) infinite}
-  .chip.gs{border-color:#2a8f55;background:#0c1f14;transition:all .3s}
-  .chip.gs:hover{background:#153523;border-color:#5fdc93}
-  .chip.gs.syncing{border-color:#ffd75e;animation:blink 1s infinite}
-  .chip.gs.err{border-color:#ff5b5b;background:#2d0f17}
-  .chip.chg{border-color:#f59e0b;background:#241804}
-  .chip.chg b{color:#fbbf24}
-  .chip.fui{border-color:#64748b;background:#151d28}
-  .chip.fui b{color:#94a3b8}
-  .tabs-salao{display:flex;gap:4px;background:#150f1e;padding:3px;border-radius:6px;border:2px solid var(--line);margin-bottom:2px}
-  .tab-salao{flex:1;background:transparent;border:none;color:var(--mute);font-family:var(--px);font-size:7px;padding:6px 2px;cursor:pointer;border-radius:4px;text-align:center;transition:all .2s}
-  .tab-salao:hover{color:#fff;background:#251c33}
-  .tab-salao.active{background:#4a3a63;color:#ffd75e;font-weight:700}
-  @keyframes blink{50%{background:#4a1220}}
-  .clock{font-family:var(--px);font-size:20px;color:#7be8ff;background:#07131a;border:3px solid #2aa9c9;border-radius:6px;padding:8px 14px;text-shadow:0 0 8px #2aa9c9}
+  .chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#e2e8f0;border-radius:999px;padding:6px 13px;display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;white-space:nowrap}
+  .chip b{font-size:15px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums}
+  .chip.pe b{color:#fdba74}.chip.sent b{color:#86efac}.chip.pa b{color:#cbd5e1}.chip.al b{color:#fde047}
+  .chip.al.on{background:rgba(220,38,38,.35);border-color:#f87171;animation:blink 1s steps(2) infinite}
+  .chip.gs{background:rgba(34,197,94,.18);border-color:rgba(74,222,128,.55);transition:all .25s}
+  .chip.gs:hover{background:rgba(34,197,94,.3)}
+  .chip.gs.syncing{border-color:#fde047;animation:blink 1s infinite}
+  .chip.gs.err{border-color:#f87171;background:rgba(220,38,38,.25)}
+  .chip.chg{background:rgba(245,158,11,.2);border-color:rgba(251,191,36,.6)}.chip.chg b{color:#fcd34d}
+  .chip.fui{background:rgba(148,163,184,.2);border-color:rgba(148,163,184,.5)}.chip.fui b{color:#cbd5e1}
+  @keyframes blink{50%{background:rgba(220,38,38,.55)}}
+  .clock{font-size:26px;font-weight:800;letter-spacing:.04em;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:4px 16px;font-variant-numeric:tabular-nums;line-height:1.3}
+  .badge-perfil{font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:999px;background:#fff;color:var(--brand)}
 
-  .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 12px}
-  .btn{font-family:var(--px);font-size:9px;color:#fff;background:#4a3a63;border:2px solid #8a72b3;box-shadow:0 3px 0 #1d1529;border-radius:4px;padding:9px 11px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
-  .btn:active{transform:translateY(3px);box-shadow:none}
-  .btn:hover{filter:brightness(1.15)}
-  .btn.g{background:#2a8f55;border-color:#5fdc93}.btn.y{background:#b97a14;border-color:#ffd05a}.btn.b{background:#2c5fc4;border-color:#7fb0ff}.btn.p{background:#7a3fb8;border-color:#c79bff}
+  /* ---- botões ---- */
+  .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 12px}
+  .btn{font-family:var(--px);font-size:12.5px;font-weight:700;color:#1e293b;background:#fff;border:1px solid #cbd5e1;border-radius:9px;box-shadow:0 1px 2px rgba(15,23,42,.08);padding:8px 13px;cursor:pointer;display:inline-flex;gap:6px;align-items:center;transition:background .15s,transform .05s}
+  .btn:hover{background:#f1f5f9}
+  .btn:active{transform:translateY(1px)}
+  .btn.g{background:#16a34a;border-color:#15803d;color:#fff}.btn.g:hover{background:#15a047}
+  .btn.y{background:#fef3c7;border-color:#f59e0b;color:#92400e}.btn.y:hover{background:#fde68a}
+  .btn.b{background:#e0ecff;border-color:#a9c6fb;color:#1d4ed8}.btn.b:hover{background:#cfe0ff}
+  .btn.p{background:#f0e8ff;border-color:#c9adf5;color:#6d28d9}.btn.p:hover{background:#e6d9ff}
+  .btn.r{background:#fee2e2;border-color:#f87171;color:#b91c1c}.btn.r:hover{background:#fecaca}
   .sp{flex:1}
-  .slider-wrap{display:flex;align-items:center;gap:10px;flex:1;min-width:260px}
-  .slider-wrap input{flex:1;accent-color:#ffd75e}
-  .slot-label{font-family:var(--px);font-size:11px;color:#ffd75e;min-width:60px;text-align:right}
+  .slider-wrap{display:flex;align-items:center;gap:12px;flex:1;min-width:280px}
+  .slider-wrap input{flex:1;accent-color:var(--brand2);height:6px}
+  .slot-label{font-size:15px;font-weight:800;color:var(--brand);min-width:56px;text-align:right;font-variant-numeric:tabular-nums}
 
-  .main{display:grid;grid-template-columns:330px 1fr;gap:10px;align-items:start}
-  @media(max-width:1000px){.main{grid-template-columns:1fr}}
+  /* ---- layout principal ---- */
+  .main{display:grid;grid-template-columns:350px 1fr;gap:10px;align-items:stretch;height:calc(100vh - 180px);min-height:520px}
+  @media(max-width:1000px){.main{grid-template-columns:1fr;height:auto}aside.side{max-height:460px !important}}
 
-  aside.side{padding:10px;display:flex;flex-direction:column;gap:8px;max-height:760px}
-  .side h2{font-family:var(--px);font-size:10px;color:#7be8ff;display:flex;gap:6px;align-items:center}
-  .search{background:#150f1e;border:2px solid var(--line);border-radius:4px;padding:8px 10px;color:#fff;font-size:13px;outline:none;width:100%}
-  .search:focus{border-color:#7be8ff}
-  .list{overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px}
-  .list::-webkit-scrollbar{width:6px}.list::-webkit-scrollbar-thumb{background:#5a4778;border-radius:3px}
-  .grp{font-family:var(--px);font-size:8px;padding:5px 7px;color:#fff;border-radius:3px;margin-top:4px;display:flex;justify-content:space-between}
-  .item{display:flex;align-items:center;gap:8px;background:var(--panel2);border:2px solid #45365e;border-left-width:6px;border-radius:4px;padding:6px 8px;cursor:pointer}
-  .item:hover{background:#42335a}
-  .item.sel{outline:3px solid #ffd75e;background:#4a3a63}
-  .item .nm{font-weight:800;font-size:13px}
-  .item .ps{font-size:11px;color:var(--mute)}
-  .item .nx{font-size:10px;color:#8fb7ff}
-  .item .st{margin-left:auto;font-size:16px}
-  .item.alerta{border-color:#ff5b5b;background:#3a1a2a}
-  .alerta-msg{font-size:10px;color:#ff9a9a;font-weight:700}
+  aside.side{padding:12px;display:flex;flex-direction:column;gap:9px;height:100%;min-height:0}
+  .side h2{font-size:14px;font-weight:800;color:var(--brand);display:flex;gap:7px;align-items:center}
+  .tabs-salao{display:flex;gap:3px;background:#eef2f7;padding:3px;border-radius:10px}
+  .tab-salao{flex:1;background:transparent;border:none;color:var(--mute);font-family:var(--px);font-size:11.5px;font-weight:700;padding:7px 4px;cursor:pointer;border-radius:8px;text-align:center;transition:all .15s}
+  .tab-salao:hover{color:var(--ink)}
+  .tab-salao.active{background:#fff;color:var(--brand2);box-shadow:0 1px 3px rgba(15,23,42,.15)}
+  .search{background:#fff;border:1px solid #cbd5e1;border-radius:9px;padding:9px 12px;color:var(--ink);font-family:var(--px);font-size:13px;outline:none;width:100%}
+  .search:focus{border-color:var(--brand2);box-shadow:0 0 0 3px rgba(29,78,216,.15)}
+  .list{overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px;flex:1;min-height:0}
+  .list::-webkit-scrollbar{width:7px}.list::-webkit-scrollbar-thumb{background:#c5d0df;border-radius:4px}
+  .grp{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:800;letter-spacing:.05em;color:#334155;padding:8px 4px 3px;margin-top:4px}
+  .grp span{display:flex;align-items:center;gap:7px}
+  .grp i{width:10px;height:10px;border-radius:3px;background:var(--gc)}
+  .grp b{background:var(--gc);color:#fff;border-radius:999px;padding:1px 9px;font-size:11px}
+  .item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-left:5px solid var(--gc);border-radius:11px;padding:8px 10px;cursor:pointer;transition:box-shadow .15s,background .15s}
+  .item:hover{box-shadow:0 3px 10px rgba(15,23,42,.12);background:#fafcff}
+  .item.sel{background:#fffbeb;outline:2px solid #facc15;border-color:#facc15}
+  .av{width:36px;height:36px;border-radius:50%;background:var(--gc);color:#fff;font-weight:800;font-size:16px;display:grid;place-items:center;flex-shrink:0;box-shadow:inset 0 -3px 0 rgba(0,0,0,.15)}
+  .inf{flex:1;min-width:0}
+  .item .nm{font-weight:800;font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px}
+  .selo{display:inline-block;background:var(--gc);color:#fff;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;letter-spacing:.02em}
+  .selo.cinza{background:#e2e8f0;color:#475569}
+  .item .nx{font-size:11px;color:var(--mute)}
+  .item .nx b{color:#1d4ed8}
+  .item .st{font-size:18px}
+  .item.alerta{background:#fef2f2;border-color:#fca5a5;border-left-color:var(--gc)}
+  .alerta-msg{font-size:11px;color:#b91c1c;font-weight:700;margin-top:2px}
+  .vazio{color:var(--mute);font-size:13px;padding:14px;text-align:center}
 
-  .stage{padding:8px;display:flex;flex-direction:column;gap:6px}
-  .stage-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:5px 8px;background:#150f1e;border:2px solid var(--line);border-radius:4px}
-  .stage-title{font-family:var(--px);font-size:9px;color:#ffd75e;letter-spacing:1px}
-  .zoom-controls{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-  .z-lbl{font-family:var(--px);font-size:8px;color:var(--mute);margin-right:2px}
-  .z-val{font-family:var(--px);font-size:9px;color:#7be8ff;min-width:54px;text-align:center;background:#07131a;border:1px solid #2aa9c9;border-radius:3px;padding:4px 6px}
-  .btn-z{font-family:var(--px);font-size:8px;color:#fff;background:#352947;border:1px solid #6b558c;border-radius:3px;padding:5px 8px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;justify-content:center}
-  .btn-z:hover{background:#544170;border-color:#ffd75e}
-  .btn-z:active{transform:scale(0.95)}
-  .btn-z.full{background:#2a8f55;border-color:#5fdc93;color:#fff}
-  .btn-z.full:hover{background:#3cb16e}
-  .screen{position:relative;background:#000;border:4px solid #0e0a14;border-radius:4px;overflow:auto;line-height:0;display:flex;justify-content:center;align-items:flex-start;max-height:calc(100vh - 245px);min-height:380px;scrollbar-width:thin;scrollbar-color:#5a4778 #150f1e}
-  .screen::-webkit-scrollbar{width:8px;height:8px}
-  .screen::-webkit-scrollbar-track{background:#150f1e}
-  .screen::-webkit-scrollbar-thumb{background:#5a4778;border-radius:4px}
-  .screen::-webkit-scrollbar-thumb:hover{background:#7a62a3}
-  canvas{width:auto;max-width:100%;height:auto;max-height:calc(100vh - 250px);image-rendering:pixelated;image-rendering:crisp-edges;display:block;cursor:pointer;flex-shrink:0}
-  .stage:fullscreen{background:#1a1423;padding:12px;display:flex;flex-direction:column;height:100vh;box-sizing:border-box;justify-content:center}
-  .stage:fullscreen .screen{max-height:calc(100vh - 90px);flex:1}
-  #tip{position:fixed;display:none;z-index:50;background:#fff;color:#1b1626;border:3px solid #000;border-radius:6px;padding:7px 10px;font-size:12px;line-height:1.4;box-shadow:4px 4px 0 rgba(0,0,0,.5);pointer-events:none;max-width:260px}
-  #tip b{font-size:14px}
-  #tip .t1{font-family:var(--px);font-size:8px;color:#fff;display:inline-block;padding:3px 5px;border-radius:3px;margin-bottom:4px}
-  .legend{display:flex;flex-wrap:wrap;gap:6px 12px;padding:2px 4px;font-size:12px;color:var(--mute);align-items:center}
-  .legend i{display:inline-block;width:12px;height:12px;border:2px solid #fff3;vertical-align:-2px;margin-right:5px}
+  /* ---- palco / mapa ---- */
+  .stage{padding:10px;display:flex;flex-direction:column;gap:8px;height:100%;min-height:0}
+  .stage-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:2px 2px}
+  .stage-title{font-size:14px;font-weight:800;color:var(--brand);display:flex;align-items:center;gap:7px}
+  .zoom-controls{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .z-lbl{font-size:11px;font-weight:700;color:var(--mute);margin-right:2px}
+  .z-val{font-size:12px;font-weight:800;color:var(--brand);min-width:58px;text-align:center;background:#eef2f7;border-radius:7px;padding:5px 6px;font-variant-numeric:tabular-nums}
+  .btn-z{font-family:var(--px);font-size:12px;font-weight:700;color:#334155;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:6px 10px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+  .btn-z:hover{background:#eef2f7;border-color:#94a3b8}
+  .btn-z:active{transform:scale(.96)}
+  .btn-z.full{background:var(--brand2);border-color:var(--brand2);color:#fff}
+  .btn-z.full:hover{background:#2563eb}
+  .btn-z.tog{background:#e0ecff;border-color:#a9c6fb;color:#1d4ed8}
+  .btn-z.tog.off{background:#fff;border-color:#cbd5e1;color:#94a3b8}
+  .screen{position:relative;background:#dde5ef;background-image:radial-gradient(#c5d0df 1px,transparent 1px);background-size:14px 14px;border:1px solid var(--line);border-radius:10px;overflow:auto;display:flex;flex:1;min-height:300px;padding:8px;scrollbar-width:thin;scrollbar-color:#9fb0c7 #dde5ef}
+  .screen::-webkit-scrollbar{width:10px;height:10px}.screen::-webkit-scrollbar-thumb{background:#9fb0c7;border-radius:5px}
+  canvas{display:block;margin:auto;flex-shrink:0;border-radius:6px;box-shadow:0 8px 28px rgba(15,23,42,.28);cursor:grab;background:#fff}
+  .stage:fullscreen{background:var(--bg);padding:12px;height:100vh;justify-content:flex-start}
+  .stage:fullscreen .screen{height:auto;flex:1;min-height:0}
+  #tip{position:fixed;display:none;z-index:50;background:#fff;color:var(--ink);border:1px solid #cbd5e1;border-radius:10px;padding:9px 12px;font-size:12.5px;line-height:1.5;box-shadow:0 10px 30px rgba(15,23,42,.25);pointer-events:none;max-width:280px}
+  #tip b{font-size:14.5px}
+  #tip .t1{font-size:10.5px;font-weight:800;letter-spacing:.04em;color:#fff;display:inline-block;padding:2px 8px;border-radius:999px;margin-bottom:4px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:6px 10px;font-size:12px;color:#475569;align-items:center;background:#f8fafc;border-radius:8px;border:1px solid var(--line);flex-shrink:0}
+  .legend span{display:inline-flex;align-items:center}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px}
+  .legend i.tag-on{background:#475569;border-radius:999px;width:20px;height:11px}
+  .legend i.tag-off{background:#fff;border:2px solid #475569;border-radius:999px;width:20px;height:11px}
+  .lg-sep{width:1px;height:16px;background:#cbd5e1}
+  .lg-dica{margin-left:auto;color:var(--mute);font-style:italic}
 
-  #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center}
-  .mbox{width:92%;max-width:620px;padding:18px}
-  .mbox h2{font-family:var(--px);font-size:11px;color:#ffd75e;margin-bottom:8px}
-  .mbox p{font-size:12px;color:var(--mute);margin-bottom:10px}
-  .mbox textarea{width:100%;height:170px;background:#0e0a14;border:2px solid var(--line);color:#7dffb0;font-family:monospace;font-size:12px;padding:10px;border-radius:4px;resize:vertical}
-  .mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+  /* ---- modais ---- */
+  #modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(3px);z-index:100;align-items:center;justify-content:center}
+  .mbox{width:92%;max-width:620px;padding:22px}
+  .mbox h2{font-size:16px;font-weight:800;color:var(--brand);margin-bottom:8px}
+  .mbox p{font-size:13px;color:var(--mute);margin-bottom:10px;line-height:1.5}
+  .mbox textarea{width:100%;height:170px;background:#f8fafc;border:1px solid #cbd5e1;color:#0f172a;font-family:Consolas,monospace;font-size:12px;padding:10px;border-radius:8px;resize:vertical}
+  .mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+  .flbl{font-size:11.5px;font-weight:800;color:#334155;display:block;margin-bottom:5px;letter-spacing:.03em}
+  .gstatus{background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:11px;font-size:13px;line-height:1.5}
   /* ---- login / perfis ---- */
   body.role-viewer .admin-only{display:none !important}
   body:not(.logado) .wrap{visibility:hidden}
-  #login{position:fixed;inset:0;z-index:1000;background:radial-gradient(circle at 50% 30%,#2a2038,#0e0a14);display:flex;align-items:center;justify-content:center}
+  #login{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,#0b2a5b,#14438f 60%,#1d4ed8);display:flex;align-items:center;justify-content:center}
   body.logado #login{display:none}
-  .lbox{width:92%;max-width:380px;padding:22px;text-align:center}
-  .lbox .ico{font-size:40px;margin-bottom:6px}
-  .lbox h2{font-family:var(--px);font-size:12px;color:#ffd75e;line-height:1.6;margin-bottom:6px;text-shadow:2px 2px 0 #000}
-  .lbox p{font-size:12px;color:var(--mute);margin-bottom:14px}
-  .lbox input{width:100%;background:#150f1e;border:3px solid var(--line);border-radius:6px;padding:11px;color:#fff;font-size:16px;text-align:center;outline:none;letter-spacing:2px}
-  .lbox input:focus{border-color:#7be8ff}
-  .lbox .btn{width:100%;justify-content:center;margin-top:12px;padding:12px}
-  #lerro{color:#ff8a8a;font-size:12px;min-height:16px;margin-top:8px;font-weight:700}
-  .badge-perfil{font-family:var(--px);font-size:8px;padding:6px 8px;border-radius:4px;border:2px solid #8a72b3;background:#150f1e;color:#ffd75e}
+  .lbox{width:92%;max-width:390px;padding:28px 26px;text-align:center;border:none;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  .lbox .ico{font-size:38px;margin-bottom:8px}
+  .lbox h2{font-size:18px;font-weight:800;color:var(--brand);line-height:1.3;margin-bottom:6px}
+  .lbox p{font-size:13px;color:var(--mute);margin-bottom:16px}
+  .lbox input{width:100%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:12px;color:var(--ink);font-size:16px;text-align:center;outline:none;letter-spacing:3px}
+  .lbox input:focus{border-color:var(--brand2);box-shadow:0 0 0 3px rgba(29,78,216,.15)}
+  .lbox .btn{width:100%;justify-content:center;margin-top:14px;padding:12px;font-size:14px}
+  #lerro{color:#dc2626;font-size:12.5px;min-height:16px;margin-top:8px;font-weight:700}
 </style>
 </head>
 <body>
@@ -124,65 +145,66 @@
 
   <header class="top box">
     <div class="logo">
-      <div class="ico">🏢</div>
+      <div class="ico">📍</div>
       <div>
-        <h1>NA HORA CEILÂNDIA<br>O JOGO DO SALÃO</h1>
-        <p>Veja onde cada atendente está agora e para onde vai no próximo horário</p>
+        <h1>NA HORA CEILÂNDIA</h1>
+        <p>Mapa dos postos de atendimento — veja onde cada atendente está e para onde vai</p>
       </div>
     </div>
     <div class="hud">
-      <div class="chip gs admin-only" id="chipGoogle" onclick="abrirModalGoogle()" style="cursor:pointer" title="Configurar conexão automática com o Google Planilhas"><span id="gDot">⚪</span> <span id="gTxt" style="font-size:11px">Planilha</span></div>
-      <div class="chip pe">🚶 EM PÉ <b id="cPe">0</b></div>
-      <div class="chip sent">💺 SENTADO <b id="cSent">0</b></div>
-      <div class="chip pa">☕ PAUSA <b id="cPausa">0</b></div>
-      <div class="chip chg" title="Colaboradores que ainda não entraram no horário atual">⏳ CHEGANDO <b id="cChegando">0</b></div>
-      <div class="chip fui" title="Colaboradores que já encerraram o expediente hoje">🏠 FUI <b id="cFui">0</b></div>
-      <div class="chip al" id="chipAl">⚠ ALERTAS NR-17 <b id="cAl">0</b></div>
+      <div class="chip gs admin-only" id="chipGoogle" onclick="abrirModalGoogle()" style="cursor:pointer" title="Configurar conexão automática com o Google Planilhas"><span id="gDot">⚪</span> <span id="gTxt">Planilha</span></div>
+      <div class="chip pe">🚶 Em pé <b id="cPe">0</b></div>
+      <div class="chip sent">💺 Sentado <b id="cSent">0</b></div>
+      <div class="chip pa">☕ Pausa <b id="cPausa">0</b></div>
+      <div class="chip chg" title="Colaboradores que ainda não entraram no horário atual">⏳ Chegando <b id="cChegando">0</b></div>
+      <div class="chip fui" title="Colaboradores que já encerraram o expediente hoje">🏠 Fui <b id="cFui">0</b></div>
+      <div class="chip al" id="chipAl">⚠ Alertas NR-17 <b id="cAl">0</b></div>
       <div class="clock" id="clock">08:00</div>
       <span class="badge-perfil" id="badgePerfil"></span>
-      <button class="btn" onclick="sairPerfil()" title="Trocar de perfil">🚪 SAIR</button>
+      <button class="btn" onclick="sairPerfil()" title="Trocar de perfil">🚪 Sair</button>
     </div>
   </header>
 
   <section class="tools box">
-    <button class="btn g admin-only" onclick="abrirModalGoogle()" title="Sincronizar ao vivo com o Google Planilhas">📊 GOOGLE PLANILHAS</button>
-    <button class="btn y admin-only" onclick="copiarLinkRecepcao()" title="Gera o link pronto para compartilhar com a equipe da recepção">🔗 LINK RECEPÇÃO</button>
-    <button class="btn y admin-only" onclick="abrirModal()">📋 COLAR</button>
-    <label class="btn b admin-only">📂 .XLSX<input type="file" id="file" accept=".xlsx,.xls" style="display:none" onchange="lerExcel(event)"></label>
-    <button class="btn p admin-only" onclick="carregarDemo()">⚡ DEMO</button>
+    <button class="btn g admin-only" onclick="abrirModalGoogle()" title="Sincronizar ao vivo com o Google Planilhas">📊 Google Planilhas</button>
+    <button class="btn y admin-only" onclick="copiarLinkRecepcao()" title="Gera o link pronto para compartilhar com a equipe da recepção">🔗 Link recepção</button>
+    <button class="btn y admin-only" onclick="abrirModal()">📋 Colar</button>
+    <label class="btn b admin-only">📂 .xlsx<input type="file" id="file" accept=".xlsx,.xls" style="display:none" onchange="lerExcel(event)"></label>
+    <button class="btn p admin-only" onclick="carregarDemo()">⚡ Demo</button>
     <span class="sp"></span>
-    <button class="btn b" onclick="passo(-1)">◀</button>
+    <button class="btn b" onclick="passo(-1)" title="Horário anterior">◀</button>
     <button class="btn g" id="btnPlay" onclick="togglePlay()">▶ AUTO</button>
-    <button class="btn b" onclick="passo(1)">▶</button>
-    <button class="btn y" onclick="horaAtual()">⏰ AGORA</button>
+    <button class="btn b" onclick="passo(1)" title="Próximo horário">▶</button>
+    <button class="btn y" onclick="horaAtual()">⏰ Agora</button>
     <div class="slider-wrap"><input type="range" id="slider" min="0" max="0" value="0" oninput="irSlot(+this.value)"><span class="slot-label" id="slotLabel">--:--</span></div>
   </section>
 
   <div class="main">
     <aside class="side box">
-      <h2>📡 QUEM ESTÁ ONDE</h2>
+      <h2>📡 Quem está onde</h2>
       <div class="tabs-salao">
-        <button class="tab-salao active" id="tabTodos" onclick="setFiltroPresenca('todos')">TODOS (<span id="countTodos">0</span>)</button>
-        <button class="tab-salao" id="tabSalao" onclick="setFiltroPresenca('salao')">NO SALÃO (<span id="countSalao">0</span>)</button>
-        <button class="tab-salao" id="tabCF" onclick="setFiltroPresenca('chegando_fui')">CHEGANDO/FUI (<span id="countCF">0</span>)</button>
+        <button class="tab-salao active" id="tabTodos" onclick="setFiltroPresenca('todos')">Todos (<span id="countTodos">0</span>)</button>
+        <button class="tab-salao" id="tabSalao" onclick="setFiltroPresenca('salao')">No salão (<span id="countSalao">0</span>)</button>
+        <button class="tab-salao" id="tabCF" onclick="setFiltroPresenca('chegando_fui')">Chegando/Fui (<span id="countCF">0</span>)</button>
       </div>
-      <input class="search" id="busca" placeholder="Buscar nome ou posto..." oninput="renderLista()">
+      <input class="search" id="busca" placeholder="🔎 Buscar nome ou posto..." oninput="renderLista()">
       <div class="list" id="lista"></div>
     </aside>
 
     <section class="stage box">
       <div class="stage-bar">
-        <div class="stage-title">🎮 PLANTA BAIXA DO SALÃO</div>
+        <div class="stage-title">🗺️ Planta baixa do salão</div>
         <div class="zoom-controls">
-          <span class="z-lbl">🔍 ZOOM:</span>
+          <button class="btn-z tog" id="btnCid" onclick="alternarCidadaos()" title="Mostrar/ocultar os cidadãos animados">👥 Cidadãos</button>
+          <span class="z-lbl">🔍 Zoom</span>
           <button class="btn-z" onclick="mudarZoom(-0.2)" title="Diminuir zoom">➖</button>
           <span class="z-val" id="zoomVal" title="Nível atual de zoom">AJUSTE</span>
           <button class="btn-z" onclick="mudarZoom(+0.2)" title="Aumentar zoom">➕</button>
-          <button class="btn-z" onclick="setZoom(1.0)" title="Zoom 100% (Original)">100%</button>
-          <button class="btn-z" onclick="setZoom(1.35)" title="Zoom 135% (Médio)">135%</button>
-          <button class="btn-z" onclick="setZoom(1.7)" title="Zoom 170% (Grande)">170%</button>
-          <button class="btn-z" onclick="setZoom('auto')" title="Ajustar automaticamente à janela">📐 AJUSTAR</button>
-          <button class="btn-z full" onclick="toggleFullscreen()" title="Modo Telão / Tela Cheia">⛶ TELA CHEIA</button>
+          <button class="btn-z" onclick="setZoom(1.0)" title="Zoom 100%">100%</button>
+          <button class="btn-z" onclick="setZoom(1.35)" title="Zoom 135%">135%</button>
+          <button class="btn-z" onclick="setZoom(1.7)" title="Zoom 170%">170%</button>
+          <button class="btn-z" onclick="setZoom('auto')" title="Ajustar automaticamente à janela">📐 Ajustar</button>
+          <button class="btn-z full" onclick="toggleFullscreen()" title="Modo Telão / Tela Cheia">⛶ Tela cheia</button>
         </div>
       </div>
       <div class="screen" id="screen"><canvas id="game"></canvas></div>
@@ -195,12 +217,12 @@
 
 <div id="login">
   <div class="lbox box">
-    <div class="ico">🏢</div>
-    <h2>NA HORA CEILÂNDIA<br>ACESSO AO PAINEL</h2>
+    <div class="ico">📍</div>
+    <h2>NA HORA CEILÂNDIA<br>Acesso ao painel</h2>
     <p>Digite a senha do seu perfil para entrar.</p>
     <input id="lsenha" type="password" placeholder="Senha" autocomplete="off" onkeydown="if(event.key==='Enter')entrar()">
     <div id="lerro"></div>
-    <button class="btn g" onclick="entrar()">🔓 ENTRAR</button>
+    <button class="btn g" onclick="entrar()">🔓 Entrar</button>
   </div>
 </div>
 <script>
@@ -244,26 +266,26 @@
 </div>
 
 <!-- Modal de Conexão com Google Planilhas -->
-<div id="modalGoogle" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center">
+<div id="modalGoogle" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(3px);z-index:100;align-items:center;justify-content:center">
   <div class="mbox box" style="max-width:680px">
-    <h2>📊 SINCRONIZAÇÃO AO VIVO — GOOGLE PLANILHAS</h2>
-    <p>Conecte diretamente à planilha do Google para que qualquer mudança feita na escala seja atualizada aqui automaticamente a cada 30 segundos!</p>
+    <h2>📊 Sincronização ao vivo — Google Planilhas</h2>
+    <p>Conecte diretamente à planilha do Google para que qualquer mudança feita na escala seja atualizada aqui automaticamente!</p>
 
     <div style="display:flex;flex-direction:column;gap:12px;margin:14px 0">
       <div>
-        <label style="font-family:var(--px);font-size:9px;color:#ffd75e;display:block;margin-bottom:6px">LINK OU ID DA PLANILHA NO GOOGLE DRIVE:</label>
-        <input id="gInputUrl" type="text" class="search" style="font-size:12px;padding:8px" placeholder="Ex: https://docs.google.com/spreadsheets/d/.../edit ou o ID da planilha">
-        <small style="color:var(--mute);font-size:11px;margin-top:4px;display:block">💡 Na planilha do Google, certifique-se de configurar em <b>Compartilhar ➔ Qualquer pessoa com o link pode ver</b>.</small>
+        <label class="flbl">LINK OU ID DA PLANILHA NO GOOGLE DRIVE</label>
+        <input id="gInputUrl" type="text" class="search" placeholder="Ex: https://docs.google.com/spreadsheets/d/.../edit ou o ID da planilha">
+        <small style="color:var(--mute);font-size:12px;margin-top:5px;display:block">💡 Na planilha do Google, configure em <b>Compartilhar ➔ Qualquer pessoa com o link pode ver</b>.</small>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div>
-          <label style="font-family:var(--px);font-size:9px;color:#ffd75e;display:block;margin-bottom:6px">NOME DA ABA (OPCIONAL):</label>
-          <input id="gInputAba" type="text" class="search" style="font-size:12px;padding:8px" placeholder="Ex: ESCALA (ou deixe vazio para 1ª aba)">
+          <label class="flbl">NOME DA ABA (OPCIONAL)</label>
+          <input id="gInputAba" type="text" class="search" placeholder="Ex: ESCALA (ou deixe vazio para 1ª aba)">
         </div>
         <div>
-          <label style="font-family:var(--px);font-size:9px;color:#ffd75e;display:block;margin-bottom:6px">INTERVALO DE ATUALIZAÇÃO:</label>
-          <select id="gInputIntervalo" class="search" style="font-size:12px;padding:8px;background:#150f1e;color:#fff">
+          <label class="flbl">INTERVALO DE ATUALIZAÇÃO</label>
+          <select id="gInputIntervalo" class="search">
             <option value="30" selected>A cada 30 segundos (Recomendado)</option>
             <option value="60">A cada 1 minuto</option>
             <option value="120">A cada 2 minutos</option>
@@ -272,24 +294,24 @@
         </div>
       </div>
 
-      <div id="gStatusBox" style="background:#150f1e;border:2px solid var(--line);border-radius:6px;padding:10px;font-size:12px;line-height:1.5">
+      <div id="gStatusBox" class="gstatus">
         <div style="font-weight:700;display:flex;align-items:center;gap:8px" id="gStatusDetalhe">
           <span id="gStatusIcon">⚪</span> <span id="gStatusMsg">Nenhuma planilha conectada no momento (usando escala padrão).</span>
         </div>
-        <div style="font-size:11px;color:var(--mute);margin-top:4px" id="gStatusSub">
-          Insira o link acima e clique em "Sincronizar Agora" para ativar a conexão automática ao vivo.
+        <div style="font-size:12px;color:var(--mute);margin-top:4px" id="gStatusSub">
+          Insira o link acima e clique em "Sincronizar agora" para ativar a conexão automática ao vivo.
         </div>
       </div>
     </div>
 
     <div class="mfoot" style="flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px">
       <div style="display:flex;gap:6px">
-        <button class="btn y" onclick="copiarLinkRecepcao()">📋 COPIAR LINK DA RECEPÇÃO</button>
-        <button class="btn" onclick="desconectarGoogle()" style="background:#5a1f2f;border-color:#a83e58">DESCONECTAR</button>
+        <button class="btn y" onclick="copiarLinkRecepcao()">📋 Copiar link da recepção</button>
+        <button class="btn r" onclick="desconectarGoogle()">Desconectar</button>
       </div>
       <div style="display:flex;gap:6px">
-        <button class="btn b" onclick="fecharModalGoogle()">FECHAR</button>
-        <button class="btn g" onclick="salvarEConectarGoogle()">🔄 SINCRONIZAR AGORA</button>
+        <button class="btn" onclick="fecharModalGoogle()">Fechar</button>
+        <button class="btn g" onclick="salvarEConectarGoogle()">🔄 Sincronizar agora</button>
       </div>
     </div>
   </div>
@@ -301,9 +323,9 @@
    NA HORA CEILÂNDIA — JOGO DO SALÃO (pixel art, vista de cima)
    Resolução lógica 480x320 (30x20 tiles de 16px), ampliada via CSS.
    ===================================================================== */
-const T = 16, W = 30, H = 32;
+const T = 16, W = 30, H = 32, K = 3;          // K = ampliação interna do canvas (desenho vetorial nítido em qualquer zoom)
 const cv = document.getElementById('game');
-cv.width = W * T; cv.height = H * T;
+cv.width = W * T * K; cv.height = H * T * K;
 const mainCtx = cv.getContext('2d');
 const bg = document.createElement('canvas'); bg.width = cv.width; bg.height = cv.height;
 const bgCtx = bg.getContext('2d');
@@ -314,35 +336,32 @@ const $ = id => document.getElementById(id);
 const COR = { emissor:'#2fae6a', telefone:'#1fb5d4', auto:'#8a5bd6', orient:'#3b6fe0', painel:'#f08a24', pesq:'#e0508a', pausa:'#6b7280' };
 const OUT = '#2b2233';
 
-/* ---------- primitivas ---------- */
-function R(x, y, w, h, c){ ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), w, h); }
-
-/* ---------- fonte bitmap 3x5 ---------- */
-const FONT = {
- A:'010101111101101',B:'110101110101110',C:'011100100100011',D:'110101101101110',E:'111100110100111',
- F:'111100110100100',G:'011100101101011',H:'101101111101101',I:'111010010010111',J:'001001001101010',
- K:'101101110101101',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'010101101101010',
- P:'110101110100100',Q:'010101101111011',R:'110101110101101',S:'011100010001110',T:'111010010010010',
- U:'101101101101111',V:'101101101101010',W:'101101111111101',X:'101101010101101',Y:'101101010010010',
- Z:'111001010100111','0':'111101101101111','1':'010110010010111','2':'110001010100111','3':'110001110001110',
- '4':'101101111001001','5':'111100110001110','6':'011100111101111','7':'111001010010010','8':'111101111101111',
- '9':'111101111001110',':':'000010000010000','-':'000000111000000','.':'000000000000010','!':'010010010000010',
- '?':'110001010000010','/':'001001010100100','+':'000010111010000','~':'000101010101000'
-};
+/* ---------- primitivas vetoriais (unidades lógicas; o canvas é ampliado K× para ficar nítido) ---------- */
+const FONTE = "'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif";
+function R(x, y, w, h, c){ ctx.fillStyle = c; ctx.fillRect(x, y, w, h); }
+function rr(x, y, w, h, r, fill, stroke, lw){
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h);
+  if(fill){ ctx.fillStyle = fill; ctx.fill(); }
+  if(stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1; ctx.stroke(); }
+}
+function tx(s, x, y, size, color, weight, align){
+  ctx.font = `${weight || 600} ${size}px ${FONTE}`; ctx.fillStyle = color;
+  ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y);
+}
+function medir(s, size, weight){ ctx.font = `${weight || 600} ${size}px ${FONTE}`; return ctx.measureText(s).width; }
+/* etiqueta arredondada centrada em (cx, cy); devolve o retângulo ocupado */
+function pill(cx, cy, s, bg, fg, opt){
+  opt = opt || {};
+  const size = opt.size || 5.6, w = medir(s, size, 700) + (opt.pad || 6), h = size + 4.4, x = cx - w / 2, y = cy - h / 2;
+  if(opt.sombra){
+    ctx.save(); ctx.shadowColor = 'rgba(15,23,42,.30)'; ctx.shadowBlur = 2.5 * K; ctx.shadowOffsetY = .8 * K;
+    rr(x, y, w, h, h / 2, bg); ctx.restore();
+  } else rr(x, y, w, h, h / 2, bg, opt.borda, opt.lw || .8);
+  tx(s, cx, cy + .2, size, fg, 700);
+  return { x, y, w, h };
+}
 const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
-const textW = s => norm(s).length * 4 - 1;
-function txt(s, x, y, col){
-  s = norm(s); let cx = Math.round(x); y = Math.round(y);
-  for(const ch of s){
-    const g = FONT[ch];
-    if(g) for(let i = 0; i < 15; i++) if(g[i] === '1') R(cx + (i % 3), y + ((i / 3) | 0), 1, 1, col);
-    cx += 4;
-  }
-}
-function plate(cx, y, s, bg, fg = '#fff'){
-  const w = textW(s) + 6, x = Math.round(cx - w / 2);
-  R(x - 1, y - 1, w + 2, 9, '#1b1626'); R(x, y, w, 7, bg); R(x, y, w, 1, 'rgba(255,255,255,.35)'); txt(s, x + 3, y + 1, fg);
-}
 
 /* ---------- mapa de colisão ---------- */
 const bloq = Array.from({length:H}, () => Array(W).fill(false));
@@ -538,177 +557,178 @@ function mapPosto(h){
 }
 
 /* =====================================================================
-   CENÁRIO ESTÁTICO (desenhado uma vez)
+   CENÁRIO ESTÁTICO — planta baixa vetorial (desenhada uma vez)
    ===================================================================== */
 const SEATS = [];
+let OBST = [], TAG_RECTS = [];          // retângulos que as etiquetas de nome devem evitar
+let senhaAtual = 42, senhaTempo = 0;
+
+const ZONAS = [
+  { nome:'AUTOATENDIMENTO',  cor:COR.auto,     bg:'#f1ebfc', x:1,  y:2,  w:8,  h:10, tit:'tl' },
+  { nome:'RECEPÇÃO',         cor:COR.emissor,  bg:'#e6f6ed', x:10, y:2,  w:19, h:7,  tit:'tl' },
+  { nome:'TELEFONES',        cor:COR.telefone, bg:'#dcf3f9', x:23, y:2,  w:6,  h:4,  tit:'br' },
+  { nome:'ENTRADA',          cor:'#2563eb',    bg:'#e2ebfd', x:20, y:9,  w:9,  h:4,  tit:'tl' },
+  { nome:'SALÃO DE ESPERA',  cor:COR.painel,   bg:'#fff3e3', x:10, y:12, w:10, h:13, tit:'bl' },
+  { nome:'SAÍDA / PESQUISA', cor:COR.pesq,     bg:'#fde9f1', x:21, y:22, w:8,  h:9,  tit:'tl' },
+  { nome:'COPA / PAUSA',     cor:'#64748b',    bg:'#eaeef3', x:1,  y:23, w:8,  h:8,  tit:'tl' }
+];
+
+function balcao(x, y, w, h){
+  ctx.save(); ctx.shadowColor = 'rgba(15,23,42,.25)'; ctx.shadowBlur = 4 * K; ctx.shadowOffsetY = 1.6 * K;
+  rr(x, y, w, h, 2.5, '#ffffff'); ctx.restore();
+  rr(x, y, w, h, 2.5, null, '#94a3b8', .8); rr(x + 1.5, y + 1.5, w - 3, 3, 1.2, 'rgba(148,163,184,.28)');
+}
+function planta(tx_, ty_){
+  const px = tx_ * T + 8, py = ty_ * T;
+  rr(px - 4, py + 9.5, 8, 5.5, 1.6, '#c2410c'); rr(px - 4.6, py + 8.6, 9.2, 2, 1, '#ea580c');
+  ctx.fillStyle = '#15803d'; ctx.beginPath(); ctx.arc(px - 3, py + 6, 3.6, 0, 6.3); ctx.fill();
+  ctx.fillStyle = '#16a34a'; ctx.beginPath(); ctx.arc(px + 3, py + 6.5, 3.4, 0, 6.3); ctx.fill();
+  ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(px, py + 3.6, 3.8, 0, 6.3); ctx.fill();
+}
+function tituloZona(z){
+  const w = medir(z.nome, 6.8, 800) + 10, h = 11;
+  let x, y;
+  if(z.tit === 'tl'){ x = z.x * T + 5; y = z.y * T + 6; }
+  else if(z.tit === 'bl'){ x = z.x * T + 5; y = (z.y + z.h) * T - 11; }
+  else { x = (z.x + z.w) * T - 5 - w; y = (z.y + z.h) * T - 11; }
+  rr(x, y, w, h, h / 2, z.cor);
+  tx(z.nome, x + w / 2, y + h / 2 + .2, 6.8, '#fff', 800);
+  OBST.push({ x: x - 1, y: y - 1, w: w + 2, h: h + 2 });
+}
+
 function desenharCenario(){
-  ctx = bgCtx;
-  SEATS.length = 0;
-  const ativo = k => !estado.postosAtivos || estado.postosAtivos.has(k);
-  R(0, 0, cv.width, cv.height, '#2a1a0e');
+  ctx = bgCtx; bgCtx.setTransform(K, 0, 0, K, 0, 0);
+  SEATS.length = 0; OBST = [];
+  const CW = W * T, CH = H * T;
 
-  // ----- piso -----
-  const pedra = (tx, ty) => {
-    const px = tx * T, py = ty * T;
-    R(px, py, T, T, (tx + ty) % 2 ? '#cfd4ea' : '#bfc6e2');
-    R(px, py, T, 1, '#a9b1d3'); R(px, py, 1, T, '#a9b1d3'); R(px + 2, py + 2, 5, 1, '#e8ebf8');
-    if((tx * 7 + ty * 13) % 5 === 0) R(px + 9, py + 9, 1, 1, '#a0a8cb');
-  };
-  const madeira = (tx, ty) => {
-    const px = tx * T, py = ty * T;
-    R(px, py, T, T, (tx + ty) % 2 ? '#dba96b' : '#d19b5e');
-    for(let k = 0; k < 4; k++){ R(px, py + k * 4 + 3, T, 1, '#a9703f'); R(px + (((tx + k) % 2) ? 4 : 11), py + k * 4, 1, 3, '#a9703f'); }
-  };
-  for(let ty = 2; ty <= 30; ty++) for(let tx = 1; tx <= 28; tx++){
-    const wood = (tx >= 10 && tx <= 28 && ty <= 7) || (tx <= 8 && ty >= 24 && ty <= 30);
-    wood ? madeira(tx, ty) : pedra(tx, ty);
-  }
+  R(0, 0, CW, CH, '#cbd5e1');
+  R(T, 2 * T, (W - 2) * T, (H - 3) * T, '#f5f7fb');          // piso
+  ctx.strokeStyle = '#e6eaf2'; ctx.lineWidth = .4; ctx.beginPath();
+  for(let x = 2; x < W - 1; x++){ ctx.moveTo(x * T, 2 * T); ctx.lineTo(x * T, (H - 1) * T); }
+  for(let y = 3; y < H - 1; y++){ ctx.moveTo(T, y * T); ctx.lineTo((W - 1) * T, y * T); }
+  ctx.stroke();
 
-  // ----- tapetes -----
-  const tapete = (x0, y0, w, h, c1, c2, c3) => {
-    R(x0 * T, y0 * T, w * T, h * T, c1);
-    R(x0 * T, y0 * T, w * T, 2, c2); R(x0 * T, (y0 + h) * T - 2, w * T, 2, c2);
-    R(x0 * T, y0 * T, 2, h * T, c2); R((x0 + w) * T - 2, y0 * T, 2, h * T, c2);
-    for(let i = 4; i < w * T - 4; i += 8) for(let j = 4; j < h * T - 4; j += 8) R(x0 * T + i, y0 * T + j, 2, 2, c3);
-  };
-  tapete(1, 2, 8, 10, '#8a5bd6', '#5e3a9c', '#a784e8');    // autoatendimento (toda a área esquerda superior)
-  tapete(20, 9, 9, 4, '#4a73dc', '#2c4aa0', '#7a9bf0');    // hall de entrada (porta lateral)
-  tapete(21, 22, 8, 9, '#3fae72', '#237a4c', '#6fd09a');   // saída
-
-  // ----- paredes externas -----
-  R(0, 0, cv.width, T, '#3a2314');
-  R(0, T, cv.width, T, '#7a4b2a');
-  for(let x = 0; x < cv.width; x += 8) R(x, T, 1, T, '#6a3f22');
-  R(0, 2 * T, cv.width, 2, '#2a1a0e');
-  R(0, 32, T, cv.height - 32, '#4d2c15'); R(T - 2, 32, 2, cv.height - 32, '#2a1a0e');
-  R(29 * T, 32, T, cv.height - 32, '#4d2c15'); R(29 * T, 32, 2, cv.height - 32, '#2a1a0e');
-  R(0, 31 * T, cv.width, T, '#4d2c15'); R(0, 31 * T, cv.width, 2, '#2a1a0e');
-  // porta de entrada (direita, no hall)
-  R(29 * T, 9 * T, T, 2 * T, '#d8ecff'); R(29 * T, 9 * T - 2, T, 2, '#1b1008'); R(29 * T, 11 * T, T, 2, '#1b1008');
-  R(28 * T + 8, 9 * T + 2, 7, 28, '#a81f2b'); R(28 * T + 8, 9 * T + 2, 1, 28, '#d0505a');
-  // porta de saída (direita, na sala de saída)
-  R(29 * T, 26 * T, T, 2 * T, '#d8ecff'); R(29 * T, 26 * T - 2, T, 2, '#1b1008'); R(29 * T, 28 * T, T, 2, '#1b1008');
-  R(28 * T + 8, 26 * T + 2, 7, 28, '#1f9d5d'); R(28 * T + 8, 26 * T + 2, 1, 28, '#6fe0a0');
-
-  // ----- telefones: bancada atrás da recepção (canto superior direito) -----
-  R(23 * T, 4 * T, 6 * T, 18, '#c3ccdd');
-  R(23 * T, 4 * T, 6 * T, 9, '#f4f6fa'); R(23 * T, 4 * T, 6 * T, 1, '#ffffff');
-  R(23 * T, 4 * T + 9, 6 * T, 1, '#8a97ad'); R(23 * T, 4 * T + 17, 6 * T, 1, '#7d8aa0');
-  R(23 * T, 4 * T, 1, 18, '#8a97ad'); R(29 * T - 1, 4 * T, 1, 18, '#8a97ad');
-  [['TEL 1','TELEFONE 1',25],['TEL 2','TELEFONE 2',27]].forEach(([lbl, pk, x]) => {
-    if(ativo(pk)){ const cx = x * T + 8, w = textW(lbl); R(cx - w / 2 - 2, 4 * T + 11, w + 4, 7, COR.telefone); txt(lbl, cx - w / 2, 4 * T + 12, '#fff'); }
+  // ----- zonas -----
+  ZONAS.forEach(z => {
+    rr(z.x * T + 1, z.y * T + 1, z.w * T - 2, z.h * T - 2, 5, z.bg);
+    ctx.save(); ctx.setLineDash([3, 2]); ctx.globalAlpha = .7;
+    rr(z.x * T + 1, z.y * T + 1, z.w * T - 2, z.h * T - 2, 5, null, z.cor, .9); ctx.restore();
   });
-  plate(26 * T, 2 * T + 3, 'TELEFONES', COR.telefone);
 
-  // ----- recepção: balcão dos emissores (na frente dos telefones) -----
-  R(11 * T, 7 * T, 16 * T, 20, '#c3ccdd');
-  R(11 * T, 7 * T, 16 * T, 10, '#f4f6fa'); R(11 * T, 7 * T, 16 * T, 1, '#ffffff');
-  R(11 * T, 7 * T + 10, 16 * T, 1, '#8a97ad'); R(11 * T, 7 * T + 19, 16 * T, 1, '#7d8aa0');
-  R(11 * T, 7 * T, 1, 20, '#8a97ad'); R(27 * T - 1, 7 * T, 1, 20, '#8a97ad');
-  [240, 304, 368].forEach(x => { R(x, 7 * T, 2, 14, '#9fd8f2'); R(x, 7 * T, 1, 14, '#d8f2ff'); });
-  [['E1','EMISSOR 1',12],['1.1','EMISSOR 1.1',13],['E2','EMISSOR 2',16],['2.1','EMISSOR 2.1',17],['E3','EMISSOR 3',20],['3.1','EMISSOR 3.1',21],['E4','EMISSOR 4',24],['4.1','EMISSOR 4.1',25]].forEach(([lbl, pk, x]) => {
-    if(ativo(pk)){ const cx = x * T + 8, w = textW(lbl); R(cx - w / 2 - 2, 7 * T + 12, w + 4, 7, COR.emissor); txt(lbl, cx - w / 2, 7 * T + 13, '#fff'); }
-  });
-  plate(18.5 * T, 5 * T + 3, 'RECEPCAO', COR.emissor);
+  // ----- paredes -----
+  R(0, 0, CW, 2 * T, '#1e293b'); R(0, 2 * T - 2, CW, 2, '#0f172a');
+  tx('NA HORA CEILÂNDIA', 22, 12, 9.6, '#ffffff', 800, 'left');
+  tx('MAPA DOS POSTOS DE ATENDIMENTO', 22, 24, 5.4, '#94a3b8', 700, 'left');
+  R(0, 2 * T, T, (H - 2) * T, '#334155'); R(T - 2, 2 * T, 2, (H - 3) * T, 'rgba(15,23,42,.35)');
+  R(0, (H - 1) * T, CW, T, '#334155'); R(T, (H - 1) * T, (W - 2) * T, 2, 'rgba(15,23,42,.35)');
+  R(29 * T, 2 * T, T, 7 * T, '#334155'); R(29 * T, 11 * T, T, 15 * T, '#334155'); R(29 * T, 28 * T, T, 3 * T, '#334155');
+  R(29 * T, 9 * T, 2, 2 * T, 'rgba(15,23,42,.35)');
+  // portas
+  R(29 * T, 9 * T, T, 2 * T, '#dbeafe'); R(29 * T, 9 * T - 1.5, T, 1.5, '#1e3a8a'); R(29 * T, 11 * T, T, 1.5, '#1e3a8a');
+  ctx.fillStyle = '#2563eb'; ctx.beginPath(); ctx.moveTo(476, 153); ctx.lineTo(476, 167); ctx.lineTo(467, 160); ctx.closePath(); ctx.fill();
+  R(29 * T, 26 * T, T, 2 * T, '#dcfce7'); R(29 * T, 26 * T - 1.5, T, 1.5, '#14532d'); R(29 * T, 28 * T, T, 1.5, '#14532d');
+  ctx.fillStyle = '#16a34a'; ctx.beginPath(); ctx.moveTo(468, 425); ctx.lineTo(468, 439); ctx.lineTo(477, 432); ctx.closePath(); ctx.fill();
+  // TV de senhas (texto dinâmico na camada frontal)
+  rr(192, 5, 112, 22, 3, '#020617', '#475569', .8);
 
-  // TV de senhas (no centro da parede superior)
-  R(12 * T, 1 * T, 72, 14, '#101420'); R(12 * T, 1 * T, 72, 1, '#3a4a7a');
+  // ----- balcões -----
+  balcao(23 * T, 4 * T, 6 * T, 19);                           // telefones (atrás da recepção)
+  balcao(11 * T, 7 * T, 16 * T, 19);                          // recepção (balcões dos emissores)
+  [240, 304, 368].forEach(x => rr(x - .5, 103, 1, 26, .5, 'rgba(56,189,248,.65)'));
+  balcao(2 * T, 10 * T, 7 * T, 16);                           // autoatendimento
 
-  // ----- autoatendimento: bancada -----
-  R(2 * T, 10 * T, 7 * T, 16, '#c3ccdd'); R(2 * T, 10 * T, 7 * T, 9, '#f4f6fa'); R(2 * T, 10 * T + 9, 7 * T, 1, '#8a97ad'); R(2 * T, 10 * T + 15, 7 * T, 1, '#7d8aa0');
-  if(ativo('AUTO SENTADO')) plate(3 * T + 8, 11 * T + 3, 'AUTO SENT', COR.auto);
-  if(ativo('AUTO 1') || ativo('AUTO')) plate(6 * T + 8, 11 * T + 3, 'AUTO 1', COR.auto);
-  if(ativo('AUTO 2')) plate(8 * T + 8, 11 * T + 3, 'AUTO 2', COR.auto);
-
-  // ----- bancos do salão (3 faixas de painéis) -----
+  // ----- bancos do salão (3 faixas) -----
   [13, 17, 21].forEach(y0 => { for(const y of [y0 + 2, y0 + 3]) for(let x = 13; x <= 15; x++){
     const px = x * T, py = y * T;
-    R(px + 1, py + 8, 14, 7, '#2c5fc4'); R(px + 1, py + 8, 14, 1, '#6a95ec'); R(px + 1, py + 14, 14, 1, '#1d3f88');
-    R(px + 1, py + 2, 14, 6, '#1f4aa6'); R(px + 1, py + 2, 14, 1, '#4c78d6'); R(px, py + 2, 1, 13, '#14295c'); R(px + 15, py + 2, 1, 13, '#14295c');
+    rr(px + 2, py + 7, 12, 7.5, 2.5, '#5b7fd1'); rr(px + 2, py + 3, 12, 5, 2.2, '#3f63b8');
+    rr(px + 2, py + 7, 12, 1, .5, 'rgba(255,255,255,.35)');
     SEATS.push({ x, y, ocupado: false });
   } });
 
-  // ----- decoração -----
-  const planta = (tx, ty) => {
-    const px = tx * T, py = ty * T;
-    R(px + 4, py + 9, 8, 6, '#b5651d'); R(px + 4, py + 9, 8, 1, '#d98a3d'); R(px + 3, py + 8, 10, 2, '#c97a2b');
-    R(px + 3, py + 2, 4, 7, '#2e9b4f'); R(px + 9, py + 3, 4, 6, '#34ad57'); R(px + 6, py, 4, 9, '#3dbd62'); R(px + 7, py + 2, 1, 5, '#7be09a');
-  };
+  // ----- decoração e utilidades -----
   [[1,13],[8,13],[1,22],[8,22],[21,14],[28,14],[21,20],[28,20],[9,2]].forEach(([x, y]) => planta(x, y));
-  // máquina de bebidas (salão, lado esquerdo)
-  R(4 * T + 1, 14 * T, 14, 16, '#c92f3a'); R(4 * T + 2, 14 * T + 2, 8, 8, '#7ad1ff'); R(4 * T + 2, 14 * T + 2, 8, 2, '#c4ecff');
-  R(4 * T + 11, 14 * T + 3, 3, 2, '#ffd75e'); R(4 * T + 11, 14 * T + 7, 3, 2, '#7dffb0'); R(4 * T + 3, 14 * T + 12, 8, 2, '#4a0e14');
+  // máquina de bebidas
+  rr(4 * T + 1, 14 * T, 14, 17, 2, '#dc2626'); rr(4 * T + 2.5, 14 * T + 2, 8, 8, 1, '#7dd3fc'); rr(4 * T + 11, 14 * T + 3, 2.4, 2, .5, '#fde047'); rr(4 * T + 11, 14 * T + 7, 2.4, 2, .5, '#4ade80'); rr(4 * T + 3, 14 * T + 12.5, 8, 2.4, .6, '#7f1d1d');
+  tx('BEBIDAS', 4 * T + 8, 14 * T + 22, 5.4, '#64748b', 700);
   // copa: cafeteira + mesa
-  R(7 * T + 1, 24 * T + 2, 14, 13, '#3a3f4d'); R(7 * T + 3, 24 * T + 4, 6, 4, '#101420'); R(7 * T + 10, 24 * T + 4, 3, 3, '#ff5b5b'); R(7 * T + 4, 24 * T + 10, 6, 3, '#e9eef7');
-  R(3 * T, 27 * T + 2, 32, 28, '#8a5a31'); R(3 * T + 1, 27 * T + 3, 30, 26, '#b27a45'); R(3 * T + 1, 27 * T + 3, 30, 2, '#d6a06a');
-  R(3 * T + 8, 27 * T + 10, 6, 5, '#fff'); R(3 * T + 18, 27 * T + 14, 6, 5, '#fff'); R(3 * T + 9, 27 * T + 11, 4, 1, '#7a4a21'); R(3 * T + 19, 27 * T + 15, 4, 1, '#7a4a21');
+  rr(7 * T + 1, 24 * T + 2, 14, 13, 2.2, '#334155'); rr(7 * T + 3, 24 * T + 4, 6, 4, 1, '#0f172a'); ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(7 * T + 11.5, 24 * T + 5.8, 1.4, 0, 6.3); ctx.fill(); rr(7 * T + 4, 24 * T + 10, 6, 3, 1, '#f1f5f9');
+  tx('CAFÉ', 7 * T + 8, 24 * T + 19.5, 5.4, '#64748b', 700);
+  rr(3 * T, 27 * T + 2, 32, 28, 6, '#d6a56e', '#b07c45', .9); rr(3 * T + 2, 27 * T + 4, 28, 3, 1.5, 'rgba(255,255,255,.25)');
+  ctx.fillStyle = '#fff'; [[9, 14], [23, 14]].forEach(([dx, dy]) => { ctx.beginPath(); ctx.arc(3 * T + dx, 27 * T + dy, 2.6, 0, 6.3); ctx.fill(); }); tx('MESA', 3 * T + 16, 27 * T + 29, 4.6, '#7a4a21', 800);
 
-  // ----- placas dos setores e postos -----
-  plate(4.5 * T, 2 * T + 3, 'AUTOATENDIMENTO', COR.auto);
-  plate(24.5 * T, 9 * T + 3, 'ENTRADA', '#a81f2b');
-  plate(15 * T, 12 * T + 4, 'SALAO DE ESPERA', '#3a4a7a');
-  plate(4.5 * T, 24 * T + 3, 'COPA / PAUSA', COR.pausa);
-  plate(25 * T, 22 * T + 3, 'SAIDA', COR.pesq);
-  if(ativo('ORIENTADOR')) plate(POSTOS['ORIENTADOR'].x * T + 8, (POSTOS['ORIENTADOR'].y + 1) * T + 4, 'ORIENTADOR', COR.orient);
-  if(ativo('ORIENTADOR')) plate(POSTOS['ORIENTADOR'].x * T + 8, (POSTOS['ORIENTADOR'].y + 1) * T + 4, 'ORIENTADOR', COR.orient);
-  if(ativo('PESQUISA')) plate(POSTOS['PESQUISA'].x * T + 8, 24 * T + 4, 'PESQ 1', COR.pesq);
-  if(ativo('PESQUISA 2')) plate(POSTOS['PESQUISA 2'].x * T + 8, 27 * T + 4, 'PESQ 2', COR.pesq);
-  ['PAINEL 1','PAINEL 2','PAINEL 2.1','PAINEL 3','PAINEL 3.1','PAINEL 4','PAINEL 5'].forEach(k => {
-    if(POSTOS[k] && ativo(k)) plate(POSTOS[k].x * T + 8, (POSTOS[k].y + 2) * T + 4, k.replace('PAINEL ', 'P.'), COR.painel);
-  });
+  // ----- títulos das zonas (por cima de tudo) -----
+  ZONAS.forEach(tituloZona);
+  ctx = mainCtx;
 }
 
 /* =====================================================================
-   CAMADA FRONTAL (itens que ficam na frente das pessoas + animações)
+   CAMADA FRONTAL (itens que ficam na frente das pessoas + marcadores)
    ===================================================================== */
-let senhaAtual = 42, senhaTempo = 0;
-function monitor(cx, y, tela){
-  R(cx - 6, y, 12, 10, '#8c95a8'); R(cx - 5, y + 1, 10, 7, '#e3e7ef'); R(cx - 4, y + 2, 8, 5, tela); R(cx - 4, y + 2, 8, 1, 'rgba(255,255,255,.4)');
-  R(cx - 2, y + 10, 4, 2, '#aab3c5');
+function monitor(cx, y, tela, w = 10){
+  rr(cx - w / 2, y, w, 6.6, 1.3, '#1e293b'); rr(cx - w / 2 + .9, y + .9, w - 1.8, 4.6, .8, tela); rr(cx - 1.2, y + 6.6, 2.4, 1.6, .4, '#475569');
 }
 function frontLayer(t){
-  ctx = mainCtx;
+  ctx = mainCtx; TAG_RECTS = [];
   const ativo = k => !estado.postosAtivos || estado.postosAtivos.has(k);
-  const tela = Math.floor(t * 1.5) % 2 ? '#59b8ff' : '#4aa6ec';
+  const ocup = {}; Object.values(estado.pessoas).forEach(p => { if(p.presente && p.posto) ocup[p.posto] = p.nome; });
+  const tela = Math.floor(t * 1.5) % 2 ? '#60a5fa' : '#38bdf8';
+
+  // monitores dos emissores (na borda do balcão)
   ['EMISSOR 1','EMISSOR 1.1','EMISSOR 2','EMISSOR 2.1','EMISSOR 3','EMISSOR 3.1','EMISSOR 4','EMISSOR 4.1'].forEach(k => {
-    if(POSTOS[k] && ativo(k)){
-      const cx = POSTOS[k].x * T + 8;
-      monitor(cx, 107, tela);
-      R(cx - 5, 120, 10, 2, '#e8ebf2'); R(cx - 5, 120, 10, 1, '#fff');
-    }
+    if(POSTOS[k] && ativo(k)) monitor(POSTOS[k].x * T + 8, 106, tela, 10);
   });
+  // telefones: monitor + aparelho com luz piscando
   ['TELEFONE 1','TELEFONE 2'].forEach((k, i) => {
     if(POSTOS[k] && ativo(k)){
       const cx = POSTOS[k].x * T + 8;
-      monitor(cx - 3, 59, tela);
-      R(cx + 4, 63, 9, 7, '#2b2f3a'); R(cx + 5, 64, 3, 1, '#555d70'); R(cx + 5, 66, 3, 1, '#555d70');
-      R(cx + 10, 64, 2, 2, (Math.floor(t * 2 + i) % 2) ? '#ff5b5b' : '#5a1a1a');
-      R(cx - 5, 72, 10, 2, '#e8ebf2'); R(cx - 5, 72, 10, 1, '#fff');
+      monitor(cx - 4, 57.5, tela, 10);
+      rr(cx + 4.5, 61, 7.5, 5.5, 1.2, '#1e293b'); rr(cx + 5.5, 62, 3, 1, .4, '#64748b'); rr(cx + 5.5, 64, 3, 1, .4, '#64748b');
+      ctx.fillStyle = (Math.floor(t * 2 + i) % 2) ? '#ef4444' : '#7f1d1d'; ctx.beginPath(); ctx.arc(cx + 10.5, 63, 1, 0, 6.3); ctx.fill();
     }
   });
-  // PC do autoatendimento sentado
-  if(ativo('AUTO SENTADO')){
-    monitor(POSTOS['AUTO SENTADO'].x * T + 8, 155, tela);
-  }
-  // Totens touch do autoatendimento 1 e 2 (ao lado do atendente, sobre a bancada)
-  [['AUTO 1', POSTOS['AUTO 1'].x], ['AUTO 2', POSTOS['AUTO 2'].x]].forEach(([k, tx]) => {
+  // autoatendimento: PC sentado e totens touch
+  if(ativo('AUTO SENTADO')) monitor(POSTOS['AUTO SENTADO'].x * T + 8, 151.5, tela, 11);
+  [['AUTO 1', POSTOS['AUTO 1'].x], ['AUTO 2', POSTOS['AUTO 2'].x]].forEach(([k, tx_]) => {
     if(ativo(k) || (k === 'AUTO 1' && estado.postosAtivos && estado.postosAtivos.has('AUTO'))){
-      const cx = tx * T + 8 + (k === 'AUTO 1' ? 10 : -10);
-      R(cx - 6, 142, 12, 18, '#243a6b'); R(cx - 6, 142, 12, 1, '#5b7fc7'); R(cx - 5, 144, 10, 9, '#4fd0ff'); R(cx - 5, 144, 10, 2, '#b4efff');
-      R(cx - 3, 155, 6, 2, '#0f1a38');
+      const cx = tx_ * T + 8 + (k === 'AUTO 1' ? 11 : -11);
+      rr(cx - 5, 139, 10, 18, 2, '#1e3a8a'); rr(cx - 4, 141, 8, 9.5, 1, '#38bdf8'); rr(cx - 4, 141, 8, 2, 1, '#bae6fd'); rr(cx - 2.5, 152, 5, 2, .6, '#0f172a');
     }
   });
-  // Totens de painel (apenas os painéis ativos), logo abaixo de cada atendente
-  ['PAINEL 1','PAINEL 2','PAINEL 2.1','PAINEL 3','PAINEL 3.1','PAINEL 4','PAINEL 5'].forEach((k, i) => {
+  // totens de painel (senha) abaixo de cada atendente
+  const PAINEIS = ['PAINEL 1','PAINEL 2','PAINEL 2.1','PAINEL 3','PAINEL 3.1','PAINEL 4','PAINEL 5'];
+  PAINEIS.forEach((k, i) => {
     if(POSTOS[k] && ativo(k)){
-      const cx = POSTOS[k].x * T + 8, ty = (POSTOS[k].y + 1) * T + 1;
-      R(cx - 7, ty, 14, 15, '#2a3550'); R(cx - 7, ty, 14, 1, '#6b7fb0'); R(cx - 6, ty + 2, 12, 7, '#0b1220');
-      txt(String(senhaAtual + i * 2).padStart(3, '0'), cx - 5, ty + 4, '#ff5a4a');
-      R(cx - 3, ty + 11, 6, 2, '#141b2e');
+      const cx = POSTOS[k].x * T + 8, ty = (POSTOS[k].y + 1) * T + 1.5;
+      rr(cx - 6, ty, 12, 13, 2, '#1e293b'); rr(cx - 5, ty + 1.4, 10, 6, 1, '#020617');
+      tx(String(senhaAtual + i * 2).padStart(3, '0'), cx, ty + 4.6, 4.8, '#ef4444', 800); rr(cx - 2.5, ty + 9.4, 5, 2, .6, '#334155');
     }
   });
-  // TV de senhas (no centro da parede superior)
-  txt('SENHA A' + String(senhaAtual).padStart(3, '0'), 12 * T + 6, 21, (Math.floor(t * 2) % 2) ? '#ffd75e' : '#ffb347');
+  // TV de senhas
+  tx('SENHA ATUAL', 248, 10.5, 4.2, '#94a3b8', 700);
+  tx('A' + String(senhaAtual).padStart(3, '0'), 248, 20, 9.5, (Math.floor(t * 2) % 2) ? '#fde047' : '#fb923c', 800);
+
+  // marcadores de posto: preenchido = ocupado, vazado = vago
+  const sel = estado.sel;
+  function marcador(keys, label, cx, cy){
+    if(!keys.some(ativo)) return;
+    const k0 = keys.find(ativo) || keys[0], cor = POSTOS[k0].cor;
+    const nome = keys.map(k => ocup[k]).find(Boolean);
+    const base = { size: 6.3, pad: 4.6 };
+    const r = nome ? pill(cx, cy, label, cor, '#fff', Object.assign({ sombra: true }, base))
+                   : pill(cx, cy, label, '#ffffff', cor, Object.assign({ borda: cor, lw: .9 }, base));
+    if(nome && nome === sel) rr(r.x - 1.3, r.y - 1.3, r.w + 2.6, r.h + 2.6, r.h / 2 + 1.3, null, '#facc15', 1.6);
+    TAG_RECTS.push(r);
+  }
+  [['E1','EMISSOR 1',12],['1.1','EMISSOR 1.1',13],['E2','EMISSOR 2',16],['2.1','EMISSOR 2.1',17],['E3','EMISSOR 3',20],['3.1','EMISSOR 3.1',21],['E4','EMISSOR 4',24],['4.1','EMISSOR 4.1',25]]
+    .forEach(([l, k, x]) => marcador([k], l, x * T + 8, 121.5));
+  [['TEL 1','TELEFONE 1',25],['TEL 2','TELEFONE 2',27]].forEach(([l, k, x]) => marcador([k], l, x * T + 8, 74));
+  marcador(['AUTO SENTADO'], 'PC', 3 * T + 8, 168);
+  marcador(['AUTO 1', 'AUTO'], 'AUTO 1', 6 * T + 8, 168);
+  marcador(['AUTO 2'], 'AUTO 2', 8 * T + 8, 168);
+  marcador(['ORIENTADOR'], 'ORIENT.', POSTOS['ORIENTADOR'].x * T + 8, (POSTOS['ORIENTADOR'].y + 1) * T + 9);
+  PAINEIS.forEach(k => { if(POSTOS[k]) marcador([k], k.replace('PAINEL ', 'P'), POSTOS[k].x * T + 8, (POSTOS[k].y + 2) * T + 5); });
+  marcador(['PESQUISA'], 'PESQ 1', POSTOS['PESQUISA'].x * T - 18, POSTOS['PESQUISA'].y * T + 7);
+  marcador(['PESQUISA 2'], 'PESQ 2', POSTOS['PESQUISA 2'].x * T - 18, POSTOS['PESQUISA 2'].y * T + 7);
 }
 
 /* =====================================================================
@@ -726,61 +746,88 @@ function criarLook(seed){
            estilo: (h >> 5) % 4, oculos: (h >> 7) % 3 === 0, calca: (h >> 9) % 2 ? '#2d3550' : '#3d3a45' };
 }
 
+/* Avatar vetorial: camisa na cor do setor (identifica o posto de longe), anel no chão e adereços por função. */
+function elipse(x, y, rx, ry){ ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); }
 function desenharPessoa(p, t){
-  const L = p.look, cx = Math.round(p.x), cy = Math.round(p.y);
-  const andando = p.moving, f = Math.floor(t * 8 + p.seed) % 4, sit = p.sitting;
-  R(cx - 5, cy - 1, 10, 2, 'rgba(0,0,0,.25)');
-  let tb = sit ? cy - 3 : cy - 6;
-  if(!sit && andando && f % 2 === 1) tb -= 1;
-  if(sit){
-    R(cx - 7, cy - 8, 14, 6, '#2d3342'); R(cx - 7, cy - 8, 14, 1, '#555d70'); R(cx - 3, cy - 2, 6, 2, '#1c202b');
-  } else {
-    const a = andando && f === 1 ? 1 : 0, b = andando && f === 3 ? 1 : 0;
-    R(cx - 4, tb, 3, 4 - a, L.calca); R(cx + 1, tb, 3, 4 - b, L.calca);
-    R(cx - 4, tb + 4 - a, 3, 2 + a, '#201a24'); R(cx + 1, tb + 4 - b, 3, 2 + b, '#201a24');
+  const L = p.look, andando = p.moving, sit = p.sitting, dir = p.dir;
+  const cor = p.staff ? (p.cor || COR.pausa) : '#94a3b8';
+  const f = Math.sin(t * 11 + p.seed * 3);
+  const bob = andando ? -Math.abs(f) * 1.3 : 0, base = sit ? 3 : 0;
+  ctx.save(); ctx.translate(p.x, p.y);
+  if(!p.staff){ ctx.scale(.88, .88); ctx.globalAlpha *= .85; }
+
+  // sombra + anel de posição (cor do setor)
+  ctx.fillStyle = 'rgba(15,23,42,.18)'; elipse(0, .5, 6.8, 2.5); ctx.fill();
+  if(p.staff){ ctx.strokeStyle = cor; ctx.lineWidth = 1.3; elipse(0, .3, 7.4, 2.9); ctx.stroke(); }
+
+  const topo = -14 + base + bob;           // topo do tronco
+  // cadeira (quando sentado)
+  if(sit){ rr(-6.5, topo + 1, 13, 10, 3.2, '#475569'); }
+  // pernas
+  if(!sit){
+    const sw = andando ? f * 1.8 : 0;
+    rr(-3.9, -6.5 + bob, 3.2, 6.5 - Math.max(0, sw) - bob, 1.4, L.calca);
+    rr(.7, -6.5 + bob, 3.2, 6.5 - Math.max(0, -sw) - bob, 1.4, L.calca);
+    rr(-4.1, -1.6 - Math.max(0, sw), 3.6, 1.7, .8, '#1e293b'); rr(.5, -1.6 - Math.max(0, -sw), 3.6, 1.7, .8, '#1e293b');
   }
-  // tronco
-  R(cx - 5, tb - 8, 10, 9, OUT); R(cx - 4, tb - 7, 8, 7, L.camisa); R(cx - 4, tb - 2, 8, 2, L.camSomb);
+  // cabelo comprido atrás da cabeça
+  const hy = topo - 4.4;
+  if(L.estilo === 1 && dir !== 'up'){ rr(-5, hy - 1, 10, 9, 3.5, L.cabelo); }
   // braços
-  let a1 = 0, a2 = 0;
-  if(andando){ a1 = f % 2 ? 1 : 0; a2 = f % 2 ? 0 : 1; }
-  if(sit){ const k = Math.floor(t * 6 + p.seed) % 2; a1 = k; a2 = 1 - k; }
-  R(cx - 6, tb - 7 + a1, 2, 5, L.camisa); R(cx - 6, tb - 2 + a1, 2, 2, L.pele);
-  R(cx + 4, tb - 7 + a2, 2, 5, L.camisa); R(cx + 4, tb - 2 + a2, 2, 2, L.pele);
-  // cabeça
-  R(cx - 5, tb - 18, 10, 11, OUT); R(cx - 4, tb - 16, 8, 8, L.pele);
-  const dir = p.dir;
-  if(dir === 'up'){
-    R(cx - 4, tb - 17, 8, 9, L.cabelo);
-  } else {
-    R(cx - 4, tb - 17, 8, 3, L.cabelo);
-    if(dir === 'down'){
-      R(cx - 4, tb - 14, 1, 2, L.cabelo); R(cx + 3, tb - 14, 1, 2, L.cabelo);
-      R(cx - 3, tb - 13, 2, 2, '#1b1626'); R(cx + 1, tb - 13, 2, 2, '#1b1626');
-      R(cx - 4, tb - 11, 1, 1, '#ff9a9a'); R(cx + 3, tb - 11, 1, 1, '#ff9a9a');
-      if(L.oculos){ R(cx - 4, tb - 14, 4, 1, '#111'); R(cx, tb - 14, 4, 1, '#111'); R(cx - 4, tb - 12, 4, 1, '#111'); R(cx, tb - 12, 4, 1, '#111'); }
-      if(L.estilo === 1){ R(cx - 5, tb - 16, 1, 9, L.cabelo); R(cx + 4, tb - 16, 1, 9, L.cabelo); }
-    } else if(dir === 'left'){
-      R(cx, tb - 17, 4, 9, L.cabelo); R(cx - 3, tb - 13, 2, 2, '#1b1626'); if(L.oculos) R(cx - 4, tb - 14, 4, 1, '#111');
-    } else {
-      R(cx - 4, tb - 17, 4, 9, L.cabelo); R(cx + 1, tb - 13, 2, 2, '#1b1626'); if(L.oculos) R(cx, tb - 14, 4, 1, '#111');
-    }
+  const sb = andando ? f * 1.2 : (sit ? Math.sin(t * 6 + p.seed) * .8 : 0);
+  rr(-6.8, topo + 1.4 + sb, 2.5, 6.4, 1.2, cor); rr(4.3, topo + 1.4 - sb, 2.5, 6.4, 1.2, cor);
+  ctx.fillStyle = L.pele; ctx.beginPath(); ctx.arc(-5.5, topo + 8.2 + sb, 1.4, 0, 6.3); ctx.fill(); ctx.beginPath(); ctx.arc(5.5, topo + 8.2 - sb, 1.4, 0, 6.3); ctx.fill();
+  // tronco
+  rr(-5, topo, 10, 9.6, 3.2, cor);
+  ctx.fillStyle = 'rgba(0,0,0,.14)'; ctx.fillRect(-5 + 1, topo + 7, 8, 1.8);
+  if(p.staff && dir !== 'up'){ rr(-3.6, topo + 2.2, 3.4, 4.4, .9, '#fff'); rr(-3, topo + 3, 2.2, .8, .4, cor); }
+  // pescoço + cabeça
+  rr(-1.4, hy + 3.2, 2.8, 2.4, .8, L.pele);
+  ctx.fillStyle = L.pele; ctx.beginPath(); ctx.arc(0, hy, 4.4, 0, 6.3); ctx.fill();
+  // cabelo
+  ctx.fillStyle = L.cabelo;
+  if(dir === 'up'){ ctx.beginPath(); ctx.arc(0, hy, 4.6, 0, 6.3); ctx.fill(); }
+  else { ctx.beginPath(); ctx.arc(0, hy, 4.7, Math.PI * 1.03, Math.PI * 1.97); ctx.closePath(); ctx.fill(); }
+  if(L.estilo === 2){ ctx.beginPath(); ctx.arc(0, hy - 5, 1.9, 0, 6.3); ctx.fill(); }
+  // rosto
+  if(dir === 'down'){
+    ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(-1.7, hy + .5, .62, 0, 6.3); ctx.arc(1.7, hy + .5, .62, 0, 6.3); ctx.fill();
+    ctx.strokeStyle = 'rgba(30,41,59,.7)'; ctx.lineWidth = .5; ctx.beginPath(); ctx.arc(0, hy + 1.9, 1, .2, Math.PI - .2); ctx.stroke();
+    if(L.oculos){ ctx.strokeStyle = '#0f172a'; ctx.lineWidth = .55; ctx.beginPath(); ctx.arc(-1.7, hy + .5, 1.3, 0, 6.3); ctx.moveTo(3, hy + .5); ctx.arc(1.7, hy + .5, 1.3, 0, 6.3); ctx.stroke(); }
+  } else if(dir === 'left' || dir === 'right'){
+    const s = dir === 'left' ? -1 : 1;
+    ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(s * 2.3, hy + .5, .62, 0, 6.3); ctx.fill();
   }
-  if(L.estilo === 2) R(cx - 2, tb - 21, 4, 4, L.cabelo);
-  // crachá + adereços (somente equipe)
+  // adereços por função
   if(p.staff){
-    if(dir === 'down'){ R(cx - 1, tb - 7, 1, 4, p.cor); R(cx - 2, tb - 3, 3, 3, '#fff'); R(cx - 1, tb - 2, 1, 1, p.cor); }
     const tp = p.tipo;
-    if(tp === 'orient' && !sit){ R(cx + 5, tb - 6, 6, 8, '#2b2f3a'); R(cx + 6, tb - 5, 4, 6, '#7ad1ff'); R(cx + 6, tb - 5, 4, 1, '#cdeeff'); }
-    if(tp === 'pesq' && !sit){ R(cx + 5, tb - 6, 6, 8, '#a8743a'); R(cx + 6, tb - 5, 4, 6, '#fff'); R(cx + 7, tb - 3, 2, 1, '#999'); }
-    if(tp === 'telefone'){ R(cx - 5, tb - 16, 1, 5, '#14161d'); R(cx - 6, tb - 13, 2, 3, '#14161d'); R(cx - 5, tb - 10, 4, 1, '#14161d'); }
-    if(tp === 'painel' && !sit){ R(cx + 5, tb - 5, 5, 3, '#ffd75e'); }
+    if(tp === 'telefone'){
+      ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(0, hy - .3, 5.3, Math.PI * .98, Math.PI * 2.02); ctx.stroke();
+      rr(-6.6, hy - .6, 2.2, 3.6, 1, '#0f172a'); ctx.beginPath(); ctx.moveTo(-5.4, hy + 3); ctx.quadraticCurveTo(-4, hy + 5.4, -1.6, hy + 4.6); ctx.stroke();
+    }
+    if(tp === 'orient' && !sit){ rr(5.4, topo + 3.6, 5.4, 7.6, 1.2, '#0f172a'); rr(6.1, topo + 4.4, 4, 6, .6, '#7dd3fc'); }
+    if(tp === 'pesq' && !sit){ rr(5.4, topo + 3.6, 5.6, 7.8, 1, '#b45309'); rr(6.2, topo + 4.8, 4, 5.8, .5, '#fff'); rr(7, topo + 6.4, 2.4, .6, .3, '#94a3b8'); }
+    if(tp === 'painel' && !sit){ rr(5.4, topo + 5, 5, 3.2, .8, '#fbbf24'); }
   }
+  ctx.restore();
 }
 
-function bolha(x, y, s){
-  const w = textW(s) + 4;
-  R(x, y, w, 9, '#1b1626'); R(x + 1, y + 1, w - 2, 7, '#fff'); txt(s, x + 2, y + 2, '#1b1626'); R(x + 2, y + 9, 2, 2, '#1b1626'); R(x + 3, y + 8, 1, 2, '#fff');
+function realceSelecao(p, t){
+  const pulso = (Math.sin(t * 6) + 1) / 2;
+  ctx.save(); ctx.translate(p.x, p.y);
+  const g = ctx.createRadialGradient(0, -8, 2, 0, -8, 24 + pulso * 4);
+  g.addColorStop(0, 'rgba(250,204,21,.55)'); g.addColorStop(1, 'rgba(250,204,21,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, -8, 26 + pulso * 4, 0, 6.3); ctx.fill();
+  ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.8; elipse(0, .3, 10 + pulso * 2.5, 4.2 + pulso); ctx.stroke();
+  ctx.restore();
+}
+
+function bolha(cx, cy, s){
+  const w = medir(s, 6.2, 700) + 8, x = cx - w / 2, y = cy - 5.5;
+  ctx.save(); ctx.shadowColor = 'rgba(15,23,42,.25)'; ctx.shadowBlur = 2 * K; ctx.shadowOffsetY = K * .6;
+  rr(x, y, w, 11, 5, '#fff', '#cbd5e1', .6); ctx.restore();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(cx - 2, y + 10.6); ctx.lineTo(cx + 2, y + 10.6); ctx.lineTo(cx, y + 13.5); ctx.closePath(); ctx.fill();
+  tx(s, cx, cy + .2, 6.2, '#0f172a', 700);
 }
 
 /* =====================================================================
@@ -1035,6 +1082,12 @@ function setFiltroPresenca(f){
 /* =====================================================================
    LISTA LATERAL
    ===================================================================== */
+function po_txt(it){
+  if(it.statusPresenca === 'chegando') return 'Ainda não chegou';
+  if(it.statusPresenca === 'fui') return 'Já foi embora';
+  const po = it.pk ? POSTOS[it.pk] : null;
+  return po ? (po.sit ? 'Sentado' : 'Em pé') : 'Pausa no salão';
+}
 function renderLista(){
   const el = $('lista'); el.innerHTML = '';
   const termo = norm($('busca').value || '').trim();
@@ -1063,51 +1116,57 @@ function renderLista(){
 
   GRUPOS.forEach(([nome, cor]) => {
     const itens = porGrupo[nome]; if(!itens || !itens.length) return;
-    const h = document.createElement('div'); h.className = 'grp'; h.style.background = cor;
-    h.innerHTML = `<span>${nome}</span><span>${itens.length}</span>`;
+    const h = document.createElement('div'); h.className = 'grp'; h.style.setProperty('--gc', cor);
+    h.innerHTML = `<span><i></i>${nome}</span><b>${itens.length}</b>`;
     el.appendChild(h);
 
     itens.forEach(it => {
       const d = document.createElement('div');
       d.className = 'item' + (estado.sel === it.nome ? ' sel' : '') + (it.alerta ? ' alerta' : '');
-      d.style.borderLeftColor = cor;
+      d.style.setProperty('--gc', cor);
 
-      let subInfo = '', prox = '', icone = '';
+      let selo = '', prox = '', icone = '';
       if(it.statusPresenca === 'chegando'){
-        subInfo = `Entra às <b>${it.entrada || '--:--'}</b>`;
-        prox = `Turno não iniciado`;
+        selo = `<span class="selo cinza">Entra às ${it.entrada || '--:--'}</span>`;
+        prox = 'Turno ainda não iniciado';
         icone = '⏳';
       } else if(it.statusPresenca === 'fui'){
-        subInfo = `Expediente encerrado hoje`;
-        prox = `Saiu às <b>${it.saida || '--:--'}</b>`;
+        selo = `<span class="selo cinza">Saiu às ${it.saida || '--:--'}</span>`;
+        prox = 'Expediente encerrado hoje';
         icone = '🏠';
       } else {
         const po = it.pk ? POSTOS[it.pk] : null;
         icone = po ? (po.sit ? '💺' : '🚶') : '☕';
-        subInfo = it.pk || 'Pausa / Descanso no salão';
+        selo = `<span class="selo">${it.pk || 'PAUSA'}</span>`;
         const pNome = it.proxPk ? (POSTOS[it.proxPk] ? it.proxPk : '?') : (estado.idx + 1 < estado.slots.length ? 'Pausa' : 'Fim do expediente');
-        prox = `→ depois: ${pNome}`;
+        prox = `Depois: <b>${pNome}</b>`;
       }
-
-      d.innerHTML = `<div><div class="nm">${it.nome}</div><div class="ps">${subInfo}</div><div class="nx">${prox}</div>${it.alerta ? `<div class="alerta-msg">⚠ ${it.alerta}</div>` : ''}</div><div class="st">${icone}</div>`;
+      const ini = norm(it.nome).charAt(0);
+      d.innerHTML = `<div class="av">${ini}</div><div class="inf"><div class="top"><div class="nm">${it.nome}</div>${selo}</div><div class="nx">${prox}</div>${it.alerta ? `<div class="alerta-msg">⚠ ${it.alerta}</div>` : ''}</div><div class="st" title="${po_txt(it)}">${icone}</div>`;
       d.onclick = () => {
-        if(it.statusPresenca === 'chegando' || it.statusPresenca === 'fui'){
-          estado.sel = estado.sel === it.nome ? null : it.nome;
-        } else {
-          estado.sel = estado.sel === it.nome ? null : it.nome;
-        }
+        estado.sel = estado.sel === it.nome ? null : it.nome;
         renderLista();
+        if(estado.sel) focarNaPessoa(estado.sel);
       };
       el.appendChild(d);
     });
   });
-  if(!el.children.length) el.innerHTML = '<div style="color:#a99bc4;font-size:12px;padding:10px">Ninguém encontrado.</div>';
+  if(!el.children.length) el.innerHTML = '<div class="vazio">Ninguém encontrado.</div>';
+  if(estado.sel){
+    const elSel = el.querySelector('.item.sel');
+    if(elSel) elSel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
 }
 
 /* =====================================================================
    LOOP PRINCIPAL
    ===================================================================== */
 let ultimo = performance.now();
+let mostrarCidadaos = true;
+function alternarCidadaos(){
+  mostrarCidadaos = !mostrarCidadaos;
+  const b = $('btnCid'); if(b) b.classList.toggle('off', !mostrarCidadaos);
+}
 function frame(ts){
   const dt = Math.min(.05, (ts - ultimo) / 1000); ultimo = ts; const t = ts / 1000;
   senhaTempo += dt; if(senhaTempo > 4){ senhaTempo = 0; senhaAtual = (senhaAtual + 1 + Math.floor(Math.random() * 2)) % 999; }
@@ -1117,27 +1176,43 @@ function frame(ts){
   presentes.forEach(p => mover(p, dt));
   npcs.forEach(n => atualizarNPC(n, dt));
 
-  ctx = mainCtx; mainCtx.drawImage(bg, 0, 0);
-  const todos = [...presentes, ...npcs.filter(n => n.ativo)].sort((a, b) => a.y - b.y);
+  mainCtx.setTransform(1, 0, 0, 1, 0, 0); mainCtx.drawImage(bg, 0, 0);
+  mainCtx.setTransform(K, 0, 0, K, 0, 0); ctx = mainCtx;
+  const sel = estado.sel;
+  const todos = [...presentes, ...(mostrarCidadaos ? npcs.filter(n => n.ativo) : [])].sort((a, b) => a.y - b.y);
   todos.forEach(p => {
-    if(p.staff && estado.sel === p.nome){
-      const cx = Math.round(p.x), cy = Math.round(p.y), pulso = Math.floor(t * 4) % 2;
-      for(let i = -9 - pulso; i <= 9 + pulso; i++) { R(cx + i, cy - 3, 1, 1, '#ffd75e'); R(cx + i, cy + 1, 1, 1, '#ffd75e'); }
-      R(cx - 10 - pulso, cy - 2, 1, 3, '#ffd75e'); R(cx + 10 + pulso, cy - 2, 1, 3, '#ffd75e');
-    }
+    const esmaece = sel && (!p.staff || p.nome !== sel);
+    ctx.globalAlpha = esmaece ? .38 : 1;
+    if(p.staff && sel === p.nome) realceSelecao(p, t);
     desenharPessoa(p, t);
+    ctx.globalAlpha = 1;
   });
   frontLayer(t);
 
-  // etiquetas por cima de quem está presente no salão
-  presentes.forEach(p => {
-    const cx = Math.round(p.x), cy = Math.round(p.y), headTop = (p.sitting ? cy - 3 : cy - 6) - 18 - (p.look.estilo === 2 ? 3 : 0);
-    const nome = norm(p.nome.split(' ')[0]).slice(0, 9), alerta = estado.alertas[p.nome];
-    const cor = alerta && Math.floor(t * 2) % 2 ? '#e03131' : p.cor;
-    plate(cx, headTop - 9, (alerta ? '!' : '') + nome, cor);
-    if(estado.sel === p.nome){ const b = Math.floor(t * 4) % 2; R(cx - 2, headTop - 17 - b, 5, 1, '#ffd75e'); R(cx - 1, headTop - 16 - b, 3, 1, '#ffd75e'); R(cx, headTop - 15 - b, 1, 1, '#ffd75e'); }
-    if(p.tipo === 'telefone' && !p.moving && Math.floor(t / 3 + p.seed) % 4 === 0) bolha(cx - 8, headTop - 23, 'ALO?');
-    if(p.tipo === 'painel' && !p.moving && senhaTempo < 2 && Math.floor(senhaAtual + p.seed * 3) % 3 === 0) bolha(cx - 8, headTop - 23, 'A' + String((senhaAtual + 3) % 999).padStart(3, '0'));
+  // etiquetas de nome (evitam sobrepor títulos, marcadores de posto e umas às outras)
+  const ocupados = OBST.concat(TAG_RECTS);
+  const colide = r => ocupados.some(o => !(r.x + r.w < o.x || o.x + o.w < r.x || r.y + r.h < o.y || o.y + o.h < r.y));
+  const itens = presentes.map(p => {
+    const cx = Math.round(p.x), cy = Math.round(p.y), topo = cy - (p.sitting ? 3 : 0) - 22 - (p.look.estilo === 2 ? 2 : 0);
+    const alerta = estado.alertas[p.nome], nome = (alerta ? '⚠ ' : '') + norm(p.nome.split(' ')[0]).slice(0, 11);
+    return { p, cx, topo, nome, alerta, w: medir(nome, 6.8, 700) + 7 };
+  }).sort((a, b) => (a.p.nome === sel) - (b.p.nome === sel) || a.cx - b.cx);
+  itens.forEach(it => {
+    let ry = it.topo - 6, rect;
+    for(let k = 0; k < 4; k++){
+      ry = it.topo - 6 - k * 11.5; rect = { x: it.cx - it.w / 2, y: ry - 5.8, w: it.w, h: 11.6 };
+      if(!colide(rect)) break;
+    }
+    ocupados.push(rect);
+    const p = it.p, eSel = sel === p.nome, esmaece = sel && !eSel;
+    ctx.globalAlpha = esmaece ? .45 : 1;
+    const piscar = it.alerta && Math.floor(t * 2) % 2;
+    if(eSel) pill(it.cx, ry, it.nome, '#facc15', '#1e293b', { size: 7.4, pad: 9, sombra: true });
+    else pill(it.cx, ry, it.nome, piscar ? '#dc2626' : p.cor, '#fff', { size: 6.8, pad: 7, sombra: true });
+    if(eSel){ const b = Math.sin(t * 7) * 1.2; ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.moveTo(it.cx - 3.5, ry - 11.5 - b); ctx.lineTo(it.cx + 3.5, ry - 11.5 - b); ctx.lineTo(it.cx, ry - 7 - b); ctx.closePath(); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    if(p.tipo === 'telefone' && !p.moving && Math.floor(t / 3 + p.seed) % 4 === 0) bolha(it.cx, ry - 14, 'Alô?');
+    if(p.tipo === 'painel' && !p.moving && senhaTempo < 2 && Math.floor(senhaAtual + p.seed * 3) % 3 === 0) bolha(it.cx, ry - 14, 'A' + String((senhaAtual + 3) % 999).padStart(3, '0'));
   });
   requestAnimationFrame(frame);
 }
@@ -1148,25 +1223,21 @@ function frame(ts){
 let zoomAtual = 'auto';
 let isDraggingScreen = false, dragStartX = 0, dragStartY = 0, startScrollLeft = 0, startScrollTop = 0, hadDragged = false;
 
+const BASE_W = W * T, BASE_H = H * T;
 function aplicarZoom(){
   const cv = $('game'), sc = $('screen'), zVal = $('zoomVal');
-  if(!cv) return;
+  if(!cv || !sc) return;
+  let s;
   if(zoomAtual === 'auto'){
-    cv.style.width = 'auto';
-    cv.style.height = 'auto';
-    cv.style.maxWidth = '100%';
-    cv.style.maxHeight = 'calc(100vh - 245px)';
+    const aw = Math.max(200, sc.clientWidth - 16), ah = Math.max(200, sc.clientHeight - 16);
+    s = Math.min(aw / BASE_W, ah / BASE_H);
     if(zVal) zVal.textContent = 'AJUSTE';
   } else {
-    const bw = 480, bh = 512;
-    const w = Math.round(bw * zoomAtual);
-    const h = Math.round(bh * zoomAtual);
-    cv.style.width = w + 'px';
-    cv.style.height = h + 'px';
-    cv.style.maxWidth = 'none';
-    cv.style.maxHeight = 'none';
+    s = zoomAtual * Math.min(1.9, Math.max(1, (sc.clientWidth - 16) / BASE_W));
     if(zVal) zVal.textContent = Math.round(zoomAtual * 100) + '%';
   }
+  cv.style.width = Math.round(BASE_W * s) + 'px';
+  cv.style.height = Math.round(BASE_H * s) + 'px';
 }
 function mudarZoom(delta){
   let cur = (zoomAtual === 'auto') ? 1.0 : zoomAtual;
@@ -1215,37 +1286,47 @@ function toggleFullscreen(){
     }
   }, { passive: false });
   window.addEventListener('resize', () => { if(zoomAtual === 'auto') aplicarZoom(); });
+  document.addEventListener('fullscreenchange', () => setTimeout(aplicarZoom, 60));
 })();
 
 /* =====================================================================
    TOOLTIP
    ===================================================================== */
-cv.addEventListener('mousemove', e => {
-  if(isDraggingScreen){ $('tip').style.display = 'none'; return; }
-  const r = cv.getBoundingClientRect(), mx = (e.clientX - r.left) * cv.width / r.width, my = (e.clientY - r.top) * cv.height / r.height;
+function pessoaNoPonto(e){
+  const r = cv.getBoundingClientRect(), mx = (e.clientX - r.left) * (W * T) / r.width, my = (e.clientY - r.top) * (H * T) / r.height;
   let achado = null, melhor = 1e9;
   Object.values(estado.pessoas).filter(p => p.presente).forEach(p => {
-    const dx = mx - p.x, dy = my - (p.y - 10), d = Math.abs(dx) < 9 && Math.abs(dy) < 14 ? Math.hypot(dx, dy) : 1e9;
+    const dx = mx - p.x, dy = my - (p.y - 10), ok = Math.abs(dx) < 9 && Math.abs(dy) < 14;
+    const d = ok ? Math.hypot(dx, dy) : 1e9;
     if(d < melhor){ melhor = d; achado = p; }
   });
-  const tip = $('tip');
-  if(!achado){ tip.style.display = 'none'; cv.style.cursor = 'default'; return; }
+  return achado;
+}
+cv.addEventListener('mousemove', e => {
+  if(isDraggingScreen){ $('tip').style.display = 'none'; return; }
+  const achado = pessoaNoPonto(e), tip = $('tip');
+  if(!achado){ tip.style.display = 'none'; cv.style.cursor = 'grab'; return; }
   cv.style.cursor = 'pointer';
   const it = estado.info.find(i => i.nome === achado.nome), po = it && it.pk ? POSTOS[it.pk] : null;
   const grupo = po ? po.grupo : 'PAUSA';
-  tip.innerHTML = `<span class="t1" style="background:${achado.cor}">${grupo}</span><br><b>${achado.nome}</b><br>${po ? it.pk + ' • ' + (po.sit ? '💺 Sentado' : '🚶 Em pé') : '☕ Pausa no salão'}<br>${po ? po.desc + '<br>' : ''}<span style="color:#2c5fc4">Antes: ${it && it.antPk || '—'} • Depois: ${it && it.proxPk || (estado.idx + 1 < estado.slots.length ? 'PAUSA' : '—')}</span>${it && it.alerta ? '<br><span style="color:#d61f1f">⚠ ' + it.alerta + '</span>' : ''}`;
-  tip.style.display = 'block'; tip.style.left = Math.min(innerWidth - 270, e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
+  tip.innerHTML = `<span class="t1" style="background:${achado.cor}">${grupo}</span><br><b>${achado.nome}</b><br>${po ? it.pk + ' • ' + (po.sit ? '💺 Sentado' : '🚶 Em pé') : '☕ Pausa no salão'}<br>${po ? po.desc + '<br>' : ''}<span style="color:#1d4ed8">Antes: ${it && it.antPk || '—'} • Depois: ${it && it.proxPk || (estado.idx + 1 < estado.slots.length ? 'PAUSA' : '—')}</span>${it && it.alerta ? '<br><span style="color:#dc2626">⚠ ' + it.alerta + '</span>' : ''}`;
+  tip.style.display = 'block'; tip.style.left = Math.min(innerWidth - 280, e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
 });
 cv.addEventListener('mouseleave', () => $('tip').style.display = 'none');
 cv.addEventListener('click', e => {
   if(hadDragged) return;
-  const r = cv.getBoundingClientRect(), mx = (e.clientX - r.left) * cv.width / r.width, my = (e.clientY - r.top) * cv.height / r.height;
-  let achado = null;
-  Object.values(estado.pessoas).filter(p => p.presente).forEach(p => {
-    if(Math.abs(mx - p.x) < 9 && Math.abs(my - (p.y - 10)) < 14) achado = p;
-  });
+  const achado = pessoaNoPonto(e);
   estado.sel = achado ? (estado.sel === achado.nome ? null : achado.nome) : null; renderLista();
 });
+
+/* rola o mapa (quando ampliado) para deixar a pessoa selecionada no centro da tela */
+function focarNaPessoa(nome){
+  const p = estado.pessoas[nome], sc = $('screen');
+  if(!p || !p.presente || !sc) return;
+  const s = cv.clientWidth / (W * T);
+  const alvoX = cv.offsetLeft + p.x * s - sc.clientWidth / 2, alvoY = cv.offsetTop + (p.y - 10) * s - sc.clientHeight / 2;
+  sc.scrollTo({ left: Math.max(0, alvoX), top: Math.max(0, alvoY), behavior: 'smooth' });
+}
 
 /* =====================================================================
    CONTROLES
@@ -1634,7 +1715,9 @@ function carregarDemo(){
 }
 
 /* ---------- legenda ---------- */
-$('legend').innerHTML = GRUPOS.map(([n, c]) => `<span><i style="background:${c}"></i>${n}</span>`).join('') + '<span>🚶 em pé &nbsp; 💺 sentado &nbsp; ☕ pausa</span><span>Clique num atendente para destacar</span>';
+$('legend').innerHTML = GRUPOS.map(([n, c]) => `<span><i style="background:${c}"></i>${n}</span>`).join('')
+  + '<span class="lg-sep"></span><span><i class="tag-on"></i>Posto ocupado</span><span><i class="tag-off"></i>Posto vago</span>'
+  + '<span>🚶 em pé &nbsp; 💺 sentado</span><span class="lg-dica">Clique num atendente (no mapa ou na lista) para localizar</span>';
 
 /* ---------- início ---------- */
 desenharCenario();
