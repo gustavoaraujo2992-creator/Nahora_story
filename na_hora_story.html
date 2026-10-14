@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Na Hora Ceilândia — Mapa dos Postos de Atendimento</title>
+<style>
+  :root{
+    --bg:#eef2f7; --panel:#ffffff; --panel2:#f8fafc; --line:#dbe3ee; --ink:#0f172a; --mute:#64748b;
+    --brand:#0b2a5b; --brand2:#1d4ed8;
+    --emissor:#2fae6a; --telefone:#1fb5d4; --auto:#8a5bd6; --orient:#3b6fe0; --painel:#f08a24; --pesq:#e0508a; --pausa:#64748b;
+    --px:'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--px);padding:12px;min-height:100vh;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.06),0 6px 18px rgba(15,23,42,.05)}
+
+  /* ---- cabeçalho ---- */
+  header.top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:8px 16px;background:linear-gradient(135deg,#0b2a5b,#14438f);border:none;color:#fff}
+  .logo{display:flex;align-items:center;gap:14px}
+  .logo .ico{width:40px;height:40px;background:#fff;border-radius:12px;display:grid;place-items:center;font-size:24px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+  .logo h1{font-size:18px;font-weight:800;letter-spacing:.02em;line-height:1.15}
+  .logo p{font-size:12.5px;color:#bfd2f5;margin-top:3px}
+  .hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#e2e8f0;border-radius:999px;padding:6px 13px;display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;white-space:nowrap}
+  .chip b{font-size:15px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums}
+  .chip.pe b{color:#fdba74}.chip.sent b{color:#86efac}.chip.pa b{color:#cbd5e1}.chip.al b{color:#fde047}
+  .chip.al.on{background:rgba(220,38,38,.35);border-color:#f87171;animation:blink 1s steps(2) infinite}
+  .chip.gs{background:rgba(34,197,94,.18);border-color:rgba(74,222,128,.55);transition:all .25s}
+  .chip.gs:hover{background:rgba(34,197,94,.3)}
+  .chip.gs.syncing{border-color:#fde047;animation:blink 1s infinite}
+  .chip.gs.err{border-color:#f87171;background:rgba(220,38,38,.25)}
+  .chip.chg{background:rgba(245,158,11,.2);border-color:rgba(251,191,36,.6)}.chip.chg b{color:#fcd34d}
+  .chip.fui{background:rgba(148,163,184,.2);border-color:rgba(148,163,184,.5)}.chip.fui b{color:#cbd5e1}
+  @keyframes blink{50%{background:rgba(220,38,38,.55)}}
+  .clock{font-size:26px;font-weight:800;letter-spacing:.04em;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:4px 16px;font-variant-numeric:tabular-nums;line-height:1.3}
+  .badge-perfil{font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:999px;background:#fff;color:var(--brand)}
+
+  /* ---- botões ---- */
+  .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 12px}
+  .btn{font-family:var(--px);font-size:12.5px;font-weight:700;color:#1e293b;background:#fff;border:1px solid #cbd5e1;border-radius:9px;box-shadow:0 1px 2px rgba(15,23,42,.08);padding:8px 13px;cursor:pointer;display:inline-flex;gap:6px;align-items:center;transition:background .15s,transform .05s}
+  .btn:hover{background:#f1f5f9}
+  .btn:active{transform:translateY(1px)}
+  .btn.g{background:#16a34a;border-color:#15803d;color:#fff}.btn.g:hover{background:#15a047}
+  .btn.y{background:#fef3c7;border-color:#f59e0b;color:#92400e}.btn.y:hover{background:#fde68a}
+  .btn.b{background:#e0ecff;border-color:#a9c6fb;color:#1d4ed8}.btn.b:hover{background:#cfe0ff}
+  .btn.p{background:#f0e8ff;border-color:#c9adf5;color:#6d28d9}.btn.p:hover{background:#e6d9ff}
+  .btn.r{background:#fee2e2;border-color:#f87171;color:#b91c1c}.btn.r:hover{background:#fecaca}
+  .sp{flex:1}
+  .slider-wrap{display:flex;align-items:center;gap:12px;flex:1;min-width:280px}
+  .slider-wrap input{flex:1;accent-color:var(--brand2);height:6px}
+  .slot-label{font-size:15px;font-weight:800;color:var(--brand);min-width:56px;text-align:right;font-variant-numeric:tabular-nums}
+
+  /* ---- layout principal ---- */
+  .main{display:grid;grid-template-columns:350px 1fr;gap:10px;align-items:stretch;height:calc(100vh - 180px);min-height:520px}
+  @media(max-width:1000px){.main{grid-template-columns:1fr;height:auto}aside.side{max-height:460px !important}}
+
+  aside.side{padding:12px;display:flex;flex-direction:column;gap:9px;height:100%;min-height:0}
+  .side h2{font-size:14px;font-weight:800;color:var(--brand);display:flex;gap:7px;align-items:center}
+  .tabs-salao{display:flex;gap:3px;background:#eef2f7;padding:3px;border-radius:10px}
+  .tab-salao{flex:1;background:transparent;border:none;color:var(--mute);font-family:var(--px);font-size:11.5px;font-weight:700;padding:7px 4px;cursor:pointer;border-radius:8px;text-align:center;transition:all .15s}
+  .tab-salao:hover{color:var(--ink)}
+  .tab-salao.active{background:#fff;color:var(--brand2);box-shadow:0 1px 3px rgba(15,23,42,.15)}
+  .search{background:#fff;border:1px solid #cbd5e1;border-radius:9px;padding:9px 12px;color:var(--ink);font-family:var(--px);font-size:13px;outline:none;width:100%}
+  .search:focus{border-color:var(--brand2);box-shadow:0 0 0 3px rgba(29,78,216,.15)}
+  .list{overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px;flex:1;min-height:0}
+  .list::-webkit-scrollbar{width:7px}.list::-webkit-scrollbar-thumb{background:#c5d0df;border-radius:4px}
+  .grp{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:800;letter-spacing:.05em;color:#334155;padding:8px 4px 3px;margin-top:4px}
+  .grp span{display:flex;align-items:center;gap:7px}
+  .grp i{width:10px;height:10px;border-radius:3px;background:var(--gc)}
+  .grp b{background:var(--gc);color:#fff;border-radius:999px;padding:1px 9px;font-size:11px}
+  .item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-left:5px solid var(--gc);border-radius:11px;padding:8px 10px;cursor:pointer;transition:box-shadow .15s,background .15s}
+  .item:hover{box-shadow:0 3px 10px rgba(15,23,42,.12);background:#fafcff}
+  .item.sel{background:#fffbeb;outline:2px solid #facc15;border-color:#facc15}
+  .av{width:36px;height:36px;border-radius:50%;background:var(--gc);color:#fff;font-weight:800;font-size:16px;display:grid;place-items:center;flex-shrink:0;box-shadow:inset 0 -3px 0 rgba(0,0,0,.15)}
+  .inf{flex:1;min-width:0}
+  .item .nm{font-weight:800;font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px}
+  .selo{display:inline-block;background:var(--gc);color:#fff;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;letter-spacing:.02em}
+  .selo.cinza{background:#e2e8f0;color:#475569}
+  .item .nx{font-size:11px;color:var(--mute)}
+  .item .nx b{color:#1d4ed8}
+  .item .st{font-size:18px}
+  .item.alerta{background:#fef2f2;border-color:#fca5a5;border-left-color:var(--gc)}
+  .alerta-msg{font-size:11px;color:#b91c1c;font-weight:700;margin-top:2px}
+  .vazio{color:var(--mute);font-size:13px;padding:14px;text-align:center}
+
+  /* ---- palco / mapa ---- */
+  .stage{padding:10px;display:flex;flex-direction:column;gap:8px;height:100%;min-height:0}
+  .stage-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:2px 2px}
+  .stage-title{font-size:14px;font-weight:800;color:var(--brand);display:flex;align-items:center;gap:7px}
+  .zoom-controls{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .z-lbl{font-size:11px;font-weight:700;color:var(--mute);margin-right:2px}
+  .z-val{font-size:12px;font-weight:800;color:var(--brand);min-width:58px;text-align:center;background:#eef2f7;border-radius:7px;padding:5px 6px;font-variant-numeric:tabular-nums}
+  .btn-z{font-family:var(--px);font-size:12px;font-weight:700;color:#334155;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:6px 10px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+  .btn-z:hover{background:#eef2f7;border-color:#94a3b8}
+  .btn-z:active{transform:scale(.96)}
+  .btn-z.full{background:var(--brand2);border-color:var(--brand2);color:#fff}
+  .btn-z.full:hover{background:#2563eb}
+  .btn-z.tog{background:#e0ecff;border-color:#a9c6fb;color:#1d4ed8}
+  .btn-z.tog.off{background:#fff;border-color:#cbd5e1;color:#94a3b8}
+  .screen{position:relative;background:#dde5ef;background-image:radial-gradient(#c5d0df 1px,transparent 1px);background-size:14px 14px;border:1px solid var(--line);border-radius:10px;overflow:auto;display:flex;flex:1;min-height:300px;padding:8px;scrollbar-width:thin;scrollbar-color:#9fb0c7 #dde5ef}
+  .screen::-webkit-scrollbar{width:10px;height:10px}.screen::-webkit-scrollbar-thumb{background:#9fb0c7;border-radius:5px}
+  canvas{display:block;margin:auto;flex-shrink:0;border-radius:6px;box-shadow:0 8px 28px rgba(15,23,42,.28);cursor:grab;background:#fff}
+  .stage:fullscreen{background:var(--bg);padding:12px;height:100vh;justify-content:flex-start}
+  .stage:fullscreen .screen{height:auto;flex:1;min-height:0}
+  #tip{position:fixed;display:none;z-index:50;background:#fff;color:var(--ink);border:1px solid #cbd5e1;border-radius:10px;padding:9px 12px;font-size:12.5px;line-height:1.5;box-shadow:0 10px 30px rgba(15,23,42,.25);pointer-events:none;max-width:280px}
+  #tip b{font-size:14.5px}
+  #tip .t1{font-size:10.5px;font-weight:800;letter-spacing:.04em;color:#fff;display:inline-block;padding:2px 8px;border-radius:999px;margin-bottom:4px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:6px 10px;font-size:12px;color:#475569;align-items:center;background:#f8fafc;border-radius:8px;border:1px solid var(--line);flex-shrink:0}
+  .legend span{display:inline-flex;align-items:center}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px}
+  .legend i.tag-on{background:#475569;border-radius:999px;width:20px;height:11px}
+  .legend i.tag-off{background:#fff;border:2px solid #475569;border-radius:999px;width:20px;height:11px}
+  .lg-sep{width:1px;height:16px;background:#cbd5e1}
+  .lg-dica{margin-left:auto;color:var(--mute);font-style:italic}
+
+  /* ---- modais ---- */
+  #modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(3px);z-index:100;align-items:center;justify-content:center}
+  .mbox{width:92%;max-width:620px;padding:22px}
+  .mbox h2{font-size:16px;font-weight:800;color:var(--brand);margin-bottom:8px}
+  .mbox p{font-size:13px;color:var(--mute);margin-bottom:10px;line-height:1.5}
+  .mbox textarea{width:100%;height:170px;background:#f8fafc;border:1px solid #cbd5e1;color:#0f172a;font-family:Consolas,monospace;font-size:12px;padding:10px;border-radius:8px;resize:vertical}
+  .mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+  .flbl{font-size:11.5px;font-weight:800;color:#334155;display:block;margin-bottom:5px;letter-spacing:.03em}
+  .gstatus{background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:11px;font-size:13px;line-height:1.5}
+  /* ---- login / perfis ---- */
+  body.role-viewer .admin-only{display:none !important}
+  body:not(.logado) .wrap{visibility:hidden}
+  #login{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,#0b2a5b,#14438f 60%,#1d4ed8);display:flex;align-items:center;justify-content:center}
+  body.logado #login{display:none}
+  .lbox{width:92%;max-width:390px;padding:28px 26px;text-align:center;border:none;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  .lbox .ico{font-size:38px;margin-bottom:8px}
+  .lbox h2{font-size:18px;font-weight:800;color:var(--brand);line-height:1.3;margin-bottom:6px}
+  .lbox p{font-size:13px;color:var(--mute);margin-bottom:16px}
+  .lbox input{width:100%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:12px;color:var(--ink);font-size:16px;text-align:center;outline:none;letter-spacing:3px}
+  .lbox input:focus{border-color:var(--brand2);box-shadow:0 0 0 3px rgba(29,78,216,.15)}
+  .lbox .btn{width:100%;justify-content:center;margin-top:14px;padding:12px;font-size:14px}
+  #lerro{color:#dc2626;font-size:12.5px;min-height:16px;margin-top:8px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top box">
+    <div class="logo">
+      <div class="ico">📍</div>
+      <div>
+        <h1>NA HORA CEILÂNDIA</h1>
+        <p>Mapa dos postos de atendimento — veja onde cada atendente está e para onde vai</p>
+      </div>
+    </div>
+    <div class="hud">
+      <div class="chip gs admin-only" id="chipGoogle" onclick="abrirModalGoogle()" style="cursor:pointer" title="Configurar conexão automática com o Google Planilhas"><span id="gDot">⚪</span> <span id="gTxt">Planilha</span></div>
+      <div class="chip pe">🚶 Em pé <b id="cPe">0</b></div>
+      <div class="chip sent">💺 Sentado <b id="cSent">0</b></div>
+      <div class="chip pa">☕ Pausa <b id="cPausa">0</b></div>
+      <div class="chip chg" title="Colaboradores que ainda não entraram no horário atual">⏳ Chegando <b id="cChegando">0</b></div>
+      <div class="chip fui" title="Colaboradores que já encerraram o expediente hoje">🏠 Fui <b id="cFui">0</b></div>
+      <div class="chip al" id="chipAl">⚠ Alertas NR-17 <b id="cAl">0</b></div>
+      <div class="clock" id="clock">08:00</div>
+      <span class="badge-perfil" id="badgePerfil"></span>
+      <button class="btn" onclick="sairPerfil()" title="Trocar de perfil">🚪 Sair</button>
+    </div>
+  </header>
+
+  <section class="tools box">
+    <button class="btn g admin-only" onclick="abrirModalGoogle()" title="Sincronizar ao vivo com o Google Planilhas">📊 Google Planilhas</button>
+    <button class="btn y admin-only" onclick="copiarLinkRecepcao()" title="Gera o link pronto para compartilhar com a equipe da recepção">🔗 Link recepção</button>
+    <button class="btn y admin-only" onclick="abrirModal()">📋 Colar</button>
+    <label class="btn b admin-only">📂 .xlsx<input type="file" id="file" accept=".xlsx,.xls" style="display:none" onchange="lerExcel(event)"></label>
+    <button class="btn p admin-only" onclick="carregarDemo()">⚡ Demo</button>
+    <span class="sp"></span>
+    <button class="btn b" onclick="passo(-1)" title="Horário anterior">◀</button>
+    <button class="btn g" id="btnPlay" onclick="togglePlay()">▶ AUTO</button>
+    <button class="btn b" onclick="passo(1)" title="Próximo horário">▶</button>
+    <button class="btn y" onclick="horaAtual()">⏰ Agora</button>
+    <div class="slider-wrap"><input type="range" id="slider" min="0" max="0" value="0" oninput="irSlot(+this.value)"><span class="slot-label" id="slotLabel">--:--</span></div>
+  </section>
+
+  <div class="main">
+    <aside class="side box">
+      <h2>📡 Quem está onde</h2>
+      <div class="tabs-salao">
+        <button class="tab-salao active" id="tabTodos" onclick="setFiltroPresenca('todos')">Todos (<span id="countTodos">0</span>)</button>
+        <button class="tab-salao" id="tabSalao" onclick="setFiltroPresenca('salao')">No salão (<span id="countSalao">0</span>)</button>
+        <button class="tab-salao" id="tabCF" onclick="setFiltroPresenca('chegando_fui')">Chegando/Fui (<span id="countCF">0</span>)</button>
+      </div>
+      <input class="search" id="busca" placeholder="🔎 Buscar nome ou posto..." oninput="renderLista()">
+      <div class="list" id="lista"></div>
+    </aside>
+
+    <section class="stage box">
+      <div class="stage-bar">
+        <div class="stage-title">🗺️ Planta baixa do salão</div>
+        <div class="zoom-controls">
+          <button class="btn-z tog" id="btnCid" onclick="alternarCidadaos()" title="Mostrar/ocultar os cidadãos animados">👥 Cidadãos</button>
+          <span class="z-lbl">🔍 Zoom</span>
+          <button class="btn-z" onclick="mudarZoom(-0.2)" title="Diminuir zoom">➖</button>
+          <span class="z-val" id="zoomVal" title="Nível atual de zoom">AJUSTE</span>
+          <button class="btn-z" onclick="mudarZoom(+0.2)" title="Aumentar zoom">➕</button>
+          <button class="btn-z" onclick="setZoom(1.0)" title="Zoom 100%">100%</button>
+          <button class="btn-z" onclick="setZoom(1.35)" title="Zoom 135%">135%</button>
+          <button class="btn-z" onclick="setZoom(1.7)" title="Zoom 170%">170%</button>
+          <button class="btn-z" onclick="setZoom('auto')" title="Ajustar automaticamente à janela">📐 Ajustar</button>
+          <button class="btn-z full" onclick="toggleFullscreen()" title="Modo Telão / Tela Cheia">⛶ Tela cheia</button>
+        </div>
+      </div>
+      <div class="screen" id="screen"><canvas id="game"></canvas></div>
+      <div class="legend" id="legend"></div>
+    </section>
+  </div>
+</div>
+
+<div id="tip"></div>
+
+<div id="login">
+  <div class="lbox box">
+    <div class="ico">📍</div>
+    <h2>NA HORA CEILÂNDIA<br>Acesso ao painel</h2>
+    <p>Digite a senha do seu perfil para entrar.</p>
+    <input id="lsenha" type="password" placeholder="Senha" autocomplete="off" onkeydown="if(event.key==='Enter')entrar()">
+    <div id="lerro"></div>
+    <button class="btn g" onclick="entrar()">🔓 Entrar</button>
+  </div>
+</div>
+<script>
+/* Perfis: ADMIN (tudo) e VISUAL (lateral + jogo + tempo). Senhas guardadas como hash. */
+(function(){
+  var HASH_ADMIN = 'ef375917', HASH_VISUAL = 'c117175c', KEY = 'nahora_perfil';
+  function fnv(s){ var x = 0x811c9dc5; for(var i = 0; i < s.length; i++){ x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; } return x.toString(16); }
+  function aplicar(p){
+    var b = document.body;
+    b.classList.remove('role-admin', 'role-viewer'); b.classList.add('logado', p === 'admin' ? 'role-admin' : 'role-viewer');
+    var el = document.getElementById('badgePerfil'); if(el) el.textContent = p === 'admin' ? '🔧 ADMIN' : '👁 VISUAL';
+  }
+  window.entrar = function(){
+    var s = (document.getElementById('lsenha').value || '').trim(), hs = fnv(s), erro = document.getElementById('lerro');
+    var p = hs === HASH_ADMIN ? 'admin' : hs === HASH_VISUAL ? 'viewer' : null;
+    if(!p){ erro.textContent = '❌ Senha incorreta.'; document.getElementById('lsenha').select(); return; }
+    erro.textContent = ''; document.getElementById('lsenha').value = '';
+    try { localStorage.setItem(KEY, p); } catch(e){}
+    aplicar(p);
+  };
+  window.sairPerfil = function(){
+    try { localStorage.removeItem(KEY); } catch(e){}
+    document.body.classList.remove('logado', 'role-admin', 'role-viewer');
+    var i = document.getElementById('lsenha'); if(i) i.focus();
+  };
+  try { var salvo = localStorage.getItem(KEY); if(salvo === 'admin' || salvo === 'viewer') aplicar(salvo); } catch(e){}
+  if(!document.body.classList.contains('logado')) setTimeout(function(){ var i = document.getElementById('lsenha'); if(i) i.focus(); }, 50);
+})();
+</script>
+
+<div id="modal">
+  <div class="mbox box">
+    <h2>📋 COLAR A GRADE DA PLANILHA</h2>
+    <p>Copie as células da grade (com os nomes dos postos e os horários) e cole abaixo:</p>
+    <textarea id="paste" placeholder="Cole aqui (Ctrl+V)..."></textarea>
+    <div class="mfoot">
+      <button class="btn b" onclick="fecharModal()">CANCELAR</button>
+      <button class="btn g" onclick="colar()">CARREGAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Conexão com Google Planilhas -->
+<div id="modalGoogle" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(3px);z-index:100;align-items:center;justify-content:center">
+  <div class="mbox box" style="max-width:680px">
+    <h2>📊 Sincronização ao vivo — Google Planilhas</h2>
+    <p>Conecte diretamente à planilha do Google para que qualquer mudança feita na escala seja atualizada aqui automaticamente!</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin:14px 0">
+      <div>
+        <label class="flbl">LINK OU ID DA PLANILHA NO GOOGLE DRIVE</label>
+        <input id="gInputUrl" type="text" class="search" placeholder="Ex: https://docs.google.com/spreadsheets/d/.../edit ou o ID da planilha">
+        <small style="color:var(--mute);font-size:12px;margin-top:5px;display:block">💡 Na planilha do Google, configure em <b>Compartilhar ➔ Qualquer pessoa com o link pode ver</b>.</small>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label class="flbl">NOME DA ABA (OPCIONAL)</label>
+          <input id="gInputAba" type="text" class="search" placeholder="Ex: ESCALA (ou deixe vazio para 1ª aba)">
+        </div>
+        <div>
+          <label class="flbl">INTERVALO DE ATUALIZAÇÃO</label>
+          <select id="gInputIntervalo" class="search">
+            <option value="30" selected>A cada 30 segundos (Recomendado)</option>
+            <option value="60">A cada 1 minuto</option>
+            <option value="120">A cada 2 minutos</option>
+            <option value="300">A cada 5 minutos</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="gStatusBox" class="gstatus">
+        <div style="font-weight:700;display:flex;align-items:center;gap:8px" id="gStatusDetalhe">
+          <span id="gStatusIcon">⚪</span> <span id="gStatusMsg">Nenhuma planilha conectada no momento (usando escala padrão).</span>
+        </div>
+        <div style="font-size:12px;color:var(--mute);margin-top:4px" id="gStatusSub">
+          Insira o link acima e clique em "Sincronizar agora" para ativar a conexão automática ao vivo.
+        </div>
+      </div>
+    </div>
+
+    <div class="mfoot" style="flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px">
+      <div style="display:flex;gap:6px">
+        <button class="btn y" onclick="copiarLinkRecepcao()">📋 Copiar link da recepção</button>
+        <button class="btn r" onclick="desconectarGoogle()">Desconectar</button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" onclick="fecharModalGoogle()">Fechar</button>
+        <button class="btn g" onclick="salvarEConectarGoogle()">🔄 Sincronizar agora</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+/* =====================================================================
+   NA HORA CEILÂNDIA — JOGO DO SALÃO (pixel art, vista de cima)
+   Resolução lógica 480x320 (30x20 tiles de 16px), ampliada via CSS.
+   ===================================================================== */
+const T = 16, W = 30, H = 32, K = 3;          // K = ampliação interna do canvas (desenho vetorial nítido em qualquer zoom)
+const cv = document.getElementById('game');
+cv.width = W * T * K; cv.height = H * T * K;
+const mainCtx = cv.getContext('2d');
+const bg = document.createElement('canvas'); bg.width = cv.width; bg.height = cv.height;
+const bgCtx = bg.getContext('2d');
+let ctx = mainCtx;
+const $ = id => document.getElementById(id);
+
+/* ---------- cores dos setores ---------- */
+const COR = { emissor:'#2fae6a', telefone:'#1fb5d4', auto:'#8a5bd6', orient:'#3b6fe0', painel:'#f08a24', pesq:'#e0508a', pausa:'#6b7280' };
+const OUT = '#2b2233';
+
+/* ---------- primitivas vetoriais (unidades lógicas; o canvas é ampliado K× para ficar nítido) ---------- */
+const FONTE = "'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif";
+function R(x, y, w, h, c){ ctx.fillStyle = c; ctx.fillRect(x, y, w, h); }
+function rr(x, y, w, h, r, fill, stroke, lw){
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h);
+  if(fill){ ctx.fillStyle = fill; ctx.fill(); }
+  if(stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1; ctx.stroke(); }
+}
+function tx(s, x, y, size, color, weight, align){
+  ctx.font = `${weight || 600} ${size}px ${FONTE}`; ctx.fillStyle = color;
+  ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y);
+}
+function medir(s, size, weight){ ctx.font = `${weight || 600} ${size}px ${FONTE}`; return ctx.measureText(s).width; }
+/* etiqueta arredondada centrada em (cx, cy); devolve o retângulo ocupado */
+function pill(cx, cy, s, bg, fg, opt){
+  opt = opt || {};
+  const size = opt.size || 5.6, w = medir(s, size, 700) + (opt.pad || 6), h = size + 4.4, x = cx - w / 2, y = cy - h / 2;
+  if(opt.sombra){
+    ctx.save(); ctx.shadowColor = 'rgba(15,23,42,.30)'; ctx.shadowBlur = 2.5 * K; ctx.shadowOffsetY = .8 * K;
+    rr(x, y, w, h, h / 2, bg); ctx.restore();
+  } else rr(x, y, w, h, h / 2, bg, opt.borda, opt.lw || .8);
+  tx(s, cx, cy + .2, size, fg, 700);
+  return { x, y, w, h };
+}
+const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+
+/* ---------- mapa de colisão ---------- */
+const bloq = Array.from({length:H}, () => Array(W).fill(false));
+function bl(x, y, w = 1, h = 1){ for(let j = 0; j < h; j++) for(let i = 0; i < w; i++) bloq[y + j][x + i] = true; }
+(function(){
+  bl(0, 0, W, 2); bl(0, 2, 1, H - 2); bl(0, 31, W, 1);       // paredes: topo, esquerda, base
+  bl(29, 2, 1, 7); bl(29, 11, 1, 15); bl(29, 28, 1, 3);       // parede direita (portas em y=9..10 e y=26..27)
+  bl(23, 4, 6);                                                // bancada dos telefones atrás da recepção (x=23..28, y=4)
+  bl(11, 7, 16);                                               // balcão dos emissores na frente (x=11..26, y=7)
+  bl(2, 10, 7);                                                // bancada do autoatendimento
+  [13, 17, 21].forEach(y0 => { [12, 14, 16].forEach(x => bl(x, y0 + 1)); [13, 14, 15].forEach(x => { bl(x, y0 + 2); bl(x, y0 + 3); }); });
+  bl(4, 14); bl(7, 24); bl(3, 27, 2, 2);                       // máquina de bebidas, cafeteira, mesa da copa
+  [[1,13],[8,13],[1,22],[8,22],[21,14],[28,14],[21,20],[28,20],[9,2]].forEach(([x, y]) => bl(x, y)); // plantas
+})();
+
+/* ---------- pathfinding (Dijkstra com penalidade de curva) ---------- */
+function achar(sx, sy, gx, gy){
+  if(sx === gx && sy === gy) return [];
+  const key = (x, y, d) => (y * W + x) * 5 + d;
+  const dist = new Map(), prev = new Map(), heap = [];
+  const push = n => { heap.push(n); let i = heap.length - 1; while(i > 0){ const p = (i - 1) >> 1; if(heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
+  const pop = () => { const top = heap[0], last = heap.pop(); if(heap.length){ heap[0] = last; let i = 0; for(;;){ let l = 2*i+1, r = l+1, m = i; if(l < heap.length && heap[l][0] < heap[m][0]) m = l; if(r < heap.length && heap[r][0] < heap[m][0]) m = r; if(m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top; };
+  const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+  const k0 = key(sx, sy, 4); dist.set(k0, 0); push([0, sx, sy, 4]);
+  let fin = null;
+  while(heap.length){
+    const [c, x, y, d] = pop(), kk = key(x, y, d);
+    if(c > (dist.get(kk) ?? Infinity)) continue;
+    if(x === gx && y === gy){ fin = kk; break; }
+    for(let nd = 0; nd < 4; nd++){
+      const nx = x + DIRS[nd][0], ny = y + DIRS[nd][1];
+      if(nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+      if(bloq[ny][nx] && !(nx === gx && ny === gy)) continue;
+      const nc = c + 1 + ((d !== 4 && d !== nd) ? 0.6 : 0), nk = key(nx, ny, nd);
+      if(nc < (dist.get(nk) ?? Infinity)){ dist.set(nk, nc); prev.set(nk, kk); push([nc, nx, ny, nd]); }
+    }
+  }
+  if(fin === null) return null;
+  const path = []; let cur = fin;
+  while(cur !== k0){ const d = cur % 5, cell = (cur - d) / 5; path.push([cell % W, (cell / W) | 0]); cur = prev.get(cur); }
+  return path.reverse();
+}
+
+/* ---------- postos oficiais (todos os 22 postos da unidade) ---------- */
+const POSTOS = {};
+function addPosto(key, o){ POSTOS[key] = Object.assign({ key }, o); }
+[['EMISSOR 1',12],['EMISSOR 1.1',13],['EMISSOR 2',16],['EMISSOR 2.1',17],['EMISSOR 3',20],['EMISSOR 3.1',21],['EMISSOR 4',24],['EMISSOR 4.1',25]].forEach(([k, x]) => addPosto(k, {
+  x, y:6, sit:true, dir:'down', grupo:'RECEPÇÃO', cor:COR.emissor, tipo:'emissor',
+  desc:'Na recepção, atendendo o cidadão que chega para pegar senha.' }));
+[['TELEFONE 1',25],['TELEFONE 2',27]].forEach(([k, x]) => addPosto(k, {
+  x, y:3, sit:true, dir:'down', grupo:'TELEFONES', cor:COR.telefone, tipo:'telefone',
+  desc:'Na bancada atrás da recepção, atendendo ligações e dando informações.' }));
+addPosto('AUTO SENTADO', { x:3, y:9, sit:true, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
+  desc:'Sentado no computador do autoatendimento, auxiliando o cidadão.' });
+addPosto('AUTO 1', { x:6, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
+  desc:'Em pé no totem 1 de autoatendimento, auxiliando o cidadão.' });
+addPosto('AUTO 2', { x:8, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
+  desc:'Em pé no totem 2 de autoatendimento, auxiliando o cidadão.' });
+addPosto('AUTO', { x:6, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
+  desc:'Em pé no autoatendimento, auxiliando o cidadão.' });
+addPosto('ORIENTADOR', { x:24, y:10, sit:false, dir:'down', grupo:'ENTRADA', cor:COR.orient, tipo:'orient',
+  desc:'Na porta de entrada, com tablet em mãos, adiantando a triagem da fila.' });
+[['PAINEL 2',12,13],['PAINEL 2.1',16,13],['PAINEL 3',12,17],['PAINEL 3.1',16,17],['PAINEL 4',12,21],['PAINEL 5',16,21]].forEach(([k, x, y]) => addPosto(k, {
+  x, y, sit:false, dir:'down', grupo:'SALÃO DE ESPERA', cor:COR.painel, tipo:'painel',
+  desc:'Em pé no salão de espera, chamando senha e orientando o painel.' }));
+addPosto('PAINEL 1', { x:14, y:13, sit:false, dir:'down', grupo:'SALÃO DE ESPERA', cor:COR.painel, tipo:'painel',
+  desc:'Em pé no salão, chamando senha no painel 1.' });
+addPosto('PESQUISA', { x:27, y:25, sit:false, dir:'right', grupo:'SAÍDA / PESQUISA', cor:COR.pesq, tipo:'pesq',
+  desc:'Na porta de saída, aplicando a pesquisa de satisfação do atendimento.' });
+addPosto('PESQUISA 2', { x:27, y:28, sit:false, dir:'right', grupo:'SAÍDA / PESQUISA', cor:COR.pesq, tipo:'pesq',
+  desc:'Na porta de saída, aplicando a pesquisa de satisfação do atendimento (dupla).' });
+
+const GRUPOS = [
+  ['RECEPÇÃO', COR.emissor], ['TELEFONES', COR.telefone], ['AUTOATENDIMENTO', COR.auto],
+  ['ENTRADA', COR.orient], ['SALÃO DE ESPERA', COR.painel], ['SAÍDA / PESQUISA', COR.pesq],
+  ['☕ PAUSA (NO SALÃO)', COR.pausa],
+  ['⏳ CHEGANDO (AINDA NÃO ENTROU)', '#f59e0b'],
+  ['🏠 FUI (JÁ FOI EMBORA)', '#64748b']
+];
+
+const PAUSA_SPOTS = [];
+for(let y = 25; y <= 30; y++) for(let x = 1; x <= 8; x++){
+  if(x >= 3 && x <= 4 && y >= 27 && y <= 28) continue; // mesa da copa
+  PAUSA_SPOTS.push([x, y]);
+}
+
+/* limpeza e normalização de nomes dos atendentes */
+function limparNome(raw){
+  if(!raw) return '';
+  let s = String(raw).trim();
+  s = s.split(/[\r\n]|\\[nNrR]/)[0].replace(/^["']|["']$/g, '').trim();
+  s = s.replace(/\s*\([^)]*\)/g, '').trim();
+  s = s.replace(/\s*-\s*(?:LANCHE|15M|FOLGA|ADM).*$/i, '').trim();
+  s = s.replace(/\s+(?:LANCHE|SAIDA|VOLTA)\b.*$/i, '').trim();
+  if(s.includes('/')) s = s.split('/')[0].trim();
+  s = norm(s);
+  if(['X', '-', '--', '—', 'FOLGA', 'FERIAS', 'ATESTADO', 'LICENCA', 'ALMOCO', 'VAGO', 'LIVRE', ''].includes(s)){
+    return '';
+  }
+  return s;
+}
+
+function matchNome(a, b){
+  if(!a || !b) return false;
+  if(a === b) return true;
+  const na = norm(a).trim(), nb = norm(b).trim();
+  if(na === nb) return true;
+  const fa = na.split(/[\s/]+/)[0], fb = nb.split(/[\s/]+/)[0];
+  if(fa.length >= 3 && fa === fb) return true;
+  return false;
+}
+
+/* extrai horário em formato HH:MM (suporta 07:30, 7:30, 07h30, 0.3125 de Excel) */
+function extrairHora(val){
+  if(val === null || val === undefined) return null;
+  const s = String(val).trim();
+  if(!s) return null;
+  const m = s.match(/^(\d{1,2})[:hH](\d{2})(?::\d{2})?/);
+  if(m){
+    const hh = parseInt(m[1], 10), mm = parseInt(m[2], 10);
+    if(hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59){
+      return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+    }
+  }
+  const num = parseFloat(s.replace(',', '.'));
+  if(!isNaN(num) && num > 0 && num < 1){
+    const totalMin = Math.round(num * 24 * 60);
+    const hh = Math.floor(totalMin / 60) % 24;
+    const mm = totalMin % 60;
+    return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+  }
+  return null;
+}
+
+/* converte o nome da coluna da planilha para um posto oficial */
+function mapPosto(h){
+  if(!h) return null;
+  const n = norm(h).replace(/[\r\n]+/g, ' ').trim();
+  let m;
+
+  // EMISSOR 1, 1.1, 2, 2.1...
+  if((m = n.match(/(?:EMISSOR|GUICHE|RECEP|BALCAO)\s*(\d(?:\.\d)?)/i))){
+    const k = 'EMISSOR ' + m[1];
+    if(POSTOS[k]) return k;
+    const base = 'EMISSOR ' + parseInt(m[1], 10);
+    if(POSTOS[base]) return base;
+  }
+  // TELEFONE 1, 2
+  if((m = n.match(/(?:TELEFONE|TEL)\D*(\d)?/i))){
+    const num = m[1] ? parseInt(m[1], 10) : 1;
+    const k = 'TELEFONE ' + (num === 2 ? 2 : 1);
+    if(POSTOS[k]) return k;
+  }
+  // AUTO SENTADO
+  if(n.includes('AUTO') && (n.includes('SENTAD') || n.includes('MESA') || n.includes('PC'))){
+    return 'AUTO SENTADO';
+  }
+  // AUTO 1, 2
+  if((m = n.match(/AUTO\s*(\d)/i))){
+    const k = 'AUTO ' + m[1];
+    if(POSTOS[k]) return k;
+    return 'AUTO';
+  }
+  if(n.includes('AUTO')){
+    return 'AUTO';
+  }
+  // ORIENTADOR
+  if(n.includes('ORIENT') || n.includes('FILA') || n.includes('TABLET') || n.includes('TRIAGEM')){
+    return 'ORIENTADOR';
+  }
+  // PAINEL 2, 2.1, 3, 3.1, 4, 5
+  if((m = n.match(/(?:PAINEL|CHAMADA|TOTEM)\s*(\d(?:\.\d)?)/i))){
+    const k = 'PAINEL ' + m[1];
+    if(POSTOS[k]) return k;
+    const base = 'PAINEL ' + parseInt(m[1], 10);
+    if(POSTOS[base]) return base;
+  }
+  // Numerais romanos
+  if(/\bPAINEL\s+I\b/i.test(n)) return 'PAINEL 1';
+  if(/\bPAINEL\s+II\b/i.test(n)) return 'PAINEL 2';
+  if(/\bPAINEL\s+III\b/i.test(n)) return 'PAINEL 3';
+  if(/\bPAINEL\s+IV\b/i.test(n)) return 'PAINEL 4';
+  if(/\bPAINEL\s+V\b/i.test(n)) return 'PAINEL 5';
+  if(n.includes('PAINEL') || n.includes('CHAMADA')){
+    return 'PAINEL 2';
+  }
+  // PESQUISA 1, 2
+  if(n.includes('PESQUI') || n.includes('SAST') || n.includes('AVALIA') || n.includes('SAIDA')){
+    if(n.includes('2')) return 'PESQUISA 2';
+    return 'PESQUISA';
+  }
+  return null;
+}
+
+/* =====================================================================
+   CENÁRIO ESTÁTICO — planta baixa vetorial (desenhada uma vez)
+   ===================================================================== */
+const SEATS = [];
+let OBST = [], TAG_RECTS = [];          // retângulos que as etiquetas de nome devem evitar
+let senhaAtual = 42, senhaTempo = 0;
+
+const ZONAS = [
+  { nome:'AUTOATENDIMENTO',  cor:COR.auto,     bg:'#f1ebfc', x:1,  y:2,  w:8,  h:10, tit:'tl' },
+  { nome:'RECEPÇÃO',         cor:COR.emissor,  bg:'#e6f6ed', x:10, y:2,  w:19, h:7,  tit:'tl' },
+  { nome:'TELEFONES',        cor:COR.telefone, bg:'#dcf3f9', x:23, y:2,  w:6,  h:4,  tit:'br' },
+  { nome:'ENTRADA',          cor:'#2563eb',    bg:'#e2ebfd', x:20, y:9,  w:9,  h:4,  tit:'tl' },
+  { nome:'SALÃO DE ESPERA',  cor:COR.painel,   bg:'#fff3e3', x:10, y:12, w:10, h:13, tit:'bl' },
+  { nome:'SAÍDA / PESQUISA', cor:COR.pesq,     bg:'#fde9f1', x:21, y:22, w:8,  h:9,  tit:'tl' },
+  { nome:'COPA / PAUSA',     cor:'#64748b',    bg:'#eaeef3', x:1,  y:23, w:8,  h:8,  tit:'tl' }
+];
+
+function balcao(x, y, w, h){
+  ctx.save(); ctx.shadowColor = 'rgba(15,23,42,.25)'; ctx.shadowBlur = 4 * K; ctx.shadowOffsetY = 1.6 * K;
+  rr(x, y, w, h, 2.5, '#ffffff'); ctx.restore();
+  rr(x, y, w, h, 2.5, null, '#94a3b8', .8); rr(x + 1.5, y + 1.5, w - 3, 3, 1.2, 'rgba(148,163,184,.28)');
+}
+function planta(tx_, ty_){
+  const px = tx_ * T + 8, py = ty_ * T;
+  rr(px - 4, py + 9.5, 8, 5.5, 1.6, '#c2410c'); rr(px - 4.6, py + 8.6, 9.2, 2, 1, '#ea580c');
+  ctx.fillStyle = '#15803d'; ctx.beginPath(); ctx.arc(px - 3, py + 6, 3.6, 0, 6.3); ctx.fill();
+  ctx.fillStyle = '#16a34a'; ctx.beginPath(); ctx.arc(px + 3, py + 6.5, 3.4, 0, 6.3); ctx.fill();
+  ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(px, py + 3.6, 3.8, 0, 6.3); ctx.fill();
+}
+function tituloZona(z){
+  const w = medir(z.nome, 6.8, 800) + 10, h = 11;
+  let x, y;
+  if(z.tit === 'tl'){ x = z.x * T + 5; y = z.y * T + 6; }
+  else if(z.tit === 'bl'){ x = z.x * T + 5; y = (z.y + z.h) * T - 11; }
+  else { x = (z.x + z.w) * T - 5 - w; y = (z.y + z.h) * T - 11; }
+  rr(x, y, w, h, h / 2, z.cor);
+  tx(z.nome, x + w / 2, y + h / 2 + .2, 6.8, '#fff', 800);
+  OBST.push({ x: x - 1, y: y - 1, w: w + 2, h: h + 2 });
+}
+
+function desenharCenario(){
+  ctx = bgCtx; bgCtx.setTransform(K, 0, 0, K, 0, 0);
+  SEATS.length = 0; OBST = [];
+  const CW = W * T, CH = H * T;
+
+  R(0, 0, CW, CH, '#cbd5e1');
+  R(T, 2 * T, (W - 2) * T, (H - 3) * T, '#f5f7fb');          // piso
+  ctx.strokeStyle = '#e6eaf2'; ctx.lineWidth = .4; ctx.beginPath();
+  for(let x = 2; x < W - 1; x++){ ctx.moveTo(x * T, 2 * T); ctx.lineTo(x * T, (H - 1) * T); }
+  for(let y = 3; y < H - 1; y++){ ctx.moveTo(T, y * T); ctx.lineTo((W - 1) * T, y * T); }
+  ctx.stroke();
+
+  // ----- zonas -----
+  ZONAS.forEach(z => {
+    rr(z.x * T + 1, z.y * T + 1, z.w * T - 2, z.h * T - 2, 5, z.bg);
+    ctx.save(); ctx.setLineDash([3, 2]); ctx.globalAlpha = .7;
+    rr(z.x * T + 1, z.y * T + 1, z.w * T - 2, z.h * T - 2, 5, null, z.cor, .9); ctx.restore();
+  });
+
+  // ----- paredes -----
+  R(0, 0, CW, 2 * T, '#1e293b'); R(0, 2 * T - 2, CW, 2, '#0f172a');
+  tx('NA HORA CEILÂNDIA', 22, 12, 9.6, '#ffffff', 800, 'left');
+  tx('MAPA DOS POSTOS DE ATENDIMENTO', 22, 24, 5.4, '#94a3b8', 700, 'left');
+  R(0, 2 * T, T, (H - 2) * T, '#334155'); R(T - 2, 2 * T, 2, (H - 3) * T, 'rgba(15,23,42,.35)');
+  R(0, (H - 1) * T, CW, T, '#334155'); R(T, (H - 1) * T, (W - 2) * T, 2, 'rgba(15,23,42,.35)');
+  R(29 * T, 2 * T, T, 7 * T, '#334155'); R(29 * T, 11 * T, T, 15 * T, '#334155'); R(29 * T, 28 * T, T, 3 * T, '#334155');
+  R(29 * T, 9 * T, 2, 2 * T, 'rgba(15,23,42,.35)');
+  // portas
+  R(29 * T, 9 * T, T, 2 * T, '#dbeafe'); R(29 * T, 9 * T - 1.5, T, 1.5, '#1e3a8a'); R(29 * T, 11 * T, T, 1.5, '#1e3a8a');
+  ctx.fillStyle = '#2563eb'; ctx.beginPath(); ctx.moveTo(476, 153); ctx.lineTo(476, 167); ctx.lineTo(467, 160); ctx.closePath(); ctx.fill();
+  R(29 * T, 26 * T, T, 2 * T, '#dcfce7'); R(29 * T, 26 * T - 1.5, T, 1.5, '#14532d'); R(29 * T, 28 * T, T, 1.5, '#14532d');
+  ctx.fillStyle = '#16a34a'; ctx.beginPath(); ctx.moveTo(468, 425); ctx.lineTo(468, 439); ctx.lineTo(477, 432); ctx.closePath(); ctx.fill();
+  // TV de senhas (texto dinâmico na camada frontal)
+  rr(192, 5, 112, 22, 3, '#020617', '#475569', .8);
+
+  // ----- balcões -----
+  balcao(23 * T, 4 * T, 6 * T, 19);                           // telefones (atrás da recepção)
+  balcao(11 * T, 7 * T, 16 * T, 19);                          // recepção (balcões dos emissores)
+  [240, 304, 368].forEach(x => rr(x - .5, 103, 1, 26, .5, 'rgba(56,189,248,.65)'));
+  balcao(2 * T, 10 * T, 7 * T, 16);                           // autoatendimento
+
+  // ----- bancos do salão (3 faixas) -----
+  [13, 17, 21].forEach(y0 => { for(const y of [y0 + 2, y0 + 3]) for(let x = 13; x <= 15; x++){
+    const px = x * T, py = y * T;
+    rr(px + 2, py + 7, 12, 7.5, 2.5, '#5b7fd1'); rr(px + 2, py + 3, 12, 5, 2.2, '#3f63b8');
+    rr(px + 2, py + 7, 12, 1, .5, 'rgba(255,255,255,.35)');
+    SEATS.push({ x, y, ocupado: false });
+  } });
+
+  // ----- decoração e utilidades -----
+  [[1,13],[8,13],[1,22],[8,22],[21,14],[28,14],[21,20],[28,20],[9,2]].forEach(([x, y]) => planta(x, y));
+  // máquina de bebidas
+  rr(4 * T + 1, 14 * T, 14, 17, 2, '#dc2626'); rr(4 * T + 2.5, 14 * T + 2, 8, 8, 1, '#7dd3fc'); rr(4 * T + 11, 14 * T + 3, 2.4, 2, .5, '#fde047'); rr(4 * T + 11, 14 * T + 7, 2.4, 2, .5, '#4ade80'); rr(4 * T + 3, 14 * T + 12.5, 8, 2.4, .6, '#7f1d1d');
+  tx('BEBIDAS', 4 * T + 8, 14 * T + 22, 5.4, '#64748b', 700);
+  // copa: cafeteira + mesa
+  rr(7 * T + 1, 24 * T + 2, 14, 13, 2.2, '#334155'); rr(7 * T + 3, 24 * T + 4, 6, 4, 1, '#0f172a'); ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(7 * T + 11.5, 24 * T + 5.8, 1.4, 0, 6.3); ctx.fill(); rr(7 * T + 4, 24 * T + 10, 6, 3, 1, '#f1f5f9');
+  tx('CAFÉ', 7 * T + 8, 24 * T + 19.5, 5.4, '#64748b', 700);
+  rr(3 * T, 27 * T + 2, 32, 28, 6, '#d6a56e', '#b07c45', .9); rr(3 * T + 2, 27 * T + 4, 28, 3, 1.5, 'rgba(255,255,255,.25)');
+  ctx.fillStyle = '#fff'; [[9, 14], [23, 14]].forEach(([dx, dy]) => { ctx.beginPath(); ctx.arc(3 * T + dx, 27 * T + dy, 2.6, 0, 6.3); ctx.fill(); }); tx('MESA', 3 * T + 16, 27 * T + 29, 4.6, '#7a4a21', 800);
+
+  // ----- títulos das zonas (por cima de tudo) -----
+  ZONAS.forEach(tituloZona);
+  ctx = mainCtx;
+}
+
+/* =====================================================================
+   CAMADA FRONTAL (itens que ficam na frente das pessoas + marcadores)
+   ===================================================================== */
+function monitor(cx, y, tela, w = 10){
+  rr(cx - w / 2, y, w, 6.6, 1.3, '#1e293b'); rr(cx - w / 2 + .9, y + .9, w - 1.8, 4.6, .8, tela); rr(cx - 1.2, y + 6.6, 2.4, 1.6, .4, '#475569');
+}
+function frontLayer(t){
+  ctx = mainCtx; TAG_RECTS = [];
+  const ativo = k => !estado.postosAtivos || estado.postosAtivos.has(k);
+  const ocup = {}; Object.values(estado.pessoas).forEach(p => { if(p.presente && p.posto) ocup[p.posto] = p.nome; });
+  const tela = Math.floor(t * 1.5) % 2 ? '#60a5fa' : '#38bdf8';
+
+  // monitores dos emissores (na borda do balcão)
+  ['EMISSOR 1','EMISSOR 1.1','EMISSOR 2','EMISSOR 2.1','EMISSOR 3','EMISSOR 3.1','EMISSOR 4','EMISSOR 4.1'].forEach(k => {
+    if(POSTOS[k] && ativo(k)) monitor(POSTOS[k].x * T + 8, 106, tela, 10);
+  });
+  // telefones: monitor + aparelho com luz piscando
+  ['TELEFONE 1','TELEFONE 2'].forEach((k, i) => {
+    if(POSTOS[k] && ativo(k)){
+      const cx = POSTOS[k].x * T + 8;
+      monitor(cx - 4, 57.5, tela, 10);
+      rr(cx + 4.5, 61, 7.5, 5.5, 1.2, '#1e293b'); rr(cx + 5.5, 62, 3, 1, .4, '#64748b'); rr(cx + 5.5, 64, 3, 1, .4, '#64748b');
+      ctx.fillStyle = (Math.floor(t * 2 + i) % 2) ? '#ef4444' : '#7f1d1d'; ctx.beginPath(); ctx.arc(cx + 10.5, 63, 1, 0, 6.3); ctx.fill();
+    }
+  });
+  // autoatendimento: PC sentado e totens touch
+  if(ativo('AUTO SENTADO')) monitor(POSTOS['AUTO SENTADO'].x * T + 8, 151.5, tela, 11);
+  [['AUTO 1', POSTOS['AUTO 1'].x], ['AUTO 2', POSTOS['AUTO 2'].x]].forEach(([k, tx_]) => {
+    if(ativo(k) || (k === 'AUTO 1' && estado.postosAtivos && estado.postosAtivos.has('AUTO'))){
+      const cx = tx_ * T + 8 + (k === 'AUTO 1' ? 11 : -11);
+      rr(cx - 5, 139, 10, 18, 2, '#1e3a8a'); rr(cx - 4, 141, 8, 9.5, 1, '#38bdf8'); rr(cx - 4, 141, 8, 2, 1, '#bae6fd'); rr(cx - 2.5, 152, 5, 2, .6, '#0f172a');
+    }
+  });
+  // totens de painel (senha) abaixo de cada atendente
+  const PAINEIS = ['PAINEL 1','PAINEL 2','PAINEL 2.1','PAINEL 3','PAINEL 3.1','PAINEL 4','PAINEL 5'];
+  PAINEIS.forEach((k, i) => {
+    if(POSTOS[k] && ativo(k)){
+      const cx = POSTOS[k].x * T + 8, ty = (POSTOS[k].y + 1) * T + 1.5;
+      rr(cx - 6, ty, 12, 13, 2, '#1e293b'); rr(cx - 5, ty + 1.4, 10, 6, 1, '#020617');
+      tx(String(senhaAtual + i * 2).padStart(3, '0'), cx, ty + 4.6, 4.8, '#ef4444', 800); rr(cx - 2.5, ty + 9.4, 5, 2, .6, '#334155');
+    }
+  });
+  // TV de senhas
+  tx('SENHA ATUAL', 248, 10.5, 4.2, '#94a3b8', 700);
+  tx('A' + String(senhaAtual).padStart(3, '0'), 248, 20, 9.5, (Math.floor(t * 2) % 2) ? '#fde047' : '#fb923c', 800);
+
+  // marcadores de posto: preenchido = ocupado, vazado = vago
+  const sel = estado.sel;
+  function marcador(keys, label, cx, cy){
+    if(!keys.some(ativo)) return;
+    const k0 = keys.find(ativo) || keys[0], cor = POSTOS[k0].cor;
+    const nome = keys.map(k => ocup[k]).find(Boolean);
+    const base = { size: 6.3, pad: 4.6 };
+    const r = nome ? pill(cx, cy, label, cor, '#fff', Object.assign({ sombra: true }, base))
+                   : pill(cx, cy, label, '#ffffff', cor, Object.assign({ borda: cor, lw: .9 }, base));
+    if(nome && nome === sel) rr(r.x - 1.3, r.y - 1.3, r.w + 2.6, r.h + 2.6, r.h / 2 + 1.3, null, '#facc15', 1.6);
+    TAG_RECTS.push(r);
+  }
+  [['E1','EMISSOR 1',12],['1.1','EMISSOR 1.1',13],['E2','EMISSOR 2',16],['2.1','EMISSOR 2.1',17],['E3','EMISSOR 3',20],['3.1','EMISSOR 3.1',21],['E4','EMISSOR 4',24],['4.1','EMISSOR 4.1',25]]
+    .forEach(([l, k, x]) => marcador([k], l, x * T + 8, 121.5));
+  [['TEL 1','TELEFONE 1',25],['TEL 2','TELEFONE 2',27]].forEach(([l, k, x]) => marcador([k], l, x * T + 8, 74));
+  marcador(['AUTO SENTADO'], 'PC', 3 * T + 8, 168);
+  marcador(['AUTO 1', 'AUTO'], 'AUTO 1', 6 * T + 8, 168);
+  marcador(['AUTO 2'], 'AUTO 2', 8 * T + 8, 168);
+  marcador(['ORIENTADOR'], 'ORIENT.', POSTOS['ORIENTADOR'].x * T + 8, (POSTOS['ORIENTADOR'].y + 1) * T + 9);
+  PAINEIS.forEach(k => { if(POSTOS[k]) marcador([k], k.replace('PAINEL ', 'P'), POSTOS[k].x * T + 8, (POSTOS[k].y + 2) * T + 5); });
+  marcador(['PESQUISA'], 'PESQ 1', POSTOS['PESQUISA'].x * T - 18, POSTOS['PESQUISA'].y * T + 7);
+  marcador(['PESQUISA 2'], 'PESQ 2', POSTOS['PESQUISA 2'].x * T - 18, POSTOS['PESQUISA 2'].y * T + 7);
+}
+
+/* =====================================================================
+   PESSOAS (sprites procedurais)
+   ===================================================================== */
+const PELES = ['#ffdbb0','#f1c27d','#d9a066','#a86b3c','#7a4a2a'];
+const CABELOS = ['#1c1410','#3e2a1a','#6b4423','#c98f3a','#e8c25a','#8a8a92','#b3361f'];
+const CAMISAS = ['#d94b4b','#3b6fe0','#2fae6a','#8a5bd6','#e0508a','#e69a2c','#1fb5d4','#4a5368'];
+function hash(s){ let h = 0; for(let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
+function sombra(hex, f = .72){ const n = parseInt(hex.slice(1), 16); const r = (n >> 16) * f | 0, g = (n >> 8 & 255) * f | 0, b = (n & 255) * f | 0; return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1); }
+function criarLook(seed){
+  const h = typeof seed === 'string' ? hash(seed) : seed;
+  const camisa = CAMISAS[(h >> 3) % CAMISAS.length];
+  return { pele: PELES[h % PELES.length], cabelo: CABELOS[(h >> 2) % CABELOS.length], camisa, camSomb: sombra(camisa),
+           estilo: (h >> 5) % 4, oculos: (h >> 7) % 3 === 0, calca: (h >> 9) % 2 ? '#2d3550' : '#3d3a45' };
+}
+
+/* Avatar vetorial: camisa na cor do setor (identifica o posto de longe), anel no chão e adereços por função. */
+function elipse(x, y, rx, ry){ ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); }
+function desenharPessoa(p, t){
+  const L = p.look, andando = p.moving, sit = p.sitting, dir = p.dir;
+  const cor = p.staff ? (p.cor || COR.pausa) : '#94a3b8';
+  const f = Math.sin(t * 11 + p.seed * 3);
+  const bob = andando ? -Math.abs(f) * 1.3 : 0, base = sit ? 3 : 0;
+  ctx.save(); ctx.translate(p.x, p.y);
+  if(!p.staff){ ctx.scale(.88, .88); ctx.globalAlpha *= .85; }
+
+  // sombra + anel de posição (cor do setor)
+  ctx.fillStyle = 'rgba(15,23,42,.18)'; elipse(0, .5, 6.8, 2.5); ctx.fill();
+  if(p.staff){ ctx.strokeStyle = cor; ctx.lineWidth = 1.3; elipse(0, .3, 7.4, 2.9); ctx.stroke(); }
+
+  const topo = -14 + base + bob;           // topo do tronco
+  // cadeira (quando sentado)
+  if(sit){ rr(-6.5, topo + 1, 13, 10, 3.2, '#475569'); }
+  // pernas
+  if(!sit){
+    const sw = andando ? f * 1.8 : 0;
+    rr(-3.9, -6.5 + bob, 3.2, 6.5 - Math.max(0, sw) - bob, 1.4, L.calca);
+    rr(.7, -6.5 + bob, 3.2, 6.5 - Math.max(0, -sw) - bob, 1.4, L.calca);
+    rr(-4.1, -1.6 - Math.max(0, sw), 3.6, 1.7, .8, '#1e293b'); rr(.5, -1.6 - Math.max(0, -sw), 3.6, 1.7, .8, '#1e293b');
+  }
+  // cabelo comprido atrás da cabeça
+  const hy = topo - 4.4;
+  if(L.estilo === 1 && dir !== 'up'){ rr(-5, hy - 1, 10, 9, 3.5, L.cabelo); }
+  // braços
+  const sb = andando ? f * 1.2 : (sit ? Math.sin(t * 6 + p.seed) * .8 : 0);
+  rr(-6.8, topo + 1.4 + sb, 2.5, 6.4, 1.2, cor); rr(4.3, topo + 1.4 - sb, 2.5, 6.4, 1.2, cor);
+  ctx.fillStyle = L.pele; ctx.beginPath(); ctx.arc(-5.5, topo + 8.2 + sb, 1.4, 0, 6.3); ctx.fill(); ctx.beginPath(); ctx.arc(5.5, topo + 8.2 - sb, 1.4, 0, 6.3); ctx.fill();
+  // tronco
+  rr(-5, topo, 10, 9.6, 3.2, cor);
+  ctx.fillStyle = 'rgba(0,0,0,.14)'; ctx.fillRect(-5 + 1, topo + 7, 8, 1.8);
+  if(p.staff && dir !== 'up'){ rr(-3.6, topo + 2.2, 3.4, 4.4, .9, '#fff'); rr(-3, topo + 3, 2.2, .8, .4, cor); }
+  // pescoço + cabeça
+  rr(-1.4, hy + 3.2, 2.8, 2.4, .8, L.pele);
+  ctx.fillStyle = L.pele; ctx.beginPath(); ctx.arc(0, hy, 4.4, 0, 6.3); ctx.fill();
+  // cabelo
+  ctx.fillStyle = L.cabelo;
+  if(dir === 'up'){ ctx.beginPath(); ctx.arc(0, hy, 4.6, 0, 6.3); ctx.fill(); }
+  else { ctx.beginPath(); ctx.arc(0, hy, 4.7, Math.PI * 1.03, Math.PI * 1.97); ctx.closePath(); ctx.fill(); }
+  if(L.estilo === 2){ ctx.beginPath(); ctx.arc(0, hy - 5, 1.9, 0, 6.3); ctx.fill(); }
+  // rosto
+  if(dir === 'down'){
+    ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(-1.7, hy + .5, .62, 0, 6.3); ctx.arc(1.7, hy + .5, .62, 0, 6.3); ctx.fill();
+    ctx.strokeStyle = 'rgba(30,41,59,.7)'; ctx.lineWidth = .5; ctx.beginPath(); ctx.arc(0, hy + 1.9, 1, .2, Math.PI - .2); ctx.stroke();
+    if(L.oculos){ ctx.strokeStyle = '#0f172a'; ctx.lineWidth = .55; ctx.beginPath(); ctx.arc(-1.7, hy + .5, 1.3, 0, 6.3); ctx.moveTo(3, hy + .5); ctx.arc(1.7, hy + .5, 1.3, 0, 6.3); ctx.stroke(); }
+  } else if(dir === 'left' || dir === 'right'){
+    const s = dir === 'left' ? -1 : 1;
+    ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(s * 2.3, hy + .5, .62, 0, 6.3); ctx.fill();
+  }
+  // adereços por função
+  if(p.staff){
+    const tp = p.tipo;
+    if(tp === 'telefone'){
+      ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(0, hy - .3, 5.3, Math.PI * .98, Math.PI * 2.02); ctx.stroke();
+      rr(-6.6, hy - .6, 2.2, 3.6, 1, '#0f172a'); ctx.beginPath(); ctx.moveTo(-5.4, hy + 3); ctx.quadraticCurveTo(-4, hy + 5.4, -1.6, hy + 4.6); ctx.stroke();
+    }
+    if(tp === 'orient' && !sit){ rr(5.4, topo + 3.6, 5.4, 7.6, 1.2, '#0f172a'); rr(6.1, topo + 4.4, 4, 6, .6, '#7dd3fc'); }
+    if(tp === 'pesq' && !sit){ rr(5.4, topo + 3.6, 5.6, 7.8, 1, '#b45309'); rr(6.2, topo + 4.8, 4, 5.8, .5, '#fff'); rr(7, topo + 6.4, 2.4, .6, .3, '#94a3b8'); }
+    if(tp === 'painel' && !sit){ rr(5.4, topo + 5, 5, 3.2, .8, '#fbbf24'); }
+  }
+  ctx.restore();
+}
+
+function realceSelecao(p, t){
+  const pulso = (Math.sin(t * 6) + 1) / 2;
+  ctx.save(); ctx.translate(p.x, p.y);
+  const g = ctx.createRadialGradient(0, -8, 2, 0, -8, 24 + pulso * 4);
+  g.addColorStop(0, 'rgba(250,204,21,.55)'); g.addColorStop(1, 'rgba(250,204,21,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, -8, 26 + pulso * 4, 0, 6.3); ctx.fill();
+  ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.8; elipse(0, .3, 10 + pulso * 2.5, 4.2 + pulso); ctx.stroke();
+  ctx.restore();
+}
+
+function bolha(cx, cy, s){
+  const w = medir(s, 6.2, 700) + 8, x = cx - w / 2, y = cy - 5.5;
+  ctx.save(); ctx.shadowColor = 'rgba(15,23,42,.25)'; ctx.shadowBlur = 2 * K; ctx.shadowOffsetY = K * .6;
+  rr(x, y, w, 11, 5, '#fff', '#cbd5e1', .6); ctx.restore();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(cx - 2, y + 10.6); ctx.lineTo(cx + 2, y + 10.6); ctx.lineTo(cx, y + 13.5); ctx.closePath(); ctx.fill();
+  tx(s, cx, cy + .2, 6.2, '#0f172a', 700);
+}
+
+/* =====================================================================
+   ESTADO, EQUIPE E CIDADÃOS
+   ===================================================================== */
+const estado = { escala:{}, slots:[], idx:0, equipe:[], pessoas:{}, auto:false, timer:null, sel:null, busca:'', info:[], alertas:{}, filtroPresenca:'todos', jornadas:{} };
+let npcs = [];
+
+function novaPessoa(nome, staff){
+  const seed = hash(nome + (staff ? '' : Math.random()));
+  return { nome, staff, look: criarLook(staff ? nome : seed), seed: (seed % 100) / 10, x: 0, y: 0, dir: 'down', sitting: false, moving: false,
+           path: [], vel: 72, espera: 0, cor: COR.pausa, tipo: null, posto: null, destino: null };
+}
+function colocar(p, tx, ty){ p.x = tx * T + 8; p.y = ty * T + 15; p.path = []; p.moving = false; }
+function tileDe(p){ return [Math.min(W - 1, Math.max(0, Math.floor(p.x / T))), Math.min(H - 1, Math.max(0, Math.floor(p.y / T)))]; }
+function irPara(p, tx, ty){
+  const [sx, sy] = tileDe(p), path = achar(sx, sy, tx, ty);
+  if(path === null){ colocar(p, tx, ty); return false; }
+  p.path = path; return true;
+}
+function chegou(p){ if(p.destino){ p.sitting = p.destino.sit; p.dir = p.destino.dir; } }
+function mover(p, dt){
+  if(p.espera > 0){ p.espera -= dt; return; }
+  if(!p.path.length){ if(p.moving){ p.moving = false; chegou(p); } return; }
+  const [tx, ty] = p.path[0], dx = tx * T + 8 - p.x, dy = ty * T + 15 - p.y, d = Math.hypot(dx, dy), step = p.vel * dt;
+  p.moving = true; p.sitting = false;
+  if(d > .01){ if(Math.abs(dx) > Math.abs(dy)) p.dir = dx > 0 ? 'right' : 'left'; else p.dir = dy > 0 ? 'down' : 'up'; }
+  if(d <= step){ p.x = tx * T + 8; p.y = ty * T + 15; p.path.shift(); }
+  else { p.x += dx / d * step; p.y += dy / d * step; }
+  if(!p.path.length){ p.moving = false; chegou(p); }
+}
+
+/* ----- cidadãos (NPCs que passam pelo fluxo real do Na Hora) ----- */
+function criarNPCs(){
+  npcs = [];
+  SEATS.forEach(s => s.ocupado = false);
+  for(let i = 0; i < 9; i++){
+    const n = novaPessoa('CID' + i, false); n.vel = 40 + Math.random() * 14; n.ativo = false; n.fase = 'nascer'; n.tempoSpawn = i * 2.5 + Math.random() * 2; n.seat = null;
+    if(i < 4){
+      const livres = SEATS.filter(s => !s.ocupado); const s = livres[Math.floor(Math.random() * livres.length)];
+      s.ocupado = true; n.seat = s; colocar(n, s.x, s.y); n.sitting = true; n.dir = 'up'; n.ativo = true; n.fase = 'levantar'; n.espera = 2 + Math.random() * 14;
+    }
+    npcs.push(n);
+  }
+}
+function atualizarNPC(n, dt){
+  if(!n.ativo){ if(n.fase === 'nascer'){ n.tempoSpawn -= dt; if(n.tempoSpawn <= 0){ colocar(n, 28, 9); n.ativo = true; n.fase = 'entrar'; n.look = criarLook(Math.floor(Math.random() * 99999)); } } return; }
+  mover(n, dt);
+  if(n.moving || n.path.length || n.espera > 0) return;
+  const R_ = (a, b) => a + Math.random() * (b - a);
+  switch(n.fase){
+    case 'entrar': { const q = [[25,9],[26,9],[25,10],[26,10],[24,10]][Math.floor(Math.random() * 5)]; irPara(n, q[0], q[1]); n.fase = 'fila'; break; }
+    case 'fila': n.espera = R_(2, 4); n.fase = 'balcao'; break;
+    case 'balcao': { const x = [12, 13, 16, 17, 20, 21, 24, 25][Math.floor(Math.random() * 8)]; irPara(n, x, 8); n.fase = 'atendido'; break; }
+    case 'atendido': n.espera = R_(4, 6); n.fase = 'sentar'; break;
+    case 'sentar': {
+      const livres = SEATS.filter(s => !s.ocupado);
+      if(!livres.length){ n.espera = 2; break; }
+      const s = livres[Math.floor(Math.random() * livres.length)]; s.ocupado = true; n.seat = s;
+      n.destino = { sit: true, dir: 'up' }; irPara(n, s.x, s.y); n.fase = 'sentado'; break;
+    }
+    case 'sentado': n.sitting = true; n.dir = 'up'; n.espera = R_(10, 22); n.fase = 'levantar'; break;
+    case 'levantar': { n.sitting = false; n.destino = null; if(n.seat){ n.seat.ocupado = false; n.seat = null; }
+      const bx = [12, 16][Math.floor(Math.random() * 2)], by = [15, 19, 23][Math.floor(Math.random() * 3)];
+      irPara(n, bx, by); n.fase = 'painel'; break; }
+    case 'painel': n.espera = R_(4, 6); n.fase = 'sair'; break;
+    case 'sair': irPara(n, 29, 26); n.fase = 'fim'; break;
+    case 'fim': n.ativo = false; n.fase = 'nascer'; n.tempoSpawn = R_(3, 12); break;
+  }
+}
+
+/* ----- equipe: aplica o horário e manda cada um caminhar ----- */
+function postoDe(idx, nome){
+  const aloc = estado.escala[estado.slots[idx]]; if(!aloc) return null;
+  for(const k in aloc){
+    if(matchNome(aloc[k], nome)) return k;
+  }
+  return null;
+}
+
+function calcularJornadas(escala, slots, equipe){
+  const jor = {};
+  equipe.forEach(nome => {
+    let minIdx = -1, maxIdx = -1;
+    slots.forEach((s, idx) => {
+      const aloc = escala[s] || {};
+      for(const pk in aloc){
+        if(matchNome(aloc[pk], nome)){
+          if(minIdx === -1) minIdx = idx;
+          maxIdx = idx;
+          break;
+        }
+      }
+    });
+    if(minIdx !== -1){
+      const entrada = slots[minIdx];
+      let saida = '';
+      if(maxIdx + 1 < slots.length){
+        saida = slots[maxIdx + 1];
+      } else {
+        const [h, m] = slots[maxIdx].split(':').map(Number);
+        const tot = h * 60 + m + 30;
+        const sh = Math.floor(tot / 60) % 24, sm = tot % 60;
+        saida = String(sh).padStart(2, '0') + ':' + String(sm).padStart(2, '0');
+      }
+      jor[nome] = { minIdx, maxIdx, entrada, saida };
+    } else {
+      jor[nome] = { minIdx: 0, maxIdx: slots.length - 1, entrada: slots[0] || '07:30', saida: '18:00' };
+    }
+  });
+  return jor;
+}
+
+function aplicarSlot(idx, animar){
+  if(!estado.slots.length) return;
+  idx = Math.max(0, Math.min(estado.slots.length - 1, idx)); estado.idx = idx;
+  $('slider').value = idx; $('slotLabel').textContent = estado.slots[idx]; $('clock').textContent = estado.slots[idx];
+  estado.info = []; estado.alertas = {};
+  let pe = 0, sent = 0, pausa = 0, chegando = 0, fui = 0, alertas = 0;
+
+  estado.equipe.forEach((nome, i) => {
+    const p = estado.pessoas[nome];
+    const j = estado.jornadas[nome] || { minIdx: 0, maxIdx: estado.slots.length - 1, entrada: '07:30', saida: '18:00' };
+    const pk = postoDe(idx, nome);
+    const proxPk = idx + 1 < estado.slots.length ? postoDe(idx + 1, nome) : null;
+    const antPk = idx > 0 ? postoDe(idx - 1, nome) : null;
+
+    let statusPresenca = 'posto';
+    if(idx < j.minIdx){
+      statusPresenca = 'chegando';
+    } else if(idx > j.maxIdx){
+      statusPresenca = 'fui';
+    } else if(!pk){
+      statusPresenca = 'pausa';
+    }
+
+    if(statusPresenca === 'chegando'){
+      chegando++;
+      p.presente = false;
+      p.x = -999; p.y = -999; p.path = []; p.moving = false; p.sitting = false;
+      p.cor = '#f59e0b'; p.tipo = null; p.posto = null; p.destino = null;
+      estado.info.push({
+        nome, pk: null, proxPk, antPk, alerta: null,
+        statusPresenca, entrada: j.entrada, saida: j.saida
+      });
+      return;
+    }
+
+    if(statusPresenca === 'fui'){
+      fui++;
+      p.presente = false;
+      p.x = -999; p.y = -999; p.path = []; p.moving = false; p.sitting = false;
+      p.cor = '#64748b'; p.tipo = null; p.posto = null; p.destino = null;
+      estado.info.push({
+        nome, pk: null, proxPk: null, antPk, alerta: null,
+        statusPresenca, entrada: j.entrada, saida: j.saida
+      });
+      return;
+    }
+
+    // Está no salão (posto de trabalho ou pausa no expediente)
+    p.presente = true;
+    let tx, ty, destino;
+    if(pk){
+      const po = POSTOS[pk]; tx = po.x; ty = po.y; destino = { sit: po.sit, dir: po.dir };
+      p.cor = po.cor; p.tipo = po.tipo; p.posto = pk; po.sit ? sent++ : pe++;
+      if(antPk && POSTOS[antPk]){
+        if(!po.sit && !POSTOS[antPk].sit){ estado.alertas[nome] = 'Ficou em pé 2 horários seguidos'; alertas++; }
+        else if(antPk === pk){ estado.alertas[nome] = 'Repetiu o mesmo posto'; alertas++; }
+      }
+    } else {
+      const sp = PAUSA_SPOTS[i % PAUSA_SPOTS.length]; tx = sp[0]; ty = sp[1]; destino = { sit: false, dir: 'down' };
+      p.cor = COR.pausa; p.tipo = null; p.posto = null; pausa++;
+    }
+    p.destino = destino;
+
+    if(!animar){
+      colocar(p, tx, ty); p.sitting = destino.sit; p.dir = destino.dir; p.espera = 0;
+    } else {
+      const [cx, cy] = tileDe(p);
+      if(p.x < 0 || p.y < 0){
+        colocar(p, tx, ty); p.sitting = destino.sit; p.dir = destino.dir; p.espera = 0;
+      } else if(!(cx === tx && cy === ty && !p.moving)){
+        p.sitting = false; p.espera = Math.random() * 1.2; irPara(p, tx, ty);
+      } else {
+        p.sitting = destino.sit; p.dir = destino.dir;
+      }
+    }
+    estado.info.push({
+      nome, pk, proxPk, antPk, alerta: estado.alertas[nome] || null,
+      statusPresenca, entrada: j.entrada, saida: j.saida
+    });
+  });
+
+  $('cPe').textContent = pe;
+  $('cSent').textContent = sent;
+  $('cPausa').textContent = pausa;
+  if($('cChegando')) $('cChegando').textContent = chegando;
+  if($('cFui')) $('cFui').textContent = fui;
+  $('cAl').textContent = alertas;
+  $('chipAl').classList.toggle('on', alertas > 0);
+
+  // Contadores das abas
+  if($('countTodos')) $('countTodos').textContent = estado.equipe.length;
+  if($('countSalao')) $('countSalao').textContent = pe + sent + pausa;
+  if($('countCF')) $('countCF').textContent = chegando + fui;
+
+  renderLista();
+}
+
+function carregarEscala(escala, manterSlot = false){
+  const slotAnterior = (manterSlot && estado.slots.length) ? estado.slots[estado.idx] : null;
+  estado.escala = escala; estado.slots = Object.keys(escala).sort();
+  const nomes = new Set();
+  estado.postosAtivos = new Set();
+  Object.values(escala).forEach(a => {
+    Object.entries(a).forEach(([pk, n]) => {
+      const limpo = limparNome(n);
+      if(limpo){
+        nomes.add(limpo);
+        estado.postosAtivos.add(pk);
+      }
+    });
+  });
+  estado.equipe = [...nomes].sort(); estado.pessoas = {};
+  estado.equipe.forEach(n => {
+    estado.pessoas[n] = Object.assign(novaPessoa(n, true), { staff: true, presente: true });
+  });
+  estado.jornadas = calcularJornadas(escala, estado.slots, estado.equipe);
+
+  $('slider').max = Math.max(0, estado.slots.length - 1);
+  estado.sel = null; criarNPCs();
+  desenharCenario();
+  let targetIdx = 0;
+  if(slotAnterior && estado.slots.includes(slotAnterior)){
+    targetIdx = estado.slots.indexOf(slotAnterior);
+  }
+  aplicarSlot(targetIdx, false);
+}
+
+function setFiltroPresenca(f){
+  estado.filtroPresenca = f;
+  ['tabTodos', 'tabSalao', 'tabCF'].forEach(id => {
+    const el = $(id); if(el) el.classList.remove('active');
+  });
+  if(f === 'todos' && $('tabTodos')) $('tabTodos').classList.add('active');
+  else if(f === 'salao' && $('tabSalao')) $('tabSalao').classList.add('active');
+  else if(f === 'chegando_fui' && $('tabCF')) $('tabCF').classList.add('active');
+  renderLista();
+}
+
+/* =====================================================================
+   LISTA LATERAL
+   ===================================================================== */
+function po_txt(it){
+  if(it.statusPresenca === 'chegando') return 'Ainda não chegou';
+  if(it.statusPresenca === 'fui') return 'Já foi embora';
+  const po = it.pk ? POSTOS[it.pk] : null;
+  return po ? (po.sit ? 'Sentado' : 'Em pé') : 'Pausa no salão';
+}
+function renderLista(){
+  const el = $('lista'); el.innerHTML = '';
+  const termo = norm($('busca').value || '').trim();
+  const porGrupo = {}; GRUPOS.forEach(g => porGrupo[g[0]] = []);
+
+  estado.info.forEach(it => {
+    // Filtro por abas
+    if(estado.filtroPresenca === 'salao' && (it.statusPresenca === 'chegando' || it.statusPresenca === 'fui')) return;
+    if(estado.filtroPresenca === 'chegando_fui' && (it.statusPresenca !== 'chegando' && it.statusPresenca !== 'fui')) return;
+
+    let grupo;
+    if(it.statusPresenca === 'chegando'){
+      grupo = '⏳ CHEGANDO (AINDA NÃO ENTROU)';
+    } else if(it.statusPresenca === 'fui'){
+      grupo = '🏠 FUI (JÁ FOI EMBORA)';
+    } else if(it.pk){
+      grupo = POSTOS[it.pk] ? POSTOS[it.pk].grupo : 'RECEPÇÃO';
+    } else {
+      grupo = '☕ PAUSA (NO SALÃO)';
+    }
+
+    if(termo && !norm(it.nome).includes(termo) && !norm(it.pk || grupo).includes(termo)) return;
+    if(!porGrupo[grupo]) porGrupo[grupo] = [];
+    porGrupo[grupo].push(it);
+  });
+
+  GRUPOS.forEach(([nome, cor]) => {
+    const itens = porGrupo[nome]; if(!itens || !itens.length) return;
+    const h = document.createElement('div'); h.className = 'grp'; h.style.setProperty('--gc', cor);
+    h.innerHTML = `<span><i></i>${nome}</span><b>${itens.length}</b>`;
+    el.appendChild(h);
+
+    itens.forEach(it => {
+      const d = document.createElement('div');
+      d.className = 'item' + (estado.sel === it.nome ? ' sel' : '') + (it.alerta ? ' alerta' : '');
+      d.style.setProperty('--gc', cor);
+
+      let selo = '', prox = '', icone = '';
+      if(it.statusPresenca === 'chegando'){
+        selo = `<span class="selo cinza">Entra às ${it.entrada || '--:--'}</span>`;
+        prox = 'Turno ainda não iniciado';
+        icone = '⏳';
+      } else if(it.statusPresenca === 'fui'){
+        selo = `<span class="selo cinza">Saiu às ${it.saida || '--:--'}</span>`;
+        prox = 'Expediente encerrado hoje';
+        icone = '🏠';
+      } else {
+        const po = it.pk ? POSTOS[it.pk] : null;
+        icone = po ? (po.sit ? '💺' : '🚶') : '☕';
+        selo = `<span class="selo">${it.pk || 'PAUSA'}</span>`;
+        const pNome = it.proxPk ? (POSTOS[it.proxPk] ? it.proxPk : '?') : (estado.idx + 1 < estado.slots.length ? 'Pausa' : 'Fim do expediente');
+        prox = `Depois: <b>${pNome}</b>`;
+      }
+      const ini = norm(it.nome).charAt(0);
+      d.innerHTML = `<div class="av">${ini}</div><div class="inf"><div class="top"><div class="nm">${it.nome}</div>${selo}</div><div class="nx">${prox}</div>${it.alerta ? `<div class="alerta-msg">⚠ ${it.alerta}</div>` : ''}</div><div class="st" title="${po_txt(it)}">${icone}</div>`;
+      d.onclick = () => {
+        estado.sel = estado.sel === it.nome ? null : it.nome;
+        renderLista();
+        if(estado.sel) focarNaPessoa(estado.sel);
+      };
+      el.appendChild(d);
+    });
+  });
+  if(!el.children.length) el.innerHTML = '<div class="vazio">Ninguém encontrado.</div>';
+  if(estado.sel){
+    const elSel = el.querySelector('.item.sel');
+    if(elSel) elSel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+}
+
+/* =====================================================================
+   LOOP PRINCIPAL
+   ===================================================================== */
+let ultimo = performance.now();
+let mostrarCidadaos = true;
+function alternarCidadaos(){
+  mostrarCidadaos = !mostrarCidadaos;
+  const b = $('btnCid'); if(b) b.classList.toggle('off', !mostrarCidadaos);
+}
+function frame(ts){
+  const dt = Math.min(.05, (ts - ultimo) / 1000); ultimo = ts; const t = ts / 1000;
+  senhaTempo += dt; if(senhaTempo > 4){ senhaTempo = 0; senhaAtual = (senhaAtual + 1 + Math.floor(Math.random() * 2)) % 999; }
+
+  // Apenas quem está presente no salão se move e é renderizado
+  const presentes = Object.values(estado.pessoas).filter(p => p.presente);
+  presentes.forEach(p => mover(p, dt));
+  npcs.forEach(n => atualizarNPC(n, dt));
+
+  mainCtx.setTransform(1, 0, 0, 1, 0, 0); mainCtx.drawImage(bg, 0, 0);
+  mainCtx.setTransform(K, 0, 0, K, 0, 0); ctx = mainCtx;
+  const sel = estado.sel;
+  const todos = [...presentes, ...(mostrarCidadaos ? npcs.filter(n => n.ativo) : [])].sort((a, b) => a.y - b.y);
+  todos.forEach(p => {
+    const esmaece = sel && (!p.staff || p.nome !== sel);
+    ctx.globalAlpha = esmaece ? .38 : 1;
+    if(p.staff && sel === p.nome) realceSelecao(p, t);
+    desenharPessoa(p, t);
+    ctx.globalAlpha = 1;
+  });
+  frontLayer(t);
+
+  // etiquetas de nome (evitam sobrepor títulos, marcadores de posto e umas às outras)
+  const ocupados = OBST.concat(TAG_RECTS);
+  const colide = r => ocupados.some(o => !(r.x + r.w < o.x || o.x + o.w < r.x || r.y + r.h < o.y || o.y + o.h < r.y));
+  const itens = presentes.map(p => {
+    const cx = Math.round(p.x), cy = Math.round(p.y), topo = cy - (p.sitting ? 3 : 0) - 22 - (p.look.estilo === 2 ? 2 : 0);
+    const alerta = estado.alertas[p.nome], nome = (alerta ? '⚠ ' : '') + norm(p.nome.split(' ')[0]).slice(0, 11);
+    return { p, cx, topo, nome, alerta, w: medir(nome, 6.8, 700) + 7 };
+  }).sort((a, b) => (a.p.nome === sel) - (b.p.nome === sel) || a.cx - b.cx);
+  itens.forEach(it => {
+    let ry = it.topo - 6, rect;
+    for(let k = 0; k < 4; k++){
+      ry = it.topo - 6 - k * 11.5; rect = { x: it.cx - it.w / 2, y: ry - 5.8, w: it.w, h: 11.6 };
+      if(!colide(rect)) break;
+    }
+    ocupados.push(rect);
+    const p = it.p, eSel = sel === p.nome, esmaece = sel && !eSel;
+    ctx.globalAlpha = esmaece ? .45 : 1;
+    const piscar = it.alerta && Math.floor(t * 2) % 2;
+    if(eSel) pill(it.cx, ry, it.nome, '#facc15', '#1e293b', { size: 7.4, pad: 9, sombra: true });
+    else pill(it.cx, ry, it.nome, piscar ? '#dc2626' : p.cor, '#fff', { size: 6.8, pad: 7, sombra: true });
+    if(eSel){ const b = Math.sin(t * 7) * 1.2; ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.moveTo(it.cx - 3.5, ry - 11.5 - b); ctx.lineTo(it.cx + 3.5, ry - 11.5 - b); ctx.lineTo(it.cx, ry - 7 - b); ctx.closePath(); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    if(p.tipo === 'telefone' && !p.moving && Math.floor(t / 3 + p.seed) % 4 === 0) bolha(it.cx, ry - 14, 'Alô?');
+    if(p.tipo === 'painel' && !p.moving && senhaTempo < 2 && Math.floor(senhaAtual + p.seed * 3) % 3 === 0) bolha(it.cx, ry - 14, 'A' + String((senhaAtual + 3) % 999).padStart(3, '0'));
+  });
+  requestAnimationFrame(frame);
+}
+
+/* =====================================================================
+   ZOOM E TELA CHEIA
+   ===================================================================== */
+let zoomAtual = 'auto';
+let isDraggingScreen = false, dragStartX = 0, dragStartY = 0, startScrollLeft = 0, startScrollTop = 0, hadDragged = false;
+
+const BASE_W = W * T, BASE_H = H * T;
+function aplicarZoom(){
+  const cv = $('game'), sc = $('screen'), zVal = $('zoomVal');
+  if(!cv || !sc) return;
+  let s;
+  if(zoomAtual === 'auto'){
+    const aw = Math.max(200, sc.clientWidth - 16), ah = Math.max(200, sc.clientHeight - 16);
+    s = Math.min(aw / BASE_W, ah / BASE_H);
+    if(zVal) zVal.textContent = 'AJUSTE';
+  } else {
+    s = zoomAtual * Math.min(1.9, Math.max(1, (sc.clientWidth - 16) / BASE_W));
+    if(zVal) zVal.textContent = Math.round(zoomAtual * 100) + '%';
+  }
+  cv.style.width = Math.round(BASE_W * s) + 'px';
+  cv.style.height = Math.round(BASE_H * s) + 'px';
+}
+function mudarZoom(delta){
+  let cur = (zoomAtual === 'auto') ? 1.0 : zoomAtual;
+  cur = Math.max(0.6, Math.min(2.5, +(cur + delta).toFixed(2)));
+  zoomAtual = cur;
+  aplicarZoom();
+}
+function setZoom(val){
+  zoomAtual = val;
+  aplicarZoom();
+}
+function toggleFullscreen(){
+  const st = document.querySelector('.stage');
+  if(!st) return;
+  if(!document.fullscreenElement){
+    if(st.requestFullscreen) st.requestFullscreen();
+    else if(st.webkitRequestFullscreen) st.webkitRequestFullscreen();
+  } else {
+    if(document.exitFullscreen) document.exitFullscreen();
+  }
+}
+
+// Pan com clique e arrasto no salão + zoom com Ctrl + Scroll
+(function initPanZoomEvents(){
+  const sc = $('screen'); if(!sc) return;
+  sc.addEventListener('mousedown', e => {
+    if(e.button !== 0) return;
+    isDraggingScreen = true; hadDragged = false;
+    dragStartX = e.clientX; dragStartY = e.clientY;
+    startScrollLeft = sc.scrollLeft; startScrollTop = sc.scrollTop;
+  });
+  window.addEventListener('mouseup', () => {
+    if(isDraggingScreen){ isDraggingScreen = false; if(sc) sc.style.cursor = 'default'; }
+  });
+  sc.addEventListener('mousemove', e => {
+    if(!isDraggingScreen) return;
+    const dx = e.clientX - dragStartX, dy = e.clientY - dragStartY;
+    if(Math.hypot(dx, dy) > 4){ hadDragged = true; sc.style.cursor = 'grabbing'; }
+    sc.scrollLeft = startScrollLeft - dx;
+    sc.scrollTop = startScrollTop - dy;
+  });
+  sc.addEventListener('wheel', e => {
+    if(e.ctrlKey){
+      e.preventDefault();
+      mudarZoom(e.deltaY < 0 ? 0.2 : -0.2);
+    }
+  }, { passive: false });
+  window.addEventListener('resize', () => { if(zoomAtual === 'auto') aplicarZoom(); });
+  document.addEventListener('fullscreenchange', () => setTimeout(aplicarZoom, 60));
+})();
+
+/* =====================================================================
+   TOOLTIP
+   ===================================================================== */
+function pessoaNoPonto(e){
+  const r = cv.getBoundingClientRect(), mx = (e.clientX - r.left) * (W * T) / r.width, my = (e.clientY - r.top) * (H * T) / r.height;
+  let achado = null, melhor = 1e9;
+  Object.values(estado.pessoas).filter(p => p.presente).forEach(p => {
+    const dx = mx - p.x, dy = my - (p.y - 10), ok = Math.abs(dx) < 9 && Math.abs(dy) < 14;
+    const d = ok ? Math.hypot(dx, dy) : 1e9;
+    if(d < melhor){ melhor = d; achado = p; }
+  });
+  return achado;
+}
+cv.addEventListener('mousemove', e => {
+  if(isDraggingScreen){ $('tip').style.display = 'none'; return; }
+  const achado = pessoaNoPonto(e), tip = $('tip');
+  if(!achado){ tip.style.display = 'none'; cv.style.cursor = 'grab'; return; }
+  cv.style.cursor = 'pointer';
+  const it = estado.info.find(i => i.nome === achado.nome), po = it && it.pk ? POSTOS[it.pk] : null;
+  const grupo = po ? po.grupo : 'PAUSA';
+  tip.innerHTML = `<span class="t1" style="background:${achado.cor}">${grupo}</span><br><b>${achado.nome}</b><br>${po ? it.pk + ' • ' + (po.sit ? '💺 Sentado' : '🚶 Em pé') : '☕ Pausa no salão'}<br>${po ? po.desc + '<br>' : ''}<span style="color:#1d4ed8">Antes: ${it && it.antPk || '—'} • Depois: ${it && it.proxPk || (estado.idx + 1 < estado.slots.length ? 'PAUSA' : '—')}</span>${it && it.alerta ? '<br><span style="color:#dc2626">⚠ ' + it.alerta + '</span>' : ''}`;
+  tip.style.display = 'block'; tip.style.left = Math.min(innerWidth - 280, e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
+});
+cv.addEventListener('mouseleave', () => $('tip').style.display = 'none');
+cv.addEventListener('click', e => {
+  if(hadDragged) return;
+  const achado = pessoaNoPonto(e);
+  estado.sel = achado ? (estado.sel === achado.nome ? null : achado.nome) : null; renderLista();
+});
+
+/* rola o mapa (quando ampliado) para deixar a pessoa selecionada no centro da tela */
+function focarNaPessoa(nome){
+  const p = estado.pessoas[nome], sc = $('screen');
+  if(!p || !p.presente || !sc) return;
+  const s = cv.clientWidth / (W * T);
+  const alvoX = cv.offsetLeft + p.x * s - sc.clientWidth / 2, alvoY = cv.offsetTop + (p.y - 10) * s - sc.clientHeight / 2;
+  sc.scrollTo({ left: Math.max(0, alvoX), top: Math.max(0, alvoY), behavior: 'smooth' });
+}
+
+/* =====================================================================
+   CONTROLES
+   ===================================================================== */
+function irSlot(i){ aplicarSlot(i, true); }
+function passo(d){ aplicarSlot(estado.idx + d, true); }
+function togglePlay(){
+  estado.auto = !estado.auto; const b = $('btnPlay');
+  if(estado.auto){ b.textContent = '⏸ PAUSAR'; b.className = 'btn y'; estado.timer = setInterval(() => aplicarSlot(estado.idx + 1 >= estado.slots.length ? 0 : estado.idx + 1, true), 11000); }
+  else { b.textContent = '▶ AUTO'; b.className = 'btn g'; clearInterval(estado.timer); }
+}
+function horaAtual(){
+  const a = new Date(), min = a.getHours() * 60 + (a.getMinutes() < 30 ? 0 : 30); let ix = 0;
+  estado.slots.forEach((s, i) => { const [h, m] = s.split(':').map(Number); if(h * 60 + m <= min) ix = i; });
+  aplicarSlot(ix, true);
+}
+
+/* ---------- importação e delimitadores (CSV, TSV, Google GViz) ---------- */
+function abrirModal(){ $('modal').style.display = 'flex'; $('paste').focus(); }
+function fecharModal(){ $('modal').style.display = 'none'; }
+
+function parseDelimited(text, forceDelimiter = null){
+  let delim = forceDelimiter;
+  if(!delim){
+    const firstLine = text.split(/\r?\n/)[0] || '';
+    const tabs = (firstLine.match(/\t/g) || []).length;
+    const commas = (firstLine.match(/,/g) || []).length;
+    const semis = (firstLine.match(/;/g) || []).length;
+    if(tabs >= commas && tabs >= semis) delim = '\t';
+    else if(commas >= semis) delim = ',';
+    else delim = ';';
+  }
+  const rows = [];
+  let row = [''];
+  let inQuotes = false;
+  for(let i = 0; i < text.length; i++){
+    const char = text[i];
+    const next = text[i + 1];
+    if(char === '"'){
+      if(inQuotes && next === '"'){
+        row[row.length - 1] += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if(char === delim && !inQuotes){
+      row.push('');
+    } else if((char === '\r' || char === '\n') && !inQuotes){
+      if(char === '\r' && next === '\n') i++;
+      rows.push(row);
+      row = [''];
+    } else {
+      row[row.length - 1] += char;
+    }
+  }
+  if(row.length > 1 || row[0] !== '') rows.push(row);
+  return rows;
+}
+const parseTSV = parseDelimited;
+
+function processarLinhasImportadas(lin, manterSlot = false){
+  let hi = -1, ch = -1;
+  for(let r = 0; r < Math.min(lin.length, 15) && hi < 0; r++){
+    for(let c = 0; c < lin[r].length; c++){
+      const v = norm(lin[r][c] || '').replace(/[\r\n]+/g, ' ').trim();
+      if(v.includes('HORA') || v.includes('EMISSOR') || v.includes('PAINEL') || v.includes('POSTO')){
+        hi = r;
+        if(v.includes('HORA')) ch = c;
+        break;
+      }
+    }
+  }
+  if(hi < 0){ throw new Error('Não achei a linha de cabeçalho (HORÁRIO / EMISSOR / PAINEL...).'); }
+  if(ch < 0){
+    for(let r = hi + 1; r < Math.min(lin.length, hi + 8); r++){
+      for(let c = 0; c < lin[r].length; c++){
+        if(extrairHora(lin[r][c])){ ch = c; break; }
+      }
+      if(ch >= 0) break;
+    }
+  }
+  if(ch < 0) ch = 0;
+
+  const cols = [];
+  for(let c = 0; c < lin[hi].length; c++){
+    if(c === ch) continue;
+    let k = mapPosto(lin[hi][c] || '');
+    if(k) cols.push({ c, k });
+  }
+  if(!cols.length){ throw new Error('Nenhuma coluna de posto reconhecida.'); }
+
+  const esc = {};
+  for(let r = hi + 1; r < lin.length; r++){
+    const valPrimeira = norm(lin[r][ch] || '').trim();
+    if(valPrimeira === 'ALMOCO' || valPrimeira === 'LANCHE') break;
+    let key = extrairHora(lin[r][ch]);
+    if(!key) continue;
+    if(!esc[key]) esc[key] = {};
+    cols.forEach(({ c, k }) => {
+      const v = limparNome(lin[r][c]);
+      if(v) esc[key][k] = v;
+    });
+  }
+
+  if(!Object.keys(esc).length){ throw new Error('Nenhum horário com atendentes encontrado.'); }
+  fecharModal();
+  carregarEscala(esc, manterSlot);
+  if(!manterSlot) horaAtual();
+  return esc;
+}
+
+function colar(){
+  const raw = $('paste').value; if(!raw.trim()) return;
+  try {
+    const lin = parseDelimited(raw);
+    processarLinhasImportadas(lin);
+  } catch(err) {
+    alert(err.message);
+  }
+}
+
+function lerExcel(e){
+  const f = e.target.files[0]; if(!f) return; const rd = new FileReader();
+  rd.onload = ev => {
+    try {
+      const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' }), ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
+      processarLinhasImportadas(rows);
+    } catch(err) {
+      alert(err.message);
+    }
+  };
+  rd.readAsArrayBuffer(f);
+}
+
+/* =====================================================================
+   INTEGRAÇÃO AO VIVO COM GOOGLE PLANILHAS (GViz Auto-Sync)
+   ===================================================================== */
+let googleTimer = null;
+let ultimaSyncGoogle = null;
+const GS_KEY = 'nahora_google_config';
+
+function extrairGoogleId(str){
+  if(!str) return '';
+  const m = String(str).match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  if(m) return m[1];
+  if(!String(str).includes('/')) return String(str).trim();
+  return '';
+}
+
+function carregarConfigGoogle(){
+  const defaultCfg = {
+    url: 'https://docs.google.com/spreadsheets/d/12oQZ1bxOguxmWZzNxXiKRxYv2uW8NrI9vp90YtNcZhQ/edit?usp=sharing',
+    sheetId: '12oQZ1bxOguxmWZzNxXiKRxYv2uW8NrI9vp90YtNcZhQ',
+    aba: '',
+    intervalo: 30
+  };
+  try {
+    const s = localStorage.getItem(GS_KEY);
+    return s ? JSON.parse(s) : defaultCfg;
+  } catch(e){
+    return defaultCfg;
+  }
+}
+
+function salvarConfigGoogle(cfg){
+  try { localStorage.setItem(GS_KEY, JSON.stringify(cfg)); } catch(e){}
+}
+
+function atualizarBadgeGoogle(tipo, msg){
+  const chip = $('chipGoogle'), dot = $('gDot'), txt = $('gTxt');
+  if(!chip) return;
+  chip.classList.remove('syncing', 'err');
+  if(tipo === 'ok'){
+    dot.textContent = '🟢'; txt.textContent = 'Google: Ao Vivo';
+    chip.title = msg || 'Conectado e sincronizando automaticamente com o Google Planilhas';
+  } else if(tipo === 'syncing'){
+    chip.classList.add('syncing');
+    dot.textContent = '🔄'; txt.textContent = 'Sincronizando...';
+  } else if(tipo === 'err'){
+    chip.classList.add('err');
+    dot.textContent = '⚠️'; txt.textContent = 'Aviso Google';
+    chip.title = msg || 'Falha de conexão com a planilha (usando dados locais)';
+  } else {
+    dot.textContent = '⚪'; txt.textContent = 'Planilha: Local';
+    chip.title = 'Nenhuma planilha conectada (escala padrão)';
+  }
+}
+
+function atualizarModalStatusGoogle(icone, msg, sub){
+  const iconEl = $('gStatusIcon'), msgEl = $('gStatusMsg'), subEl = $('gStatusSub');
+  if(iconEl) iconEl.textContent = icone;
+  if(msgEl) msgEl.textContent = msg;
+  if(subEl) subEl.textContent = sub;
+}
+
+function abrirModalGoogle(){
+  const cfg = carregarConfigGoogle();
+  $('gInputUrl').value = cfg.url || cfg.sheetId || '';
+  $('gInputAba').value = cfg.aba || '';
+  $('gInputIntervalo').value = cfg.intervalo || '30';
+  if(cfg.sheetId){
+    const timeStr = ultimaSyncGoogle ? ultimaSyncGoogle.toLocaleTimeString() : 'em andamento';
+    atualizarModalStatusGoogle('🟢', `Conectado à planilha (${cfg.sheetId.slice(0, 10)}...)`, `Última atualização: ${timeStr} • Atualizando a cada ${cfg.intervalo || 30}s.`);
+  } else {
+    atualizarModalStatusGoogle('⚪', 'Nenhuma planilha conectada no momento (usando escala padrão).', 'Insira o link e clique em Sincronizar Agora.');
+  }
+  $('modalGoogle').style.display = 'flex';
+}
+
+function fecharModalGoogle(){ $('modalGoogle').style.display = 'none'; }
+
+function carregarGoogleViaJSONP(sheetId, aba){
+  return new Promise((resolve, reject) => {
+    const callbackName = 'gvizCallback_' + Math.floor(Math.random() * 1e9);
+    const script = document.createElement('script');
+    let url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:${callbackName}`;
+    if(aba) url += `&sheet=${encodeURIComponent(aba)}`;
+    url += `&_cb=${Date.now()}`;
+
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Tempo limite esgotado ao conectar à planilha do Google.'));
+    }, 12000);
+
+    function cleanup(){
+      clearTimeout(timer);
+      delete window[callbackName];
+      if(script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[callbackName] = function(resp){
+      cleanup();
+      if(!resp || resp.status === 'error'){
+        const msg = (resp && resp.errors && resp.errors[0]) ? resp.errors[0].message : 'Erro ao ler dados da planilha';
+        reject(new Error(msg));
+        return;
+      }
+      resolve(resp);
+    };
+
+    script.onerror = function(){
+      cleanup();
+      reject(new Error('Falha ao carregar a planilha. Verifique se o compartilhamento está como "Qualquer pessoa com o link pode ver" (Leitor).'));
+    };
+
+    script.src = url;
+    document.head.appendChild(script);
+  });
+}
+
+function converterGvizParaMatriz(resp){
+  const matriz = [];
+  if(!resp || !resp.table || !resp.table.rows) return matriz;
+  resp.table.rows.forEach(r => {
+    const row = [];
+    if(r && r.c){
+      r.c.forEach(cell => {
+        if(!cell) row.push('');
+        else if(cell.f !== undefined && cell.f !== null) row.push(String(cell.f));
+        else if(cell.v !== undefined && cell.v !== null) row.push(String(cell.v));
+        else row.push('');
+      });
+    }
+    matriz.push(row);
+  });
+  return matriz;
+}
+
+async function sincronizarGoogle(silencioso = false){
+  const cfg = carregarConfigGoogle();
+  if(!cfg.sheetId){
+    if(!silencioso) alert('Por favor, informe o link ou ID da planilha do Google primeiro.');
+    return;
+  }
+  atualizarBadgeGoogle('syncing');
+
+  try {
+    const resp = await carregarGoogleViaJSONP(cfg.sheetId, cfg.aba);
+    const matriz = converterGvizParaMatriz(resp);
+    if(!matriz || matriz.length < 2){
+      throw new Error('A planilha retornou vazia ou com formato não reconhecido.');
+    }
+
+    processarLinhasImportadas(matriz, true);
+    ultimaSyncGoogle = new Date();
+    const horaFormatada = ultimaSyncGoogle.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    const detalhe = `Sincronizado às ${horaFormatada} • ${estado.slots.length} horários ativos`;
+    atualizarBadgeGoogle('ok', detalhe);
+    atualizarModalStatusGoogle('🟢', `Conectado e atualizado (${horaFormatada})`, `${estado.slots.length} horários carregados com sucesso. Próxima checagem automática em ${cfg.intervalo || 30}s.`);
+    if(!silencioso){
+      fecharModalGoogle();
+      alert(`✅ Conectado com sucesso!\n\n${detalhe}.\nTodas as mudanças feitas na planilha serão atualizadas automaticamente aqui a cada ${cfg.intervalo || 30} segundos!`);
+    }
+  } catch(err){
+    console.warn('Erro ao sincronizar com Google Sheets:', err);
+    atualizarBadgeGoogle('err', err.message);
+    atualizarModalStatusGoogle('⚠️', 'Aviso de sincronização', err.message);
+    if(!silencioso){
+      alert(`⚠️ Erro ao buscar dados da planilha do Google:\n\n${err.message}\n\n💡 Como resolver:\n1. Abra sua planilha no Google Planilhas.\n2. Clique no botão azul "Compartilhar" (canto superior direito).\n3. Mude o Acesso Geral para "Qualquer pessoa com o link" (Leitor).\n4. Cole novamente o link aqui.`);
+    }
+  }
+}
+
+function iniciarGooglePolling(){
+  if(googleTimer) clearInterval(googleTimer);
+  const cfg = carregarConfigGoogle();
+  if(!cfg.sheetId) return;
+  const segs = parseInt(cfg.intervalo, 10) || 30;
+  googleTimer = setInterval(() => sincronizarGoogle(true), segs * 1000);
+}
+
+function salvarEConectarGoogle(){
+  const urlVal = ($('gInputUrl').value || '').trim();
+  const id = extrairGoogleId(urlVal);
+  if(!id){
+    alert('Não foi possível identificar o ID da planilha. Cole o link completo do navegador (ex: https://docs.google.com/spreadsheets/d/.../edit).');
+    return;
+  }
+  const aba = ($('gInputAba').value || '').trim();
+  const intervalo = parseInt($('gInputIntervalo').value, 10) || 30;
+  const cfg = { url: urlVal, sheetId: id, aba, intervalo };
+  salvarConfigGoogle(cfg);
+  iniciarGooglePolling();
+  sincronizarGoogle(false);
+}
+
+function desconectarGoogle(){
+  if(googleTimer) clearInterval(googleTimer);
+  googleTimer = null;
+  localStorage.removeItem(GS_KEY);
+  atualizarBadgeGoogle('off');
+  atualizarModalStatusGoogle('⚪', 'Planilha desconectada.', 'O jogo agora está usando a escala local padrão.');
+  alert('Conexão com a planilha Google desativada. Voltando para a escala padrão.');
+  carregarDemo();
+  fecharModalGoogle();
+}
+
+function copiarLinkRecepcao(){
+  const cfg = carregarConfigGoogle();
+  let base = window.location.href.split('?')[0].split('#')[0];
+  const params = new URLSearchParams();
+  if(cfg.sheetId){
+    params.set('sheet', cfg.sheetId);
+    if(cfg.aba) params.set('aba', cfg.aba);
+    if(cfg.intervalo) params.set('int', cfg.intervalo);
+  }
+  const linkFinal = params.toString() ? `${base}?${params.toString()}` : base;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(linkFinal).then(() => {
+      alert(`📋 LINK DA RECEPÇÃO COPIADO COM SUCESSO!\n\nEnvie este link para qualquer pessoa da recepção ou abra no telão:\n\n${linkFinal}\n\nAo abrir, o jogo já carregará sincronizado com a planilha do Google automaticamente!`);
+    }).catch(() => prompt('Copie o link abaixo para compartilhar com a equipe da recepção:', linkFinal));
+  } else {
+    prompt('Copie o link abaixo para compartilhar com a equipe da recepção:', linkFinal);
+  }
+}
+
+/* ---------- grade oficial da unidade (ESCALA CLAUDIA 05/10 a 09/10) ---------- */
+const ESCALA_OFICIAL = {
+  "07:30": {"EMISSOR 1":"ADRIELLE","EMISSOR 2":"CIDA","EMISSOR 3":"DUDA","EMISSOR 4":"GABRIEL","TELEFONE 1":"LETICIA","AUTO 1":"JACQUELINE","ORIENTADOR":"LUCIANA","PAINEL 2":"VIVIANE","PAINEL 3":"CONCEICAO","PAINEL 5":"OVIDIO"},
+  "08:00": {"EMISSOR 1":"JACQUELINE","EMISSOR 2":"OVIDIO","EMISSOR 3":"VIVIANE","EMISSOR 4":"LUCIANA","TELEFONE 1":"CONCEICAO","AUTO SENTADO":"LETICIA","AUTO 1":"ADRIELLE","ORIENTADOR":"GABRIEL","PAINEL 2":"DUDA","PAINEL 5":"CIDA"},
+  "08:30": {"EMISSOR 1":"CIDA","EMISSOR 2":"ADRIELLE","EMISSOR 3":"GABRIEL","EMISSOR 4":"DUDA","TELEFONE 1":"JACQUELINE","AUTO SENTADO":"LUCIANA","AUTO 1":"LETICIA","ORIENTADOR":"CONCEICAO","PAINEL 2":"OVIDIO","PAINEL 5":"VIVIANE"},
+  "09:00": {"EMISSOR 1":"LETICIA","EMISSOR 2":"VIVIANE","EMISSOR 3":"OVIDIO","EMISSOR 4":"CONCEICAO","TELEFONE 1":"ADRIELLE","AUTO SENTADO":"GABRIEL","AUTO 1":"LUCIANA","ORIENTADOR":"DUDA","PAINEL 2":"CIDA","PAINEL 5":"JACQUELINE"},
+  "09:30": {"EMISSOR 1":"DUDA","EMISSOR 2":"LUCIANA","EMISSOR 3":"CIDA","EMISSOR 4":"JACQUELINE","TELEFONE 1":"OVIDIO","AUTO SENTADO":"CONCEICAO","AUTO 1":"GABRIEL","ORIENTADOR":"VIVIANE","PAINEL 2":"LETICIA","PAINEL 5":"ADRIELLE"},
+  "10:00": {"EMISSOR 1":"GABRIEL","EMISSOR 2":"LETICIA","EMISSOR 3":"LUCIANA","EMISSOR 4":"VIVIANE","TELEFONE 1":"CIDA","AUTO SENTADO":"ADRIELLE","AUTO 1":"DUDA","ORIENTADOR":"OVIDIO","PAINEL 2":"JACQUELINE","PAINEL 5":"CONCEICAO"},
+  "10:30": {"EMISSOR 1":"CONCEICAO","EMISSOR 2":"DUDA","EMISSOR 3":"JACQUELINE","EMISSOR 4":"OVIDIO","TELEFONE 1":"GABRIEL","AUTO SENTADO":"VIVIANE","AUTO 1":"CIDA","ORIENTADOR":"LETICIA","PAINEL 2":"ADRIELLE","PAINEL 5":"LUCIANA"},
+  "11:00": {"EMISSOR 1":"LUCIANA","EMISSOR 1.1":"WISLAINE","EMISSOR 2":"FANTINNY","EMISSOR 2.1":"GUSTAVO","EMISSOR 3":"LETICIA","EMISSOR 3.1":"JULIA","EMISSOR 4":"LUCIELE","EMISSOR 4.1":"ADRIELLE","TELEFONE 1":"MARIA","TELEFONE 2":"CIDA","AUTO SENTADO":"SONIA","AUTO 1":"VIVIANE","AUTO 2":"DVANY","ORIENTADOR":"JACQUELINE","PAINEL 2":"CONCEICAO","PAINEL 2.1":"JUAN","PAINEL 3":"DUDA","PAINEL 4":"THALITA","PAINEL 5":"GABRIEL","PESQUISA":"OVIDIO"},
+  "11:30": {"EMISSOR 1":"DVANY","EMISSOR 1.1":"GABRIEL","EMISSOR 2":"JUAN","EMISSOR 2.1":"OVIDIO","EMISSOR 3":"THALITA","EMISSOR 3.1":"CONCEICAO","EMISSOR 4":"CIDA","EMISSOR 4.1":"DUDA","TELEFONE 1":"VIVIANE","TELEFONE 2":"ADRIELLE","AUTO SENTADO":"JACQUELINE","AUTO 1":"FANTINNY","AUTO 2":"LETICIA","ORIENTADOR":"SONIA","PAINEL 2":"MARIA","PAINEL 2.1":"LUCIANA","PAINEL 3":"WISLAINE","PAINEL 4":"JULIA","PAINEL 5":"LUCIELE","PESQUISA":"GUSTAVO"},
+  "12:00": {"EMISSOR 1":"FANTINNY","EMISSOR 2":"LUCIELE","EMISSOR 3":"MARIA","EMISSOR 4":"SONIA","TELEFONE 1":"WISLAINE","AUTO SENTADO":"GUSTAVO","AUTO 1":"OVIDIO","ORIENTADOR":"DVANY","PAINEL 2":"THALITA","PAINEL 3":"VIVIANE","PAINEL 5":"JUAN"},
+  "12:30": {"EMISSOR 1":"VIVIANE","EMISSOR 1.1":"JULIA","EMISSOR 2":"DVANY","EMISSOR 3":"JUAN","EMISSOR 4":"THALITA","TELEFONE 1":"RAYANE","AUTO SENTADO":"WILLIANA","AUTO 1":"LUCIELE","ORIENTADOR":"WISLAINE","PAINEL 2":"SONIA","PAINEL 3":"GUSTAVO","PAINEL 4":"FANTINNY","PAINEL 5":"MARIA","PESQUISA":"CAMILA"},
+  "13:00": {"EMISSOR 1":"CAMILA","EMISSOR 2":"CONCEICAO","EMISSOR 3":"LUCIANA","EMISSOR 4":"LETICIA","TELEFONE 1":"DUDA","AUTO SENTADO":"VIVIANE","AUTO 1":"RAYANE","ORIENTADOR":"ADRIELLE","PAINEL 2":"GABRIEL","PAINEL 3":"JACQUELINE","PAINEL 4":"CIDA","PAINEL 5":"WILLIANA"},
+  "13:30": {"EMISSOR 1":"RAYANE","EMISSOR 2":"GABRIEL","EMISSOR 3":"ADRIELLE","EMISSOR 4":"JACQUELINE","TELEFONE 1":"WILLIANA","AUTO SENTADO":"CIDA","AUTO 1":"CONCEICAO","ORIENTADOR":"LETICIA","PAINEL 2":"CAMILA","PAINEL 3":"LUCIANA","PAINEL 4":"VIVIANE","PAINEL 5":"DUDA"},
+  "14:00": {"EMISSOR 1":"LUCIELE","EMISSOR 1.1":"LETICIA","EMISSOR 2":"CAMILA","EMISSOR 2.1":"VIVIANE","EMISSOR 3":"CONCEICAO","EMISSOR 3.1":"MARIA","EMISSOR 4":"FANTINNY","EMISSOR 4.1":"SONIA","TELEFONE 1":"LUCIANA","TELEFONE 2":"WISLAINE","AUTO SENTADO":"DUDA","AUTO 1":"WILLIANA","AUTO 2":"CIDA","ORIENTADOR":"JUAN","PAINEL 2":"DVANY","PAINEL 2.1":"GABRIEL","PAINEL 3":"THALITA","PAINEL 3.1":"JACQUELINE","PAINEL 4":"RAYANE","PAINEL 5":"JULIA","PESQUISA":"ADRIELLE","PESQUISA 2":"GUSTAVO"},
+  "14:30": {"EMISSOR 1":"WILLIANA","EMISSOR 1.1":"GUSTAVO","EMISSOR 2":"RAYANE","EMISSOR 2.1":"ADRIELLE","EMISSOR 3":"JULIA","EMISSOR 3.1":"CIDA","EMISSOR 4":"DVANY","EMISSOR 4.1":"GABRIEL","TELEFONE 1":"JUAN","TELEFONE 2":"JACQUELINE","AUTO SENTADO":"THALITA","AUTO 1":"CAMILA","AUTO 2":"LUCIANA","ORIENTADOR":"MARIA","PAINEL 2":"WISLAINE","PAINEL 2.1":"LETICIA","PAINEL 3":"SONIA","PAINEL 3.1":"CONCEICAO","PAINEL 4":"LUCIELE","PAINEL 5":"FANTINNY","PESQUISA":"DUDA","PESQUISA 2":"VIVIANE"},
+  "15:00": {"EMISSOR 1":"MARIA","EMISSOR 1.1":"DUDA","EMISSOR 2":"SONIA","EMISSOR 2.1":"LETICIA","EMISSOR 3":"FANTINNY","EMISSOR 3.1":"LUCIANA","EMISSOR 4":"WISLAINE","EMISSOR 4.1":"CONCEICAO","TELEFONE 1":"CAMILA","TELEFONE 2":"VIVIANE","AUTO SENTADO":"LUCIELE","AUTO 1":"GUSTAVO","AUTO 2":"ADRIELLE","ORIENTADOR":"THALITA","PAINEL 2":"JUAN","PAINEL 2.1":"CIDA","PAINEL 3":"DVANY","PAINEL 3.1":"GABRIEL","PAINEL 4":"WILLIANA","PAINEL 5":"RAYANE","PESQUISA":"JULIA","PESQUISA 2":"JACQUELINE"},
+  "15:30": {"EMISSOR 1":"JULIA","EMISSOR 2":"THALITA","EMISSOR 3":"RAYANE","EMISSOR 4":"JUAN","TELEFONE 1":"WILLIANA","AUTO SENTADO":"DVANY","AUTO 1":"WISLAINE","ORIENTADOR":"LUCIELE","PAINEL 2":"FANTINNY","PAINEL 3":"MARIA","PAINEL 4":"CAMILA","PAINEL 5":"SONIA"},
+  "16:00": {"EMISSOR 1":"SONIA","EMISSOR 2":"MARIA","EMISSOR 3":"CAMILA","EMISSOR 4":"FANTINNY","TELEFONE 1":"LUCIELE","AUTO SENTADO":"WISLAINE","AUTO 1":"DVANY","ORIENTADOR":"WILLIANA","PAINEL 2":"JULIA","PAINEL 3":"RAYANE","PAINEL 4":"GUSTAVO","PAINEL 5":"THALITA","PESQUISA":"JUAN"},
+  "16:30": {"EMISSOR 1":"GUSTAVO","EMISSOR 2":"WILLIANA","EMISSOR 3":"DVANY","EMISSOR 4":"RAYANE","TELEFONE 1":"JULIA","AUTO SENTADO":"JUAN","AUTO 1":"MARIA","ORIENTADOR":"FANTINNY","PAINEL 2":"LUCIELE","PAINEL 3":"CAMILA","PAINEL 4":"SONIA","PAINEL 5":"WISLAINE"},
+  "17:00": {"EMISSOR 1":"WISLAINE","EMISSOR 2":"SONIA","EMISSOR 3":"LUCIELE","EMISSOR 4":"MARIA","TELEFONE 1":"FANTINNY","AUTO SENTADO":"CAMILA","AUTO 1":"JULIA","ORIENTADOR":"RAYANE","PAINEL 2":"WILLIANA","PAINEL 3":"JUAN","PAINEL 4":"DVANY","PAINEL 5":"GUSTAVO","PESQUISA":"THALITA"},
+  "17:30": {"EMISSOR 1":"THALITA","EMISSOR 2":"GUSTAVO","EMISSOR 3":"WILLIANA","EMISSOR 4":"JULIA","TELEFONE 1":"DVANY","AUTO SENTADO":"RAYANE","AUTO 1":"SONIA","ORIENTADOR":"LUCIELE","PAINEL 2":"WISLAINE","PAINEL 3":"FANTINNY","PAINEL 4":"MARIA","PAINEL 5":"CAMILA"},
+  "18:00": {"EMISSOR 1":"LUCIELE","EMISSOR 2":"WISLAINE","EMISSOR 3":"SONIA","EMISSOR 4":"CAMILA","TELEFONE 1":"FANTINNY","AUTO SENTADO":"MARIA","AUTO 1":"THALITA","ORIENTADOR":"JULIA","PAINEL 2":"GUSTAVO","PAINEL 3":"WILLIANA","PAINEL 4":"JUAN","PAINEL 5":"DVANY","PESQUISA":"RAYANE"}
+};
+
+function carregarDemo(){
+  carregarEscala(ESCALA_OFICIAL);
+}
+
+/* ---------- legenda ---------- */
+$('legend').innerHTML = GRUPOS.map(([n, c]) => `<span><i style="background:${c}"></i>${n}</span>`).join('')
+  + '<span class="lg-sep"></span><span><i class="tag-on"></i>Posto ocupado</span><span><i class="tag-off"></i>Posto vago</span>'
+  + '<span>🚶 em pé &nbsp; 💺 sentado</span><span class="lg-dica">Clique num atendente (no mapa ou na lista) para localizar</span>';
+
+/* ---------- início ---------- */
+desenharCenario();
+carregarDemo();
+aplicarZoom();
+
+// Inicialização inteligente: conecta à URL do Google se fornecida via link ou salva no navegador
+(function bootGoogle(){
+  const p = new URLSearchParams(window.location.search);
+  const qSheet = p.get('sheet') || p.get('id') || p.get('spreadsheet');
+  const qAba = p.get('aba') || p.get('tab');
+  const qInt = p.get('int') || p.get('interval');
+  if(qSheet){
+    const sheetId = extrairGoogleId(qSheet);
+    if(sheetId){
+      const cfg = { url: qSheet, sheetId, aba: qAba || '', intervalo: parseInt(qInt, 10) || 30 };
+      salvarConfigGoogle(cfg);
+      iniciarGooglePolling();
+      sincronizarGoogle(true);
+      return;
+    }
+  }
+  const salva = carregarConfigGoogle();
+  if(salva.sheetId){
+    iniciarGooglePolling();
+    sincronizarGoogle(true);
+  } else {
+    horaAtual();
+  }
+})();
+
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
