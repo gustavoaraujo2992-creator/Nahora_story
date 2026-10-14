@@ -34,7 +34,14 @@
   .chip.chg{background:rgba(245,158,11,.2);border-color:rgba(251,191,36,.6)}.chip.chg b{color:#fcd34d}
   .chip.fui{background:rgba(148,163,184,.2);border-color:rgba(148,163,184,.5)}.chip.fui b{color:#cbd5e1}
   @keyframes blink{50%{background:rgba(220,38,38,.55)}}
-  .clock{font-size:26px;font-weight:800;letter-spacing:.04em;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:4px 16px;font-variant-numeric:tabular-nums;line-height:1.3}
+  .clock-box{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:3px 14px;box-shadow:0 2px 8px rgba(0,0,0,.15);cursor:default}
+  .clock{font-size:23px;font-weight:800;letter-spacing:.05em;color:#fff;font-variant-numeric:tabular-nums;line-height:1.15}
+  .clock-sub{font-size:10px;font-weight:800;letter-spacing:.08em;color:#fde047;text-transform:uppercase;margin-top:1px}
+  .dot-live{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:6px;box-shadow:0 0 6px #4ade80}
+  .btn.live-active{background:#16a34a;border-color:#15803d;color:#fff;animation:livePulse 2.5s infinite}
+  .btn.live-paused{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+  .btn.live-paused .dot-live{background:#f59e0b;box-shadow:0 0 6px #f59e0b}
+  @keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.45)}50%{box-shadow:0 0 0 4px rgba(34,197,94,.15)}}
   .badge-perfil{font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:999px;background:#fff;color:var(--brand)}
 
   /* ---- botões ---- */
@@ -159,7 +166,7 @@
       <div class="chip chg" title="Colaboradores que ainda não entraram no horário atual">⏳ Chegando <b id="cChegando">0</b></div>
       <div class="chip fui" title="Colaboradores que já encerraram o expediente hoje">🏠 Fui <b id="cFui">0</b></div>
       <div class="chip al" id="chipAl">⚠ Alertas NR-17 <b id="cAl">0</b></div>
-      <div class="clock" id="clock">08:00</div>
+      <div class="clock-box" title="Horário do seu computador sincronizado em tempo real"><div class="clock" id="clock">--:--:--</div><div class="clock-sub" id="clockTurno">TURNO --:--</div></div>
       <span class="badge-perfil" id="badgePerfil"></span>
       <button class="btn" onclick="sairPerfil()" title="Trocar de perfil">🚪 Sair</button>
     </div>
@@ -172,11 +179,11 @@
     <label class="btn b admin-only">📂 .xlsx<input type="file" id="file" accept=".xlsx,.xls" style="display:none" onchange="lerExcel(event)"></label>
     <button class="btn p admin-only" onclick="carregarDemo()">⚡ Demo</button>
     <span class="sp"></span>
-    <button class="btn b" onclick="passo(-1)" title="Horário anterior">◀</button>
-    <button class="btn g" id="btnPlay" onclick="togglePlay()">▶ AUTO</button>
-    <button class="btn b" onclick="passo(1)" title="Próximo horário">▶</button>
-    <button class="btn y" onclick="horaAtual()">⏰ Agora</button>
-    <div class="slider-wrap"><input type="range" id="slider" min="0" max="0" value="0" oninput="irSlot(+this.value)"><span class="slot-label" id="slotLabel">--:--</span></div>
+    <button class="btn live-active" id="btnSyncRelogio" onclick="toggleSeguirRelogio()" title="Sincronizado automaticamente com o relógio do seu computador. Clique para pausar ou navegar manualmente."><span class="dot-live"></span> ⏰ AO VIVO</button>
+    <button class="btn b" onclick="passo(-1)" title="Horário anterior (pausa o modo ao vivo)">◀</button>
+    <button class="btn" id="btnPlay" onclick="togglePlay()" title="Avanço rápido de demonstração">▶ DEMO</button>
+    <button class="btn b" onclick="passo(1)" title="Próximo horário (pausa o modo ao vivo)">▶</button>
+    <div class="slider-wrap"><input type="range" id="slider" min="0" max="0" value="0" oninput="irSlotManual(+this.value)" title="Arraste para visualizar outro horário"><span class="slot-label" id="slotLabel">--:--</span></div>
   </section>
 
   <div class="main">
@@ -408,7 +415,7 @@ function achar(sx, sy, gx, gy){
 /* ---------- postos oficiais (todos os 22 postos da unidade) ---------- */
 const POSTOS = {};
 function addPosto(key, o){ POSTOS[key] = Object.assign({ key }, o); }
-[['EMISSOR 1',12],['EMISSOR 1.1',13],['EMISSOR 2',16],['EMISSOR 2.1',17],['EMISSOR 3',20],['EMISSOR 3.1',21],['EMISSOR 4',24],['EMISSOR 4.1',25]].forEach(([k, x]) => addPosto(k, {
+[['EMISSOR 1',12],['EMISSOR 1.1',13],['EMISSOR 2',15],['EMISSOR 2.1',16],['EMISSOR 3',18],['EMISSOR 3.1',19],['EMISSOR 4',21],['EMISSOR 4.1',22],['EMISSOR 5',24],['EMISSOR 5.1',25]].forEach(([k, x]) => addPosto(k, {
   x, y:6, sit:true, dir:'down', grupo:'RECEPÇÃO', cor:COR.emissor, tipo:'emissor',
   desc:'Na recepção, atendendo o cidadão que chega para pegar senha.' }));
 [['TELEFONE 1',25],['TELEFONE 2',27]].forEach(([k, x]) => addPosto(k, {
@@ -634,7 +641,7 @@ function desenharCenario(){
   // ----- balcões -----
   balcao(23 * T, 4 * T, 6 * T, 19);                           // telefones (atrás da recepção)
   balcao(11 * T, 7 * T, 16 * T, 19);                          // recepção (balcões dos emissores)
-  [240, 304, 368].forEach(x => rr(x - .5, 103, 1, 26, .5, 'rgba(56,189,248,.65)'));
+  [224, 272, 320, 368].forEach(x => rr(x - .5, 103, 1, 26, .5, 'rgba(56,189,248,.65)'));
   balcao(2 * T, 10 * T, 7 * T, 16);                           // autoatendimento
 
   // ----- bancos do salão (3 faixas) -----
@@ -674,7 +681,7 @@ function frontLayer(t){
   const tela = Math.floor(t * 1.5) % 2 ? '#60a5fa' : '#38bdf8';
 
   // monitores dos emissores (na borda do balcão)
-  ['EMISSOR 1','EMISSOR 1.1','EMISSOR 2','EMISSOR 2.1','EMISSOR 3','EMISSOR 3.1','EMISSOR 4','EMISSOR 4.1'].forEach(k => {
+  ['EMISSOR 1','EMISSOR 1.1','EMISSOR 2','EMISSOR 2.1','EMISSOR 3','EMISSOR 3.1','EMISSOR 4','EMISSOR 4.1','EMISSOR 5','EMISSOR 5.1'].forEach(k => {
     if(POSTOS[k] && ativo(k)) monitor(POSTOS[k].x * T + 8, 106, tela, 10);
   });
   // telefones: monitor + aparelho com luz piscando
@@ -719,7 +726,7 @@ function frontLayer(t){
     if(nome && nome === sel) rr(r.x - 1.3, r.y - 1.3, r.w + 2.6, r.h + 2.6, r.h / 2 + 1.3, null, '#facc15', 1.6);
     TAG_RECTS.push(r);
   }
-  [['E1','EMISSOR 1',12],['1.1','EMISSOR 1.1',13],['E2','EMISSOR 2',16],['2.1','EMISSOR 2.1',17],['E3','EMISSOR 3',20],['3.1','EMISSOR 3.1',21],['E4','EMISSOR 4',24],['4.1','EMISSOR 4.1',25]]
+  [['E1','EMISSOR 1',12],['1.1','EMISSOR 1.1',13],['E2','EMISSOR 2',15],['2.1','EMISSOR 2.1',16],['E3','EMISSOR 3',18],['3.1','EMISSOR 3.1',19],['E4','EMISSOR 4',21],['4.1','EMISSOR 4.1',22],['E5','EMISSOR 5',24],['5.1','EMISSOR 5.1',25]]
     .forEach(([l, k, x]) => marcador([k], l, x * T + 8, 121.5));
   [['TEL 1','TELEFONE 1',25],['TEL 2','TELEFONE 2',27]].forEach(([l, k, x]) => marcador([k], l, x * T + 8, 74));
   marcador(['AUTO SENTADO'], 'PC', 3 * T + 8, 168);
@@ -748,17 +755,29 @@ function criarLook(seed){
 
 /* Avatar vetorial: camisa na cor do setor (identifica o posto de longe), anel no chão e adereços por função. */
 function elipse(x, y, rx, ry){ ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); }
+// Uniforme oficial dos atendentes Na Hora / BRB
+const BRB_AZUL = '#005ea6';       // Azul Royal característico do BRB
+const BRB_AZUL_SOMB = '#003a6b';  // Gola polo e sombra do uniforme BRB
+const BRB_CALCA = '#1e293b';      // Calça social corporativa escura
+
 function desenharPessoa(p, t){
   const L = p.look, andando = p.moving, sit = p.sitting, dir = p.dir;
-  const cor = p.staff ? (p.cor || COR.pausa) : '#94a3b8';
+  const isStaff = p.staff;
+  // ATENDENTE: Uniforme oficial Azul BRB | CIDADÃO: Roupas civis coloridas
+  const corCamisa = isStaff ? BRB_AZUL : (L.camisa || '#dc2626');
+  const corSomb = isStaff ? BRB_AZUL_SOMB : sombra(corCamisa, .74);
+  const corCalca = isStaff ? BRB_CALCA : (L.calca || '#475569');
+  const corSetor = p.cor || COR.pausa;
+
   const f = Math.sin(t * 11 + p.seed * 3);
   const bob = andando ? -Math.abs(f) * 1.3 : 0, base = sit ? 3 : 0;
   ctx.save(); ctx.translate(p.x, p.y);
-  if(!p.staff){ ctx.scale(.88, .88); ctx.globalAlpha *= .85; }
+  if(!isStaff){ ctx.scale(.88, .88); ctx.globalAlpha *= .9; }
 
-  // sombra + anel de posição (cor do setor)
+  // sombra no chão
   ctx.fillStyle = 'rgba(15,23,42,.18)'; elipse(0, .5, 6.8, 2.5); ctx.fill();
-  if(p.staff){ ctx.strokeStyle = cor; ctx.lineWidth = 1.3; elipse(0, .3, 7.4, 2.9); ctx.stroke(); }
+  // Anel luminoso do setor (apenas para atendentes)
+  if(isStaff){ ctx.strokeStyle = corSetor; ctx.lineWidth = 1.4; elipse(0, .3, 7.6, 3.0); ctx.stroke(); }
 
   const topo = -14 + base + bob;           // topo do tronco
   // cadeira (quando sentado)
@@ -766,21 +785,31 @@ function desenharPessoa(p, t){
   // pernas
   if(!sit){
     const sw = andando ? f * 1.8 : 0;
-    rr(-3.9, -6.5 + bob, 3.2, 6.5 - Math.max(0, sw) - bob, 1.4, L.calca);
-    rr(.7, -6.5 + bob, 3.2, 6.5 - Math.max(0, -sw) - bob, 1.4, L.calca);
+    rr(-3.9, -6.5 + bob, 3.2, 6.5 - Math.max(0, sw) - bob, 1.4, corCalca);
+    rr(.7, -6.5 + bob, 3.2, 6.5 - Math.max(0, -sw) - bob, 1.4, corCalca);
     rr(-4.1, -1.6 - Math.max(0, sw), 3.6, 1.7, .8, '#1e293b'); rr(.5, -1.6 - Math.max(0, -sw), 3.6, 1.7, .8, '#1e293b');
   }
   // cabelo comprido atrás da cabeça
   const hy = topo - 4.4;
   if(L.estilo === 1 && dir !== 'up'){ rr(-5, hy - 1, 10, 9, 3.5, L.cabelo); }
-  // braços
+  // braços (com a manga da camisa)
   const sb = andando ? f * 1.2 : (sit ? Math.sin(t * 6 + p.seed) * .8 : 0);
-  rr(-6.8, topo + 1.4 + sb, 2.5, 6.4, 1.2, cor); rr(4.3, topo + 1.4 - sb, 2.5, 6.4, 1.2, cor);
+  rr(-6.8, topo + 1.4 + sb, 2.5, 6.4, 1.2, corCamisa); rr(4.3, topo + 1.4 - sb, 2.5, 6.4, 1.2, corCamisa);
   ctx.fillStyle = L.pele; ctx.beginPath(); ctx.arc(-5.5, topo + 8.2 + sb, 1.4, 0, 6.3); ctx.fill(); ctx.beginPath(); ctx.arc(5.5, topo + 8.2 - sb, 1.4, 0, 6.3); ctx.fill();
-  // tronco
-  rr(-5, topo, 10, 9.6, 3.2, cor);
-  ctx.fillStyle = 'rgba(0,0,0,.14)'; ctx.fillRect(-5 + 1, topo + 7, 8, 1.8);
-  if(p.staff && dir !== 'up'){ rr(-3.6, topo + 2.2, 3.4, 4.4, .9, '#fff'); rr(-3, topo + 3, 2.2, .8, .4, cor); }
+  // tronco (uniforme azul BRB ou roupa casual)
+  rr(-5, topo, 10, 9.6, 3.2, corCamisa);
+  ctx.fillStyle = corSomb; ctx.fillRect(-5 + 1, topo + 7.8, 8, 1.4);
+  // Detalhes exclusivos do atendente: gola polo azul BRB + crachá funcional Na Hora
+  if(isStaff && dir !== 'up'){
+    // gola polo elegante BRB
+    ctx.fillStyle = BRB_AZUL_SOMB; ctx.beginPath(); ctx.moveTo(-2.8, topo); ctx.lineTo(0, topo + 2.5); ctx.lineTo(2.8, topo); ctx.closePath(); ctx.fill();
+    // cordão do crachá
+    ctx.strokeStyle = '#003666'; ctx.lineWidth = .7; ctx.beginPath(); ctx.moveTo(-1.6, topo + 1); ctx.lineTo(-2.2, topo + 3.2); ctx.stroke();
+    // crachá funcional no peito
+    rr(-3.8, topo + 2.8, 3.6, 4.8, .8, '#ffffff', '#cbd5e1', .5);
+    rr(-3.2, topo + 3.3, 2.4, 1.2, .3, BRB_AZUL); // logo azul BRB
+    rr(-3.2, topo + 5.1, 2.4, .8, .2, corSetor);   // tarja da cor do setor
+  }
   // pescoço + cabeça
   rr(-1.4, hy + 3.2, 2.8, 2.4, .8, L.pele);
   ctx.fillStyle = L.pele; ctx.beginPath(); ctx.arc(0, hy, 4.4, 0, 6.3); ctx.fill();
@@ -833,7 +862,7 @@ function bolha(cx, cy, s){
 /* =====================================================================
    ESTADO, EQUIPE E CIDADÃOS
    ===================================================================== */
-const estado = { escala:{}, slots:[], idx:0, equipe:[], pessoas:{}, auto:false, timer:null, sel:null, busca:'', info:[], alertas:{}, filtroPresenca:'todos', jornadas:{} };
+const estado = { escala:{}, slots:[], idx:0, equipe:[], pessoas:{}, auto:false, timer:null, sel:null, busca:'', info:[], alertas:{}, filtroPresenca:'todos', jornadas:{}, seguirRelogio: true };
 let npcs = [];
 
 function novaPessoa(nome, staff){
@@ -881,7 +910,7 @@ function atualizarNPC(n, dt){
   switch(n.fase){
     case 'entrar': { const q = [[25,9],[26,9],[25,10],[26,10],[24,10]][Math.floor(Math.random() * 5)]; irPara(n, q[0], q[1]); n.fase = 'fila'; break; }
     case 'fila': n.espera = R_(2, 4); n.fase = 'balcao'; break;
-    case 'balcao': { const x = [12, 13, 16, 17, 20, 21, 24, 25][Math.floor(Math.random() * 8)]; irPara(n, x, 8); n.fase = 'atendido'; break; }
+    case 'balcao': { const x = [12, 13, 15, 16, 18, 19, 21, 22, 24, 25][Math.floor(Math.random() * 10)]; irPara(n, x, 8); n.fase = 'atendido'; break; }
     case 'atendido': n.espera = R_(4, 6); n.fase = 'sentar'; break;
     case 'sentar': {
       const livres = SEATS.filter(s => !s.ocupado);
@@ -944,7 +973,8 @@ function calcularJornadas(escala, slots, equipe){
 function aplicarSlot(idx, animar){
   if(!estado.slots.length) return;
   idx = Math.max(0, Math.min(estado.slots.length - 1, idx)); estado.idx = idx;
-  $('slider').value = idx; $('slotLabel').textContent = estado.slots[idx]; $('clock').textContent = estado.slots[idx];
+  $('slider').value = idx; $('slotLabel').textContent = estado.slots[idx];
+  if($('clockTurno')) $('clockTurno').textContent = (estado.seguirRelogio ? 'TURNO ' : 'MANUAL ') + estado.slots[idx];
   estado.info = []; estado.alertas = {};
   let pe = 0, sent = 0, pausa = 0, chegando = 0, fui = 0, alertas = 0;
 
@@ -1062,7 +1092,9 @@ function carregarEscala(escala, manterSlot = false){
   estado.sel = null; criarNPCs();
   desenharCenario();
   let targetIdx = 0;
-  if(slotAnterior && estado.slots.includes(slotAnterior)){
+  if(estado.seguirRelogio){
+    targetIdx = slotDoRelogio();
+  } else if(slotAnterior && estado.slots.includes(slotAnterior)){
     targetIdx = estado.slots.indexOf(slotAnterior);
   }
   aplicarSlot(targetIdx, false);
@@ -1194,7 +1226,16 @@ function frame(ts){
   const colide = r => ocupados.some(o => !(r.x + r.w < o.x || o.x + o.w < r.x || r.y + r.h < o.y || o.y + o.h < r.y));
   const itens = presentes.map(p => {
     const cx = Math.round(p.x), cy = Math.round(p.y), topo = cy - (p.sitting ? 3 : 0) - 22 - (p.look.estilo === 2 ? 2 : 0);
-    const alerta = estado.alertas[p.nome], nome = (alerta ? '⚠ ' : '') + norm(p.nome.split(' ')[0]).slice(0, 11);
+    function formatarNomeCracha(raw){
+      if(!raw) return '';
+      const str = norm(raw).trim();
+      const partes = str.split(/\s+/).filter(Boolean);
+      if(!partes.length) return '';
+      if(partes.length === 1) return partes[0];
+      if(partes[0].length + partes[1].length + 1 <= 14) return partes[0] + ' ' + partes[1];
+      return partes[0] + ' ' + partes[1][0] + '.';
+    }
+    const alerta = estado.alertas[p.nome], nome = (alerta ? '⚠ ' : '') + formatarNomeCracha(p.nome);
     return { p, cx, topo, nome, alerta, w: medir(nome, 6.8, 700) + 7 };
   }).sort((a, b) => (a.p.nome === sel) - (b.p.nome === sel) || a.cx - b.cx);
   itens.forEach(it => {
@@ -1331,17 +1372,102 @@ function focarNaPessoa(nome){
 /* =====================================================================
    CONTROLES
    ===================================================================== */
-function irSlot(i){ aplicarSlot(i, true); }
-function passo(d){ aplicarSlot(estado.idx + d, true); }
+function slotDoRelogio(){
+  if(!estado.slots || !estado.slots.length) return 0;
+  const a = new Date();
+  const minAtual = a.getHours() * 60 + a.getMinutes();
+  let melhorIdx = 0;
+  estado.slots.forEach((s, i) => {
+    const [h, m] = s.split(':').map(Number);
+    if(h * 60 + m <= minAtual) melhorIdx = i;
+  });
+  return melhorIdx;
+}
+
+let timeoutVoltarAoVivo = null;
+function setSeguirRelogio(ativo){
+  estado.seguirRelogio = !!ativo;
+  const btn = $('btnSyncRelogio');
+  if(btn){
+    if(estado.seguirRelogio){
+      btn.className = 'btn live-active';
+      btn.innerHTML = '<span class="dot-live"></span> ⏰ AO VIVO';
+      btn.title = 'Sincronizado automaticamente com o relógio do seu computador. Clique para pausar.';
+      if(timeoutVoltarAoVivo){ clearTimeout(timeoutVoltarAoVivo); timeoutVoltarAoVivo = null; }
+    } else {
+      btn.className = 'btn live-paused';
+      btn.innerHTML = '<span class="dot-live"></span> ⏰ VOLTAR AO VIVO';
+      btn.title = 'Modo manual ativo (outro horário selecionado). Clique para sincronizar com o relógio do computador agora.';
+      if(timeoutVoltarAoVivo) clearTimeout(timeoutVoltarAoVivo);
+      // Retoma automaticamente para o AO VIVO após 4 minutos sem interação para nunca deixar a tela desatualizada
+      timeoutVoltarAoVivo = setTimeout(() => {
+        setSeguirRelogio(true);
+        if(estado.slots.length) aplicarSlot(slotDoRelogio(), true);
+      }, 240000);
+    }
+  }
+  if($('clockTurno') && estado.slots.length){
+    $('clockTurno').textContent = (estado.seguirRelogio ? 'TURNO ' : 'MANUAL ') + estado.slots[estado.idx];
+  }
+}
+
+function toggleSeguirRelogio(){
+  if(estado.seguirRelogio){
+    setSeguirRelogio(false);
+  } else {
+    setSeguirRelogio(true);
+    if(estado.slots.length) aplicarSlot(slotDoRelogio(), true);
+  }
+}
+
+function irSlotManual(i){
+  setSeguirRelogio(false);
+  aplicarSlot(i, true);
+}
+
+function passo(d){
+  setSeguirRelogio(false);
+  aplicarSlot(estado.idx + d, true);
+}
+
 function togglePlay(){
   estado.auto = !estado.auto; const b = $('btnPlay');
-  if(estado.auto){ b.textContent = '⏸ PAUSAR'; b.className = 'btn y'; estado.timer = setInterval(() => aplicarSlot(estado.idx + 1 >= estado.slots.length ? 0 : estado.idx + 1, true), 11000); }
-  else { b.textContent = '▶ AUTO'; b.className = 'btn g'; clearInterval(estado.timer); }
+  if(estado.auto){
+    setSeguirRelogio(false);
+    b.textContent = '⏸ PAUSAR'; b.className = 'btn y';
+    estado.timer = setInterval(() => aplicarSlot(estado.idx + 1 >= estado.slots.length ? 0 : estado.idx + 1, true), 8000);
+  } else {
+    b.textContent = '▶ DEMO'; b.className = 'btn';
+    clearInterval(estado.timer);
+  }
 }
+
 function horaAtual(){
-  const a = new Date(), min = a.getHours() * 60 + (a.getMinutes() < 30 ? 0 : 30); let ix = 0;
-  estado.slots.forEach((s, i) => { const [h, m] = s.split(':').map(Number); if(h * 60 + m <= min) ix = i; });
-  aplicarSlot(ix, true);
+  setSeguirRelogio(true);
+  if(estado.slots.length) aplicarSlot(slotDoRelogio(), true);
+}
+
+let relogioTimer = null;
+function iniciarRelogioReal(){
+  if(relogioTimer) clearInterval(relogioTimer);
+  function tick(){
+    const agora = new Date();
+    const hh = String(agora.getHours()).padStart(2, '0');
+    const mm = String(agora.getMinutes()).padStart(2, '0');
+    const ss = String(agora.getSeconds()).padStart(2, '0');
+    const elClock = $('clock');
+    if(elClock) elClock.textContent = `${hh}:${mm}:${ss}`;
+    
+    // Sincronismo automático: ao virar o bloco de 30m, transiciona a equipe para os novos postos
+    if(estado.seguirRelogio && estado.slots.length){
+      const idxEsperado = slotDoRelogio();
+      if(idxEsperado !== estado.idx){
+        aplicarSlot(idxEsperado, true);
+      }
+    }
+  }
+  tick();
+  relogioTimer = setInterval(tick, 1000);
 }
 
 /* ---------- importação e delimitadores (CSV, TSV, Google GViz) ---------- */
@@ -1686,7 +1812,7 @@ function copiarLinkRecepcao(){
 
 /* ---------- grade oficial da unidade (ESCALA CLAUDIA 05/10 a 09/10) ---------- */
 const ESCALA_OFICIAL = {
-  "07:30": {"EMISSOR 1":"ADRIELLE","EMISSOR 2":"CIDA","EMISSOR 3":"DUDA","EMISSOR 4":"GABRIEL","TELEFONE 1":"LETICIA","AUTO 1":"JACQUELINE","ORIENTADOR":"LUCIANA","PAINEL 2":"VIVIANE","PAINEL 3":"CONCEICAO","PAINEL 5":"OVIDIO"},
+  "07:30": {"EMISSOR 1":"ADRIELLE","EMISSOR 2":"CIDA","EMISSOR 3":"DUDA","EMISSOR 4":"GABRIEL","EMISSOR 5":"TATIANA","TELEFONE 1":"LETICIA","AUTO 1":"JACQUELINE","ORIENTADOR":"LUCIANA","PAINEL 2":"VIVIANE","PAINEL 3":"CONCEICAO","PAINEL 5":"OVIDIO"},
   "08:00": {"EMISSOR 1":"JACQUELINE","EMISSOR 2":"OVIDIO","EMISSOR 3":"VIVIANE","EMISSOR 4":"LUCIANA","TELEFONE 1":"CONCEICAO","AUTO SENTADO":"LETICIA","AUTO 1":"ADRIELLE","ORIENTADOR":"GABRIEL","PAINEL 2":"DUDA","PAINEL 5":"CIDA"},
   "08:30": {"EMISSOR 1":"CIDA","EMISSOR 2":"ADRIELLE","EMISSOR 3":"GABRIEL","EMISSOR 4":"DUDA","TELEFONE 1":"JACQUELINE","AUTO SENTADO":"LUCIANA","AUTO 1":"LETICIA","ORIENTADOR":"CONCEICAO","PAINEL 2":"OVIDIO","PAINEL 5":"VIVIANE"},
   "09:00": {"EMISSOR 1":"LETICIA","EMISSOR 2":"VIVIANE","EMISSOR 3":"OVIDIO","EMISSOR 4":"CONCEICAO","TELEFONE 1":"ADRIELLE","AUTO SENTADO":"GABRIEL","AUTO 1":"LUCIANA","ORIENTADOR":"DUDA","PAINEL 2":"CIDA","PAINEL 5":"JACQUELINE"},
@@ -1715,7 +1841,7 @@ function carregarDemo(){
 }
 
 /* ---------- legenda ---------- */
-$('legend').innerHTML = GRUPOS.map(([n, c]) => `<span><i style="background:${c}"></i>${n}</span>`).join('')
+$('legend').innerHTML = '<span><i style="background:#005ea6;border-radius:3px"></i><b>Uniforme:</b> Azul BRB</span><span class="lg-sep"></span>' + GRUPOS.map(([n, c]) => `<span><i style="background:${c}"></i>${n}</span>`).join('')
   + '<span class="lg-sep"></span><span><i class="tag-on"></i>Posto ocupado</span><span><i class="tag-off"></i>Posto vago</span>'
   + '<span>🚶 em pé &nbsp; 💺 sentado</span><span class="lg-dica">Clique num atendente (no mapa ou na lista) para localizar</span>';
 
@@ -1723,6 +1849,7 @@ $('legend').innerHTML = GRUPOS.map(([n, c]) => `<span><i style="background:${c}"
 desenharCenario();
 carregarDemo();
 aplicarZoom();
+iniciarRelogioReal();
 
 // Inicialização inteligente: conecta à URL do Google se fornecida via link ou salva no navegador
 (function bootGoogle(){
