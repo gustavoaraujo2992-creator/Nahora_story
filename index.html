@@ -169,9 +169,23 @@
   .skin-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
   .skstatus{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:8px 12px;font-size:12px;display:flex;align-items:center;gap:8px;margin-bottom:12px}
   .skstatus.err{background:#fef2f2;border-color:#fca5a5;color:#991b1b}
+
+  /* ---- barra de ferramentas do modo editor de layout ---- */
+  .editor-bar{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:45;background:#0b1329;color:#fff;border:1px solid #38bdf8;box-shadow:0 12px 35px rgba(0,0,0,.5);border-radius:14px;padding:8px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;animation:slideDown .25s ease-out;backdrop-filter:blur(6px)}
+  @keyframes slideDown{from{transform:translateX(-50%) translateY(-22px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+  .ed-title{font-size:12px;font-weight:800;color:#38bdf8;letter-spacing:.04em;display:flex;align-items:center;gap:6px}
+  .ed-tip{font-size:11px;color:#94a3b8;border-right:1px solid #334155;padding-right:10px}
+  .ed-btn{padding:5px 11px;font-size:11.5px;font-weight:700;border-radius:8px}
+  .ed-snap{font-size:11px;font-weight:700;color:#cbd5e1;display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
+  .ed-snap input{cursor:pointer;accent-color:#38bdf8}
+  .ed-coord{font-size:11px;font-weight:800;color:#facc15;background:#1e293b;padding:3px 8px;border-radius:6px;font-variant-numeric:tabular-nums}
+  .layout-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);opacity:0;pointer-events:none;background:#0b1329;color:#fff;border:1px solid #10b981;padding:10px 22px;border-radius:999px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 12px 35px rgba(0,0,0,.45);transition:all .35s cubic-bezier(.16,1,.3,1);z-index:220}
+  .layout-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
 </style>
 </head>
 <body>
+<div id="layoutToast" class="layout-toast"><span class="dot-live"></span><span id="layoutToastMsg">🗺️ Layout atualizado!</span></div>
 <div id="skinToast" class="skin-toast"><span class="dot-live"></span><span id="skinToastMsg">🎨 Visual atualizado!</span></div>
 <div class="wrap">
 
@@ -204,6 +218,7 @@
     <label class="btn b admin-only">📂 .xlsx<input type="file" id="file" accept=".xlsx,.xls" style="display:none" onchange="lerExcel(event)"></label>
     <button class="btn p admin-only" onclick="carregarDemo()">⚡ Demo</button>
     <button class="btn p" onclick="abrirSkin()" title="Personalize o visual do seu avatar no mapa (roupa, cabelo, barba, óculos, pele)">🎨 Meu avatar</button>
+    <button class="btn p admin-only" id="btnEditarLayout" onclick="toggleModoEditor()" title="Editar o layout do salão e reposicionar móveis e postos">🛠️ Editar Layout</button>
     <span class="sp"></span>
     <button class="btn live-active" id="btnSyncRelogio" onclick="toggleSeguirRelogio()" title="Sincronizado automaticamente com o relógio do seu computador. Clique para pausar ou navegar manualmente."><span class="dot-live"></span> ⏰ AO VIVO</button>
     <button class="btn b" onclick="passo(-1)" title="Horário anterior (pausa o modo ao vivo)">◀</button>
@@ -240,7 +255,18 @@
           <button class="btn-z full" onclick="toggleFullscreen()" title="Modo Telão / Tela Cheia">⛶ Tela cheia</button>
         </div>
       </div>
-      <div class="screen" id="screen"><canvas id="game"></canvas></div>
+            <div class="screen" id="screen">
+        <div id="editorToolbar" class="editor-bar" style="display:none">
+          <span class="ed-title">🛠️ MODO EDIÇÃO DO SALÃO</span>
+          <span class="ed-tip">Arraste móveis e postos para reposicionar</span>
+          <span class="ed-coord" id="edCoordInfo">Móvel: nenhum</span>
+          <button class="btn ed-btn" onclick="editorUndo()" title="Desfazer alteração (Ctrl+Z)">↩ Desfazer</button>
+          <button class="btn ed-btn" onclick="editorRedo()" title="Refazer alteração (Ctrl+Y)">↪ Refazer</button>
+          <label class="ed-snap"><input type="checkbox" id="chkSnap" checked onchange="editorSnap = this.checked"> Snap 16px</label>
+          <button class="btn y ed-btn" onclick="restaurarLayoutPadrao()" title="Restaurar layout original de fábrica">↺ Padrão</button>
+          <button class="btn b ed-btn" onclick="cancelarEdicaoLayout()" title="Descartar mudanças não salvas">❌ Cancelar</button>
+          <button class="btn g ed-btn" onclick="salvarLayout()" title="Salvar e sincronizar com todas as telas">💾 Salvar Layout</button>
+        </div><canvas id="game"></canvas></div>
       <div class="legend" id="legend"></div>
     </section>
   </div>
@@ -426,20 +452,125 @@ function pill(cx, cy, s, bg, fg, opt){
 }
 const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
 
-/* ---------- mapa de colisão ---------- */
+/* ---------- modelo de dados do layout oficial (totalmente customizavel pelo admin) ---------- */
+const LAYOUT_KEY = 'nahora_custom_layout_v1';
+const DEFAULT_LAYOUT = {
+  versao: 2,
+  unidade: 'NH_CEILANDIA',
+  zonas: [
+    { id:'z_auto', nome:'AUTOATENDIMENTO', cor:'#a855f7', bg:'rgba(168,85,247,0.08)', x:1.5, y:2.5, w:8.5, h:9.8, tit:'tl' },
+    { id:'z_recepcao', nome:'RECEPÇÃO', cor:'#10b981', bg:'rgba(16,185,129,0.08)', x:10.5, y:2.5, w:18.5, h:9.8, tit:'tl' },
+    { id:'z_tel', nome:'TELEFONES', cor:'#06b6d4', bg:'rgba(6,182,212,0.08)', x:22.8, y:2.8, w:5.8, h:4.2, tit:'br' },
+    { id:'z_entrada', nome:'ENTRADA', cor:'#3b82f6', bg:'rgba(59,130,246,0.08)', x:19.8, y:12.5, w:8.8, h:4.5, tit:'tl' },
+    // Salão de Espera dividido nos 5 Paineis oficiais conforme imagem de referência
+    { id:'z_painel_1', nome:'PAINEL 1', cor:'#10b981', bg:'rgba(16,185,129,0.07)', x:10.5, y:12.2, w:8.8, h:3.1, tit:'tl', painel:true },
+    { id:'z_painel_2', nome:'PAINEL 2', cor:'#f97316', bg:'rgba(249,115,22,0.07)', x:10.5, y:15.5, w:8.8, h:3.1, tit:'tl', painel:true },
+    { id:'z_painel_3', nome:'PAINEL 3', cor:'#eab308', bg:'rgba(234,179,8,0.07)', x:10.5, y:18.8, w:8.8, h:3.1, tit:'tl', painel:true },
+    { id:'z_painel_4', nome:'PAINEL 4', cor:'#3b82f6', bg:'rgba(59,130,246,0.07)', x:10.5, y:22.1, w:8.8, h:3.1, tit:'tl', painel:true },
+    { id:'z_painel_5', nome:'PAINEL 5', cor:'#a855f7', bg:'rgba(168,85,247,0.07)', x:10.5, y:25.4, w:8.8, h:3.1, tit:'tl', painel:true },
+    { id:'z_saida', nome:'SAÍDA / PESQUISA', cor:'#ec4899', bg:'rgba(236,72,153,0.08)', x:20.5, y:23.5, w:8.2, h:7.5, tit:'tl' },
+    { id:'z_copa', nome:'COPA / PAUSA', cor:'#38bdf8', bg:'rgba(56,189,248,0.08)', x:1.5, y:23.5, w:8.5, h:7.5, tit:'tl' }
+  ],
+  moveis: [
+    // Computadores individuais da Recepção (podem ser movidos individualmente!)
+    { id:'c_emissor_1', nome:'Computador Emissor 1', tipo:'computador', x:12, y:6.2, w:1.4, h:1.4, bloqueia:false, posto:'EMISSOR 1' },
+    { id:'c_emissor_2', nome:'Computador Emissor 2', tipo:'computador', x:15, y:6.2, w:1.4, h:1.4, bloqueia:false, posto:'EMISSOR 2' },
+    { id:'c_emissor_3', nome:'Computador Emissor 3', tipo:'computador', x:18, y:6.2, w:1.4, h:1.4, bloqueia:false, posto:'EMISSOR 3' },
+    { id:'c_emissor_4', nome:'Computador Emissor 4', tipo:'computador', x:21, y:6.2, w:1.4, h:1.4, bloqueia:false, posto:'EMISSOR 4' },
+    { id:'c_emissor_5', nome:'Computador Emissor 5', tipo:'computador', x:24, y:6.2, w:1.4, h:1.4, bloqueia:false, posto:'EMISSOR 5' },
+    // Balcão de vidro da Recepção
+    { id:'m_balcao_emissores', nome:'Balcão dos Emissores', tipo:'balcao_vidro', x:11, y:6.8, w:16, h:1.4, bloqueia:true },
+
+    // Supervisão: computadores de Leandro e Claudia + mesa
+    { id:'c_superv_1', nome:'Computador Leandro (Supervisão)', tipo:'computador_duplo', x:15, y:3.2, w:1.6, h:1.4, bloqueia:false, posto:'SUPERVISÃO 1' },
+    { id:'c_superv_2', nome:'Computador Claudia (Supervisão)', tipo:'computador_duplo', x:19, y:3.2, w:1.6, h:1.4, bloqueia:false, posto:'SUPERVISÃO 2' },
+    { id:'m_mesa_supervisao', nome:'Mesa Supervisão', tipo:'mesa_supervisao', x:14, y:3.8, w:7, h:1.3, bloqueia:true },
+
+    // Telefones: aparelhos/computadores + bancada
+    { id:'c_tel_1', nome:'Computador / Telefone 1', tipo:'telefone_estacao', x:24.5, y:3.2, w:1.4, h:1.4, bloqueia:false, posto:'TELEFONE 1' },
+    { id:'c_tel_2', nome:'Computador / Telefone 2', tipo:'telefone_estacao', x:26.5, y:3.2, w:1.4, h:1.4, bloqueia:false, posto:'TELEFONE 2' },
+    { id:'m_bancada_telefones', nome:'Bancada Telefones', tipo:'bancada_telefones', x:23.2, y:3.8, w:5.2, h:1.3, bloqueia:true },
+
+    // Autoatendimento
+    { id:'c_auto_pc', nome:'Computador Autoatendimento (Sentado)', tipo:'computador', x:3, y:9.2, w:1.4, h:1.4, bloqueia:false, posto:'AUTO SENTADO' },
+    { id:'m_totens_auto', nome:'Totens de Autoatendimento (3x)', tipo:'totens_auto', x:2.2, y:4.2, w:7.2, h:3.2, bloqueia:true },
+    { id:'m_balcao_auto', nome:'Balcão Apoio Autoatendimento', tipo:'balcao_auto', x:2.2, y:9.8, w:7.2, h:1.3, bloqueia:true },
+
+    // SALÃO DE ESPERA: 5 Estações de Painel com totens, cadeiras e displays de senha (idêntico à imagem de referência!)
+    { id:'p_painel_1', nome:'Painel 1 - Estação & Totem P1', tipo:'painel_tier_1', x:11.2, y:12.4, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 1'] },
+    { id:'p_painel_2', nome:'Painel 2 - Fila de Cadeiras & Totem P2', tipo:'painel_tier_2', x:11.2, y:15.7, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 2','PAINEL 2.1'] },
+    { id:'p_painel_3', nome:'Painel 3 - Fila de Cadeiras & Totens P3', tipo:'painel_tier_3', x:11.2, y:19.0, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 3','PAINEL 3.1'] },
+    { id:'p_painel_4', nome:'Painel 4 - Fila de Cadeiras & Totens P4', tipo:'painel_tier_4', x:11.2, y:22.3, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 4'] },
+    { id:'p_painel_5', nome:'Painel 5 - Fila de Cadeiras & Totens P5', tipo:'painel_tier_5', x:11.2, y:25.6, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 5'] },
+
+    // Entrada & Saída
+    { id:'m_posto_orientador', nome:'Posto Orientador da Entrada', tipo:'ponto_orientador', x:24, y:13.5, w:2, h:1.5, bloqueia:false, postos:['ORIENTADOR'] },
+    { id:'m_posto_pesquisa', nome:'Posto Pesquisa de Satisfação', tipo:'ponto_pesquisa', x:26.5, y:25.5, w:2, h:3.5, bloqueia:false, postos:['PESQUISA','PESQUISA 2'] },
+
+    // Máquina de bebidas, Copa e Decoração
+    { id:'m_bebidas', nome:'Máquina 3D de Bebidas', tipo:'maquina_bebidas', x:4, y:14.2, w:1.8, h:1.8, bloqueia:true },
+    { id:'m_geladeira_copa', nome:'Geladeira Expositora de Bebidas', tipo:'geladeira_copa', x:5.8, y:24.2, w:1.8, h:1.8, bloqueia:true },
+    { id:'m_cafeteira_inox', nome:'Estação Cafeteira Inox', tipo:'cafeteira_inox', x:7.8, y:24.2, w:1.8, h:1.8, bloqueia:true },
+    { id:'m_mesa_copa', nome:'Mesa de Café / Lanche da Copa', tipo:'mesa_copa', x:3, y:27, w:2.8, h:2.8, bloqueia:true },
+    { id:'m_poltrona_copa', nome:'Poltronas Lounge da Copa', tipo:'poltronas_copa', x:7.2, y:28, w:2.2, h:2.2, bloqueia:true },
+
+    // Plantas decorativas
+    { id:'m_planta_1', nome:'Planta Vaso - Recepção', tipo:'planta', x:9.2, y:2.8, w:1.2, h:1.2, bloqueia:true },
+    { id:'m_planta_2', nome:'Planta Vaso - Corredor Auto', tipo:'planta', x:1.8, y:13.5, w:1.2, h:1.2, bloqueia:true },
+    { id:'m_planta_3', nome:'Planta Vaso - Corredor Meio', tipo:'planta', x:8.8, y:13.5, w:1.2, h:1.2, bloqueia:true },
+    { id:'m_planta_4', nome:'Planta Vaso - Corredor Copa', tipo:'planta', x:1.8, y:21.8, w:1.2, h:1.2, bloqueia:true },
+    { id:'m_planta_5', nome:'Planta Vaso - Copa Canto', tipo:'planta', x:8.8, y:21.8, w:1.2, h:1.2, bloqueia:true },
+    { id:'m_planta_6', nome:'Planta Vaso - Entrada Dir.', tipo:'planta', x:21, y:14.5, w:1.2, h:1.2, bloqueia:true },
+    { id:'m_planta_7', nome:'Planta Vaso - Parede Dir.', tipo:'planta', x:28, y:14.5, w:1.2, h:1.2, bloqueia:true },
+    { id:'m_planta_8', nome:'Planta Vaso - Saída Dir.', tipo:'planta', x:21, y:21, w:1.2, h:1.2, bloqueia:true },
+    { id:'m_planta_9', nome:'Planta Vaso - Saída Parede', tipo:'planta', x:28, y:21, w:1.2, h:1.2, bloqueia:true }
+  ],
+  trilhasLuz: [
+    { id:'trilha_1', pts:[{x:24, y:12.5}, {x:24, y:18}, {x:19.5, y:18}] },
+    { id:'trilha_2', pts:[{x:14.9, y:11.5}, {x:14.9, y:28.5}] }, // Trilha vertical iluminada central do Salão de Espera conectando os 5 painéis
+    { id:'trilha_3', pts:[{x:10.5, y:18.8}, {x:5, y:18.8}, {x:5, y:13}] },
+    { id:'trilha_4', pts:[{x:5, y:18.8}, {x:5, y:24}] },
+    { id:'trilha_5', pts:[{x:14.9, y:28.5}, {x:20.5, y:28.5}] }
+  ]
+};
+function carregarLayout(){
+  try {
+    const salvo = localStorage.getItem(LAYOUT_KEY);
+    if(salvo){
+      const parsed = JSON.parse(salvo);
+      if(parsed && parsed.moveis && parsed.zonas) return parsed;
+    }
+  } catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
+}
+let LAYOUT = carregarLayout();
+
+/* ---------- mapa de colisão dinâmico ---------- */
 const bloq = Array.from({length:H}, () => Array(W).fill(false));
-function bl(x, y, w = 1, h = 1){ for(let j = 0; j < h; j++) for(let i = 0; i < w; i++) bloq[y + j][x + i] = true; }
-(function(){
-  bl(0, 0, W, 2); bl(0, 2, 1, H - 2); bl(0, 31, W, 1);       // paredes: topo, esquerda, base
-  bl(29, 2, 1, 7); bl(29, 11, 1, 15); bl(29, 28, 1, 3);       // parede direita (portas em y=9..10 e y=26..27)
-  bl(23, 4, 6);                                                // bancada dos telefones atrás da recepção (x=23..28, y=4)
-  bl(11, 7, 16);                                               // balcão dos emissores na frente (x=11..26, y=7)
-  bl(14, 4, 7);                                                // mesa da supervisão atrás dos emissores (x=14..20, y=4)
-  bl(2, 10, 7);                                                // bancada do autoatendimento
-  [13, 17, 21].forEach(y0 => { [12, 14, 16].forEach(x => bl(x, y0 + 1)); [13, 14, 15].forEach(x => { bl(x, y0 + 2); bl(x, y0 + 3); }); });
-  bl(4, 14); bl(7, 24); bl(3, 27, 2, 2);                       // máquina de bebidas, cafeteira, mesa da copa
-  [[1,13],[8,13],[1,22],[8,22],[21,14],[28,14],[21,20],[28,20],[9,2]].forEach(([x, y]) => bl(x, y)); // plantas
-})();
+function bl(x, y, w = 1, h = 1){
+  for(let j = 0; j < h; j++) for(let i = 0; i < w; i++){
+    const nx = x + i, ny = y + j;
+    if(ny >= 0 && ny < H && nx >= 0 && nx < W) bloq[ny][nx] = true;
+  }
+}
+function recalcularMatrizColisao(layout){
+  layout = layout || LAYOUT;
+  for(let y = 0; y < H; y++) for(let x = 0; x < W; x++) bloq[y][x] = false;
+  // Paredes perimetrais fixas
+  bl(0, 0, W, 2); bl(0, 2, 1, H - 2); bl(0, H - 1, W, 1);
+  bl(29, 2, 1, 7); bl(29, 11, 1, 15); bl(29, 28, 1, 3); // portas em y=9..10 e y=26..27
+  // Móveis com colisão ativa
+  if(layout && layout.moveis){
+    layout.moveis.forEach(m => {
+      if(!m.bloqueia) return;
+      const x0 = Math.max(1, Math.min(W - 2, Math.floor(m.x)));
+      const y0 = Math.max(2, Math.min(H - 2, Math.floor(m.y)));
+      const w0 = Math.max(1, Math.min(W - 1 - x0, Math.round(m.w)));
+      const h0 = Math.max(1, Math.min(H - 1 - y0, Math.round(m.h)));
+      bl(x0, y0, w0, h0);
+    });
+  }
+}
 
 /* ---------- pathfinding (Dijkstra com penalidade de curva) ---------- */
 function achar(sx, sy, gx, gy){
@@ -469,9 +600,11 @@ function achar(sx, sy, gx, gy){
   return path.reverse();
 }
 
-/* ---------- postos oficiais (todos os 22 postos da unidade) ---------- */
+/* ---------- postos oficiais (todos os 22 postos da unidade, vinculados aos móveis) ---------- */
 const POSTOS = {};
 function addPosto(key, o){ POSTOS[key] = Object.assign({ key }, o); }
+
+// Registra todos os postos oficiais
 [['EMISSOR 1',12],['EMISSOR 1.1',13],['EMISSOR 2',15],['EMISSOR 2.1',16],['EMISSOR 3',18],['EMISSOR 3.1',19],['EMISSOR 4',21],['EMISSOR 4.1',22],['EMISSOR 5',24],['EMISSOR 5.1',25]].forEach(([k, x]) => addPosto(k, {
   x, y:6, sit:true, dir:'down', grupo:'RECEPÇÃO', cor:COR.emissor, tipo:'emissor',
   desc:'Na recepção, atendendo o cidadão que chega para pegar senha.' }));
@@ -481,26 +614,75 @@ function addPosto(key, o){ POSTOS[key] = Object.assign({ key }, o); }
 [['SUPERVISÃO 1',15],['SUPERVISÃO 2',19]].forEach(([k, x]) => addPosto(k, {
   x, y:3, sit:true, dir:'down', grupo:'SUPERVISÃO', cor:COR.superv, tipo:'superv',
   desc:'Supervisão da unidade — dentro da recepção, acompanhando a operação no computador.' }));
-addPosto('AUTO SENTADO', { x:3, y:9, sit:true, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
-  desc:'Sentado no computador do autoatendimento, auxiliando o cidadão.' });
-addPosto('AUTO 1', { x:6, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
-  desc:'Em pé no totem 1 de autoatendimento, auxiliando o cidadão.' });
-addPosto('AUTO 2', { x:8, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
-  desc:'Em pé no totem 2 de autoatendimento, auxiliando o cidadão.' });
-addPosto('AUTO', { x:6, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
-  desc:'Em pé no autoatendimento, auxiliando o cidadão.' });
-addPosto('ORIENTADOR', { x:24, y:10, sit:false, dir:'down', grupo:'ENTRADA', cor:COR.orient, tipo:'orient',
-  desc:'Na porta de entrada, com tablet em mãos, adiantando a triagem da fila.' });
+addPosto('AUTO SENTADO', { x:3, y:9, sit:true, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto', desc:'Sentado no computador do autoatendimento, auxiliando o cidadão.' });
+addPosto('AUTO 1', { x:6, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto', desc:'Em pé no totem 1 de autoatendimento, auxiliando o cidadão.' });
+addPosto('AUTO 2', { x:8, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto', desc:'Em pé no totem 2 de autoatendimento, auxiliando o cidadão.' });
+addPosto('AUTO', { x:6, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto', desc:'Em pé no autoatendimento, auxiliando o cidadão.' });
+addPosto('ORIENTADOR', { x:24, y:10, sit:false, dir:'down', grupo:'ENTRADA', cor:COR.orient, tipo:'orient', desc:'Na porta de entrada, com tablet em mãos, adiantando a triagem da fila.' });
 [['PAINEL 2',12,13],['PAINEL 2.1',16,13],['PAINEL 3',12,17],['PAINEL 3.1',16,17],['PAINEL 4',12,21],['PAINEL 5',16,21]].forEach(([k, x, y]) => addPosto(k, {
-  x, y, sit:false, dir:'down', grupo:'SALÃO DE ESPERA', cor:COR.painel, tipo:'painel',
-  desc:'Em pé no salão de espera, chamando senha e orientando o painel.' }));
-addPosto('PAINEL 1', { x:14, y:13, sit:false, dir:'down', grupo:'SALÃO DE ESPERA', cor:COR.painel, tipo:'painel',
-  desc:'Em pé no salão, chamando senha no painel 1.' });
-addPosto('PESQUISA', { x:27, y:25, sit:false, dir:'right', grupo:'SAÍDA / PESQUISA', cor:COR.pesq, tipo:'pesq',
-  desc:'Na porta de saída, aplicando a pesquisa de satisfação do atendimento.' });
-addPosto('PESQUISA 2', { x:27, y:28, sit:false, dir:'right', grupo:'SAÍDA / PESQUISA', cor:COR.pesq, tipo:'pesq',
-  desc:'Na porta de saída, aplicando a pesquisa de satisfação do atendimento (dupla).' });
+  x, y, sit:false, dir:'down', grupo:'SALÃO DE ESPERA', cor:COR.painel, tipo:'painel', desc:'Em pé no salão de espera, chamando senha e orientando o painel.' }));
+addPosto('PAINEL 1', { x:14, y:13, sit:false, dir:'down', grupo:'SALÃO DE ESPERA', cor:COR.painel, tipo:'painel', desc:'Em pé no salão, chamando senha no painel 1.' });
+addPosto('PESQUISA', { x:27, y:25, sit:false, dir:'right', grupo:'SAÍDA / PESQUISA', cor:COR.pesq, tipo:'pesq', desc:'Na porta de saída, aplicando a pesquisa de satisfação do atendimento.' });
+addPosto('PESQUISA 2', { x:27, y:28, sit:false, dir:'right', grupo:'SAÍDA / PESQUISA', cor:COR.pesq, tipo:'pesq', desc:'Na porta de saída, aplicando a pesquisa de satisfação do atendimento (dupla).' });
 
+function atualizarPostosDoLayout(layout){
+  layout = layout || LAYOUT;
+  if(!layout || !layout.moveis) return;
+
+  // 1. Vincula postos com computadores e estações individuais
+  layout.moveis.forEach(m => {
+    if(m.posto && POSTOS[m.posto]){
+      POSTOS[m.posto].x = Math.round(m.x);
+      POSTOS[m.posto].y = Math.round(m.y);
+    }
+    // Painel 1
+    if(m.id === 'p_painel_1' && POSTOS['PAINEL 1']){
+      POSTOS['PAINEL 1'].x = Math.round(m.x + m.w / 2);
+      POSTOS['PAINEL 1'].y = Math.round(m.y + 0.6);
+    }
+    // Painel 2
+    if(m.id === 'p_painel_2'){
+      if(POSTOS['PAINEL 2']){ POSTOS['PAINEL 2'].x = Math.round(m.x + 1.2); POSTOS['PAINEL 2'].y = Math.round(m.y + 0.6); }
+      if(POSTOS['PAINEL 2.1']){ POSTOS['PAINEL 2.1'].x = Math.round(m.x + m.w - 1.2); POSTOS['PAINEL 2.1'].y = Math.round(m.y + 0.6); }
+    }
+    // Painel 3
+    if(m.id === 'p_painel_3'){
+      if(POSTOS['PAINEL 3']){ POSTOS['PAINEL 3'].x = Math.round(m.x + 1.2); POSTOS['PAINEL 3'].y = Math.round(m.y + 0.6); }
+      if(POSTOS['PAINEL 3.1']){ POSTOS['PAINEL 3.1'].x = Math.round(m.x + m.w - 1.2); POSTOS['PAINEL 3.1'].y = Math.round(m.y + 0.6); }
+    }
+    // Painel 4
+    if(m.id === 'p_painel_4' && POSTOS['PAINEL 4']){
+      POSTOS['PAINEL 4'].x = Math.round(m.x + 1.8);
+      POSTOS['PAINEL 4'].y = Math.round(m.y + 0.6);
+    }
+    // Painel 5
+    if(m.id === 'p_painel_5' && POSTOS['PAINEL 5']){
+      POSTOS['PAINEL 5'].x = Math.round(m.x + 1.8);
+      POSTOS['PAINEL 5'].y = Math.round(m.y + 0.6);
+    }
+    // Orientador e Pesquisa
+    if(m.id === 'm_posto_orientador' && POSTOS['ORIENTADOR']){
+      POSTOS['ORIENTADOR'].x = Math.round(m.x);
+      POSTOS['ORIENTADOR'].y = Math.round(m.y);
+    }
+    if(m.id === 'm_posto_pesquisa'){
+      if(POSTOS['PESQUISA']){ POSTOS['PESQUISA'].x = Math.round(m.x); POSTOS['PESQUISA'].y = Math.round(m.y); }
+      if(POSTOS['PESQUISA 2']){ POSTOS['PESQUISA 2'].x = Math.round(m.x); POSTOS['PESQUISA 2'].y = Math.round(m.y + 2); }
+    }
+  });
+
+  // Atualiza imediatamente a posição dos atendentes já presentes nos postos
+  if(typeof estado !== 'undefined' && estado.pessoas){
+    Object.values(estado.pessoas).forEach(p => {
+      if(p.posto && POSTOS[p.posto] && !p.moving){
+        p.x = POSTOS[p.posto].x * T + 8;
+        p.y = POSTOS[p.posto].y * T + 8;
+      }
+    });
+  }
+}
+atualizarPostosDoLayout();
+recalcularMatrizColisao();
 const GRUPOS = [
   ['SUPERVISÃO', COR.superv],
   ['RECEPÇÃO', COR.emissor], ['TELEFONES', COR.telefone], ['AUTOATENDIMENTO', COR.auto],
@@ -631,36 +813,338 @@ const SEATS = [];
 let OBST = [], TAG_RECTS = [];          // retângulos que as etiquetas de nome devem evitar
 let senhaAtual = 42, senhaTempo = 0;
 
-const ZONAS = [
-  { nome:'AUTOATENDIMENTO',  cor:COR.auto,     bg:'#f1ebfc', x:1,  y:2,  w:8,  h:10, tit:'tl' },
-  { nome:'RECEPÇÃO',         cor:COR.emissor,  bg:'#e6f6ed', x:10, y:2,  w:19, h:7,  tit:'tl' },
-  { nome:'TELEFONES',        cor:COR.telefone, bg:'#dcf3f9', x:23, y:2,  w:6,  h:4,  tit:'br' },
-  { nome:'ENTRADA',          cor:'#2563eb',    bg:'#e2ebfd', x:20, y:9,  w:9,  h:4,  tit:'tl' },
-  { nome:'SALÃO DE ESPERA',  cor:COR.painel,   bg:'#fff3e3', x:10, y:12, w:10, h:13, tit:'bl' },
-  { nome:'SAÍDA / PESQUISA', cor:COR.pesq,     bg:'#fde9f1', x:21, y:22, w:8,  h:9,  tit:'tl' },
-  { nome:'COPA / PAUSA',     cor:'#64748b',    bg:'#eaeef3', x:1,  y:23, w:8,  h:8,  tit:'tl' }
-];
+const ZONAS = LAYOUT.zonas;
 
-function balcao(x, y, w, h){
-  ctx.save(); ctx.shadowColor = 'rgba(15,23,42,.25)'; ctx.shadowBlur = 4 * K; ctx.shadowOffsetY = 1.6 * K;
-  rr(x, y, w, h, 2.5, '#ffffff'); ctx.restore();
-  rr(x, y, w, h, 2.5, null, '#94a3b8', .8); rr(x + 1.5, y + 1.5, w - 3, 3, 1.2, 'rgba(148,163,184,.28)');
+/* ---------- renderizadores 3D procedurais de alta fidelidade (estilo maquete executiva) ---------- */
+function desenharTotensAuto(m){
+  for(let i = 0; i < 3; i++){
+    const tx_ = (m.x + i * 2.38) * T, ty_ = m.y * T;
+    bgCtx.fillStyle = 'rgba(0,0,0,0.48)';
+    bgCtx.beginPath(); bgCtx.ellipse(tx_ + 14, ty_ + 45, 13, 4, 0, 0, 6.3); bgCtx.fill();
+    const gradG = bgCtx.createLinearGradient(tx_, ty_, tx_ + 28, ty_);
+    gradG.addColorStop(0, '#334155'); gradG.addColorStop(0.5, '#475569'); gradG.addColorStop(1, '#1e293b');
+    rr(tx_ + 2, ty_ + 2, 24, 42, 4, gradG, '#64748b', 0.9);
+    rr(tx_ + 3.5, ty_ + 3.2, 21, 2, 1, 'rgba(255,255,255,0.4)');
+    const gradTela = bgCtx.createLinearGradient(tx_, ty_ + 8, tx_, ty_ + 27);
+    gradTela.addColorStop(0, '#0284c7'); gradTela.addColorStop(1, '#0369a1');
+    rr(tx_ + 5.5, ty_ + 7, 17, 18, 2, gradTela, '#38bdf8', 0.8);
+    rr(tx_ + 7, ty_ + 8.5, 14, 3, 1, 'rgba(255,255,255,0.85)');
+    rr(tx_ + 8, ty_ + 13.5, 10, 1.2, 0.5, 'rgba(255,255,255,0.45)');
+    rr(tx_ + 8, ty_ + 16.5, 12, 1.2, 0.5, 'rgba(255,255,255,0.45)');
+    rr(tx_ + 7, ty_ + 28, 14, 2.4, 0.8, '#0f172a', '#334155', 0.6);
+    rr(tx_ + 9, ty_ + 33.5, 10, 1.8, 0.6, '#0f172a');
+    rr(tx_ + 10, ty_ + 32.5, 8, 1.4, 0.4, '#f8fafc');
+  }
 }
+
+function desenharBalcaoVidro(m){
+  const bx = m.x * T, by = m.y * T, bw = m.w * T, bh = m.h * T;
+  bgCtx.save();
+  bgCtx.shadowColor = 'rgba(0,0,0,0.45)'; bgCtx.shadowBlur = 6 * K; bgCtx.shadowOffsetY = 2.5 * K;
+  rr(bx, by, bw, bh, 3, '#1e293b');
+  bgCtx.restore();
+  rr(bx, by, bw, bh, 3, '#0f172a');
+  const gradV = bgCtx.createLinearGradient(bx, by, bx, by + bh);
+  gradV.addColorStop(0, 'rgba(224, 242, 254, 0.38)'); gradV.addColorStop(1, 'rgba(186, 230, 253, 0.16)');
+  rr(bx, by, bw, bh, 3, gradV, 'rgba(186, 230, 253, 0.8)', 1.2);
+  rr(bx + 2, by + 1.2, bw - 4, 2.2, 1, 'rgba(255,255,255,0.5)');
+  for(let i = 1; i <= 4; i++){
+    const dx = bx + (bw / 5) * i;
+    rr(dx - 1, by - 6, 2, bh + 8, 1, 'rgba(56, 189, 248, 0.6)', 'rgba(255,255,255,0.8)', 0.5);
+  }
+}
+
+function desenharComputador(m){
+  const cx = m.x * T + 8, cy = m.y * T + 8;
+  // Suporte articulado e base
+  rr(cx - 3, cy + 5, 6, 2, 0.5, '#475569');
+  rr(cx - 1, cy + 3, 2, 3, 0.4, '#1e293b');
+  // Monitor curvo
+  rr(cx - 7, cy - 4, 14, 8, 1.5, '#0f172a');
+  rr(cx - 6, cy - 3.2, 12, 6.2, 1, '#0284c7');
+  rr(cx - 5.5, cy - 2.8, 6, 1.2, 0.4, 'rgba(255,255,255,0.6)');
+  // Teclado e mousepad
+  rr(cx - 4.5, cy + 7.5, 6.5, 2, 0.5, '#334155');
+  rr(cx + 3, cy + 7.5, 2.2, 2, 0.4, '#1e293b');
+}
+
+function desenharComputadorDuplo(m){
+  const cx = m.x * T + 8, cy = m.y * T + 8;
+  // Monitor esquerdo
+  rr(cx - 9, cy - 4, 8, 7.5, 1.2, '#0f172a');
+  rr(cx - 8.2, cy - 3.2, 6.4, 5.8, 0.8, '#0284c7');
+  // Monitor direito
+  rr(cx + 1, cy - 4, 8, 7.5, 1.2, '#0f172a');
+  rr(cx + 1.8, cy - 3.2, 6.4, 5.8, 0.8, '#10b981');
+  // Suporte duplo
+  rr(cx - 3, cy + 4.5, 6, 2, 0.5, '#475569');
+  // Teclado ergonômico
+  rr(cx - 5, cy + 7.2, 10, 2.2, 0.6, '#334155');
+}
+
+function desenharTelefoneEstacao(m){
+  const cx = m.x * T + 8, cy = m.y * T + 8;
+  // Monitor
+  rr(cx - 6, cy - 4, 11, 7.5, 1.2, '#0f172a');
+  rr(cx - 5.2, cy - 3.2, 9.4, 5.8, 0.8, '#06b6d4');
+  // Aparelho telefônico
+  rr(cx + 5.5, cy - 2, 6.5, 7, 1.2, '#1e293b');
+  rr(cx + 6.5, cy - 1, 3, 1, 0.4, '#64748b');
+  rr(cx + 6.5, cy + 1, 3, 1, 0.4, '#64748b');
+}
+
+function desenharMesaSupervisao(m){
+  const sx = m.x * T, sy = m.y * T, sw = m.w * T, sh = m.h * T;
+  bgCtx.save(); bgCtx.shadowColor = 'rgba(0,0,0,0.4)'; bgCtx.shadowBlur = 5 * K; bgCtx.shadowOffsetY = 2 * K;
+  rr(sx, sy, sw, sh, 3, '#2a1a10'); bgCtx.restore();
+  rr(sx, sy, sw, sh, 3, '#3b2214', '#5a351d', 1.2);
+  rr(sx + 2, sy + 1.2, sw - 4, 2, 1, 'rgba(255,255,255,0.22)');
+  rr(sx + 6, sy + 3, 34, sh - 6, 2, '#18181b');
+  rr(sx + sw - 40, sy + 3, 34, sh - 6, 2, '#18181b');
+}
+
+function desenharBancadaTelefones(m){
+  const tx_ = m.x * T, ty_ = m.y * T, tw = m.w * T, th = m.h * T;
+  bgCtx.save(); bgCtx.shadowColor = 'rgba(0,0,0,0.38)'; bgCtx.shadowBlur = 5 * K; bgCtx.shadowOffsetY = 2 * K;
+  rr(tx_, ty_, tw, th, 3, '#1e293b'); bgCtx.restore();
+  rr(tx_, ty_, tw, th, 3, '#334155', '#06b6d4', 1.0);
+  rr(tx_ + 2, ty_ + 1.2, tw - 4, 2, 1, 'rgba(255,255,255,0.25)');
+}
+
+function desenharBalcaoAuto(m){
+  const ax = m.x * T, ay = m.y * T, aw = m.w * T, ah = m.h * T;
+  bgCtx.save(); bgCtx.shadowColor = 'rgba(0,0,0,0.38)'; bgCtx.shadowBlur = 5 * K; bgCtx.shadowOffsetY = 2 * K;
+  rr(ax, ay, aw, ah, 3, '#1e293b'); bgCtx.restore();
+  rr(ax, ay, aw, ah, 3, '#334155', '#a855f7', 1.0);
+  rr(ax + 2, ay + 1.2, aw - 4, 2, 1, 'rgba(255,255,255,0.25)');
+}
+
+// -------------------------------------------------------------
+// RENDERIZADORES DOS 5 TIERS DO SALÃO DE ESPERA (CONFORME FOTO)
+// -------------------------------------------------------------
+function desenharPainelTier1(m){
+  const px = m.x * T, py = m.y * T, pw = m.w * T, ph = m.h * T;
+  const cx = px + pw / 2;
+  // Cadeira giratória de escritório do atendente
+  rr(cx - 7, py + 4, 14, 14, 3, '#1e293b', '#334155', 0.8);
+  // Display digital de senha vermelha A08 sob o assento
+  rr(cx - 6, py + 18, 12, 6, 1, '#020617', '#ef4444', 0.5);
+  tx('A08', cx, py + 21, 4.2, '#ef4444', 800);
+  // Pedestal Totem P1 em cinza/prata
+  rr(cx - 10, py + 25, 20, 8, 2, '#475569', '#cbd5e1', 0.8);
+  tx('P1', cx, py + 29, 5.2, '#ffffff', 800);
+}
+
+function desenharPainelTier2(m){
+  const px = m.x * T, py = m.y * T;
+  // Cadeira do atendente à esquerda com display A07
+  rr(px + 4, py + 4, 14, 14, 3, '#1e293b', '#334155', 0.8);
+  rr(px + 5, py + 18, 12, 6, 1, '#020617', '#ef4444', 0.5);
+  tx('A07', px + 11, py + 21, 4.2, '#ef4444', 800);
+  // Badge P2
+  rr(px + 24, py + 11, 14, 8, 2, '#ea580c');
+  tx('P2', px + 31, py + 15, 5.0, '#ffffff', 800);
+  // Fileira de 3 assentos acolchoados (Laranja, Cinza, Laranja)
+  [
+    [px + 39, '#ea580c'], [px + 54, '#475569'], [px + 69, '#ea580c']
+  ].forEach(([ax, cor]) => {
+    bgCtx.fillStyle = 'rgba(0,0,0,0.35)'; bgCtx.beginPath(); bgCtx.ellipse(ax + 6, py + 20, 6, 2.5, 0, 0, 6.3); bgCtx.fill();
+    rr(ax, py + 10, 13, 9, 2, cor, '#f97316', 0.6);
+    rr(ax + 1, py + 11, 11, 2, 0.8, 'rgba(255,255,255,0.35)');
+    SEATS.push({ x: (ax + 6) / T, y: (py + 14) / T, ocupado: false });
+  });
+}
+
+function desenharPainelTier3(m){
+  const px = m.x * T, py = m.y * T;
+  // Atendente 1 (Leticia) à esquerda com A09
+  rr(px + 6, py + 4, 14, 14, 3, '#1e293b', '#334155', 0.8);
+  rr(px + 7, py + 18, 12, 6, 1, '#020617', '#ef4444', 0.5);
+  tx('A09', px + 13, py + 21, 4.2, '#ef4444', 800);
+  rr(px + 6, py + 25, 14, 7, 2, '#ea580c'); tx('P3', px + 13, py + 28.5, 4.8, '#fff', 800);
+
+  // Atendente 2 (Thalita) à direita com A10
+  rr(px + 78, py + 4, 14, 14, 3, '#1e293b', '#334155', 0.8);
+  rr(px + 79, py + 18, 12, 6, 1, '#020617', '#ef4444', 0.5);
+  tx('A10', px + 85, py + 21, 4.2, '#ef4444', 800);
+  rr(px + 78, py + 25, 14, 7, 2, '#ea580c'); tx('P3', px + 85, py + 28.5, 4.8, '#fff', 800);
+
+  // Assentos acolchoados centrais
+  [
+    [px + 24, '#ea580c'], [px + 42, '#475569'], [px + 60, '#ea580c']
+  ].forEach(([ax, cor]) => {
+    bgCtx.fillStyle = 'rgba(0,0,0,0.35)'; bgCtx.beginPath(); bgCtx.ellipse(ax + 7, py + 24, 7, 2.5, 0, 0, 6.3); bgCtx.fill();
+    rr(ax, py + 14, 14, 9, 2, cor, '#facc15', 0.6);
+    rr(ax + 1, py + 15, 12, 2, 0.8, 'rgba(255,255,255,0.35)');
+    SEATS.push({ x: (ax + 7) / T, y: (py + 18) / T, ocupado: false });
+  });
+}
+
+function desenharPainelTier4(m){
+  const px = m.x * T, py = m.y * T;
+  // Cadeira do atendente com display A07
+  const cx = px + 22;
+  rr(cx - 7, py + 4, 14, 14, 3, '#1e293b', '#334155', 0.8);
+  rr(cx - 6, py + 18, 12, 6, 1, '#020617', '#ef4444', 0.5);
+  tx('A07', cx, py + 21, 4.2, '#ef4444', 800);
+  // Badges P4
+  rr(px + 8, py + 22, 14, 8, 2, '#ea580c'); tx('P4', px + 15, py + 26, 5.0, '#fff', 800);
+  rr(px + 78, py + 22, 14, 8, 2, '#ea580c'); tx('P4', px + 85, py + 26, 5.0, '#fff', 800);
+  // Assentos com cidadãos sentados
+  [
+    [px + 26, '#475569'], [px + 44, '#475569'], [px + 62, '#ea580c']
+  ].forEach(([ax, cor]) => {
+    bgCtx.fillStyle = 'rgba(0,0,0,0.35)'; bgCtx.beginPath(); bgCtx.ellipse(ax + 7, py + 24, 7, 2.5, 0, 0, 6.3); bgCtx.fill();
+    rr(ax, py + 14, 14, 9, 2, cor, '#3b82f6', 0.6);
+    SEATS.push({ x: (ax + 7) / T, y: (py + 18) / T, ocupado: false });
+  });
+}
+
+function desenharPainelTier5(m){
+  const px = m.x * T, py = m.y * T;
+  // Cadeira do atendente com display A07
+  const cx = px + 22;
+  rr(cx - 7, py + 4, 14, 14, 3, '#1e293b', '#334155', 0.8);
+  rr(cx - 6, py + 18, 12, 6, 1, '#020617', '#ef4444', 0.5);
+  tx('A07', cx, py + 21, 4.2, '#ef4444', 800);
+  // Badges P5
+  rr(px + 4, py + 22, 14, 8, 2, '#ea580c'); tx('P5', px + 11, py + 26, 5.0, '#fff', 800);
+  rr(px + 82, py + 22, 14, 8, 2, '#ea580c'); tx('P5', px + 89, py + 26, 5.0, '#fff', 800);
+  // 3 assentos laranjas contíguos
+  [
+    px + 22, px + 42, px + 62
+  ].forEach(ax => {
+    bgCtx.fillStyle = 'rgba(0,0,0,0.35)'; bgCtx.beginPath(); bgCtx.ellipse(ax + 9, py + 24, 8, 2.5, 0, 0, 6.3); bgCtx.fill();
+    rr(ax, py + 14, 18, 9, 2, '#ea580c', '#c2410c', 0.8);
+    rr(ax + 1, py + 15, 16, 2, 0.8, 'rgba(255,255,255,0.35)');
+    SEATS.push({ x: (ax + 9) / T, y: (py + 18) / T, ocupado: false });
+  });
+}
+
+function desenharMaquinaBebidas(m){
+  const vx = m.x * T, vy = m.y * T;
+  bgCtx.fillStyle = 'rgba(0,0,0,0.48)';
+  bgCtx.beginPath(); bgCtx.ellipse(vx + 14, vy + 30, 14, 4, 0, 0, 6.3); bgCtx.fill();
+  rr(vx, vy, 27, 30, 3, '#dc2626', '#991b1b', 1.2);
+  rr(vx + 1.5, vy + 1.5, 24, 2, 1, 'rgba(255,255,255,0.45)');
+  rr(vx + 3, vy + 4, 15, 15, 2, '#0284c7', '#38bdf8', 0.8);
+  const latas = ['#ef4444','#f59e0b','#10b981','#3b82f6'];
+  for(let row = 0; row < 2; row++){
+    for(let col = 0; col < 3; col++){
+      rr(vx + 4.5 + col * 4.2, vy + 5.5 + row * 6.5, 3, 5, 0.8, latas[(row*3+col)%latas.length]);
+    }
+  }
+  rr(vx + 20, vy + 5, 4, 2, 0.5, '#facc15');
+  rr(vx + 20, vy + 8.5, 4, 2, 0.5, '#4ade80');
+  rr(vx + 20, vy + 12, 4, 2, 0.5, '#38bdf8');
+  rr(vx + 20.5, vy + 16, 3, 1, 0.4, '#0f172a');
+  rr(vx + 4, vy + 22, 19, 5, 1.2, '#0f172a', '#475569', 0.6);
+  tx('BEBIDAS', vx + 13.5, vy + 36, 5.5, '#94a3b8', 800);
+}
+
+function desenharGeladeiraCopa(m){
+  const gx = m.x * T, gy = m.y * T;
+  bgCtx.fillStyle = 'rgba(0,0,0,0.42)';
+  bgCtx.beginPath(); bgCtx.ellipse(gx + 14, gy + 30, 14, 4, 0, 0, 6.3); bgCtx.fill();
+  rr(gx, gy, 27, 30, 3, '#334155', '#64748b', 1);
+  rr(gx + 3, gy + 3, 21, 24, 2, 'rgba(224, 242, 254, 0.45)', '#94a3b8', 1);
+  for(let r = 0; r < 3; r++){
+    rr(gx + 4, gy + 5 + r * 7, 19, 1, 0.5, '#cbd5e1');
+    for(let c = 0; c < 3; c++){
+      rr(gx + 5.2 + c * 5.8, gy + 6.5 + r * 7, 3.2, 5, 1, c % 2 === 0 ? '#10b981' : '#f59e0b');
+    }
+  }
+}
+
+function desenharCafeteiraInox(m){
+  const cx = m.x * T, cy = m.y * T;
+  bgCtx.fillStyle = 'rgba(0,0,0,0.42)';
+  bgCtx.beginPath(); bgCtx.ellipse(cx + 14, cy + 28, 14, 4, 0, 0, 6.3); bgCtx.fill();
+  rr(cx, cy, 27, 26, 3, '#475569', '#94a3b8', 1.2);
+  rr(cx + 2, cy + 1.5, 23, 2, 1, 'rgba(255,255,255,0.4)');
+  bgCtx.fillStyle = '#0f172a'; bgCtx.beginPath(); bgCtx.arc(cx + 8, cy + 8, 3.5, 0, 6.3); bgCtx.fill();
+  bgCtx.fillStyle = '#ef4444'; bgCtx.beginPath(); bgCtx.arc(cx + 19, cy + 7, 1.6, 0, 6.3); bgCtx.fill();
+  bgCtx.fillStyle = '#22c55e'; bgCtx.beginPath(); bgCtx.arc(cx + 19, cy + 11, 1.6, 0, 6.3); bgCtx.fill();
+  rr(cx + 6, cy + 15, 15, 8, 1.5, 'rgba(241, 245, 249, 0.9)', '#0f172a', 0.8);
+  tx('CAFÉ', cx + 13.5, cy + 34, 5.5, '#94a3b8', 800);
+}
+
+function desenharMesaCopa(m){
+  const mx_ = m.x * T, my_ = m.y * T, mw = m.w * T, mh = m.h * T;
+  bgCtx.save(); bgCtx.shadowColor = 'rgba(0,0,0,0.4)'; bgCtx.shadowBlur = 6 * K; bgCtx.shadowOffsetY = 2.5 * K;
+  rr(mx_, my_, mw, mh, 7, '#92400e'); bgCtx.restore();
+  rr(mx_, my_, mw, mh, 7, '#b45309', '#d97706', 1.4);
+  rr(mx_ + 2, my_ + 2, mw - 4, 3, 1.5, 'rgba(255,255,255,0.32)');
+  [[mx_ + 11, my_ + 14], [mx_ + mw - 11, my_ + 14], [mx_ + mw / 2, my_ + mh - 11]].forEach(([x0, y0]) => {
+    bgCtx.fillStyle = '#ffffff'; bgCtx.beginPath(); bgCtx.arc(x0, y0, 3.5, 0, 6.3); bgCtx.fill();
+    bgCtx.fillStyle = '#451a03'; bgCtx.beginPath(); bgCtx.arc(x0, y0, 2.2, 0, 6.3); bgCtx.fill();
+  });
+  tx('MESA', mx_ + mw / 2, my_ + mh / 2, 5.5, '#fff', 800);
+}
+
+function desenharPoltronasCopa(m){
+  const px = m.x * T, py = m.y * T;
+  rr(px + 2, py + 2, 14, 14, 4, '#334155', '#64748b', 1);
+  rr(px + 4, py + 4, 10, 10, 3, '#1e293b');
+  rr(px + 18, py + 16, 14, 14, 4, '#334155', '#64748b', 1);
+  rr(px + 20, py + 18, 10, 10, 3, '#1e293b');
+}
+
 function planta(tx_, ty_){
-  const px = tx_ * T + 8, py = ty_ * T;
-  rr(px - 4, py + 9.5, 8, 5.5, 1.6, '#c2410c'); rr(px - 4.6, py + 8.6, 9.2, 2, 1, '#ea580c');
-  ctx.fillStyle = '#15803d'; ctx.beginPath(); ctx.arc(px - 3, py + 6, 3.6, 0, 6.3); ctx.fill();
-  ctx.fillStyle = '#16a34a'; ctx.beginPath(); ctx.arc(px + 3, py + 6.5, 3.4, 0, 6.3); ctx.fill();
-  ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(px, py + 3.6, 3.8, 0, 6.3); ctx.fill();
+  const px = tx_ * T + 8, py = ty_ * T + 4;
+  bgCtx.fillStyle = 'rgba(0,0,0,0.45)';
+  bgCtx.beginPath(); bgCtx.ellipse(px, py + 14, 8, 3.5, 0, 0, 6.3); bgCtx.fill();
+  rr(px - 6, py + 8, 12, 8, 2, '#9a3412', '#c2410c', 0.8);
+  rr(px - 7, py + 7, 14, 2.5, 1, '#ea580c');
+  bgCtx.fillStyle = '#14532d'; bgCtx.beginPath(); bgCtx.arc(px - 4, py + 3, 5.2, 0, 6.3); bgCtx.fill();
+  bgCtx.fillStyle = '#16a34a'; bgCtx.beginPath(); bgCtx.arc(px + 4, py + 3.5, 5.0, 0, 6.3); bgCtx.fill();
+  bgCtx.fillStyle = '#22c55e'; bgCtx.beginPath(); bgCtx.arc(px, py, 5.5, 0, 6.3); bgCtx.fill();
+  bgCtx.fillStyle = '#86efac'; bgCtx.beginPath(); bgCtx.arc(px - 1.5, py - 1.5, 2.2, 0, 6.3); bgCtx.fill();
+}
+
+function desenharProp(m){
+  switch(m.tipo){
+    case 'totens_auto': desenharTotensAuto(m); break;
+    case 'balcao_vidro': desenharBalcaoVidro(m); break;
+    case 'computador': desenharComputador(m); break;
+    case 'computador_duplo': desenharComputadorDuplo(m); break;
+    case 'telefone_estacao': desenharTelefoneEstacao(m); break;
+    case 'mesa_supervisao': desenharMesaSupervisao(m); break;
+    case 'bancada_telefones': desenharBancadaTelefones(m); break;
+    case 'balcao_auto': desenharBalcaoAuto(m); break;
+    case 'painel_tier_1': desenharPainelTier1(m); break;
+    case 'painel_tier_2': desenharPainelTier2(m); break;
+    case 'painel_tier_3': desenharPainelTier3(m); break;
+    case 'painel_tier_4': desenharPainelTier4(m); break;
+    case 'painel_tier_5': desenharPainelTier5(m); break;
+    case 'maquina_bebidas': desenharMaquinaBebidas(m); break;
+    case 'geladeira_copa': desenharGeladeiraCopa(m); break;
+    case 'cafeteira_inox': desenharCafeteiraInox(m); break;
+    case 'mesa_copa': desenharMesaCopa(m); break;
+    case 'poltronas_copa': desenharPoltronasCopa(m); break;
+    case 'planta': planta(m.x, m.y); break;
+    case 'ponto_orientador':
+      rr(m.x * T - 2, m.y * T - 2, m.w * T + 4, m.h * T + 4, 4, 'rgba(59,130,246,0.15)', '#3b82f6', 1);
+      break;
+    case 'ponto_pesquisa':
+      rr(m.x * T - 2, m.y * T - 2, m.w * T + 4, m.h * T + 4, 4, 'rgba(236,72,153,0.15)', '#ec4899', 1);
+      break;
+  }
 }
 function tituloZona(z){
-  const w = medir(z.nome, 6.8, 800) + 10, h = 11;
+  const w = medir(z.nome, 6.8, 800) + 12, h = 12;
   let x, y;
-  if(z.tit === 'tl'){ x = z.x * T + 5; y = z.y * T + 6; }
-  else if(z.tit === 'bl'){ x = z.x * T + 5; y = (z.y + z.h) * T - 11; }
-  else { x = (z.x + z.w) * T - 5 - w; y = (z.y + z.h) * T - 11; }
+  if(z.tit === 'tl'){ x = z.x * T + 6; y = z.y * T + 6; }
+  else if(z.tit === 'bl'){ x = z.x * T + 6; y = (z.y + z.h) * T - 13; }
+  else if(z.tit === 'tr'){ x = (z.x + z.w) * T - 6 - w; y = z.y * T + 6; }
+  else { x = (z.x + z.w) * T - 6 - w; y = (z.y + z.h) * T - 13; }
+
+  // Sombra e pill do título de setor
+  bgCtx.save();
+  bgCtx.shadowColor = z.cor; bgCtx.shadowBlur = 4 * K;
   rr(x, y, w, h, h / 2, z.cor);
-  tx(z.nome, x + w / 2, y + h / 2 + .2, 6.8, '#fff', 800);
+  bgCtx.restore();
+  tx(z.nome, x + w / 2, y + h / 2 + .3, 6.8, '#fff', 800);
   OBST.push({ x: x - 1, y: y - 1, w: w + 2, h: h + 2 });
 }
 
@@ -669,67 +1153,99 @@ function desenharCenario(){
   SEATS.length = 0; OBST = [];
   const CW = W * T, CH = H * T;
 
-  R(0, 0, CW, CH, '#cbd5e1');
-  R(T, 2 * T, (W - 2) * T, (H - 3) * T, '#f5f7fb');          // piso
-  ctx.strokeStyle = '#e6eaf2'; ctx.lineWidth = .4; ctx.beginPath();
-  for(let x = 2; x < W - 1; x++){ ctx.moveTo(x * T, 2 * T); ctx.lineTo(x * T, (H - 1) * T); }
-  for(let y = 3; y < H - 1; y++){ ctx.moveTo(T, y * T); ctx.lineTo((W - 1) * T, y * T); }
-  ctx.stroke();
+  // 1. Moldura de madeira nobre chanfrada perimetral
+  const bordaMadeira = 8;
+  const gradM = bgCtx.createLinearGradient(0, 0, CW, CH);
+  gradM.addColorStop(0, '#2e180f'); gradM.addColorStop(0.5, '#452417'); gradM.addColorStop(1, '#23120b');
+  bgCtx.fillStyle = gradM; bgCtx.fillRect(0, 0, CW, CH);
+  bgCtx.strokeStyle = '#6e3c27'; bgCtx.lineWidth = 1.0; bgCtx.strokeRect(1, 1, CW - 2, CH - 2);
+  bgCtx.strokeStyle = '#140a06'; bgCtx.lineWidth = 1.0; bgCtx.strokeRect(bordaMadeira - 1, bordaMadeira - 1, CW - (bordaMadeira - 1) * 2, CH - (bordaMadeira - 1) * 2);
 
-  // ----- zonas -----
-  ZONAS.forEach(z => {
-    rr(z.x * T + 1, z.y * T + 1, z.w * T - 2, z.h * T - 2, 5, z.bg);
-    ctx.save(); ctx.setLineDash([3, 2]); ctx.globalAlpha = .7;
-    rr(z.x * T + 1, z.y * T + 1, z.w * T - 2, z.h * T - 2, 5, null, z.cor, .9); ctx.restore();
+  // 2. Piso grafite escuro com blocos 16x16px
+  const pisoX = bordaMadeira, pisoY = bordaMadeira, pisoW = CW - bordaMadeira * 2, pisoH = CH - bordaMadeira * 2;
+  bgCtx.fillStyle = '#14171f'; bgCtx.fillRect(pisoX, pisoY, pisoW, pisoH);
+  bgCtx.strokeStyle = '#1d232e'; bgCtx.lineWidth = 0.5; bgCtx.beginPath();
+  for(let x = 1; x < W; x++){ bgCtx.moveTo(x * T, 2 * T); bgCtx.lineTo(x * T, (H - 1) * T); }
+  for(let y = 3; y < H - 1; y++){ bgCtx.moveTo(T, y * T); bgCtx.lineTo((W - 1) * T, y * T); }
+  bgCtx.stroke();
+
+  // 3. Trilhas de luz iluminadas no piso (circuit guide paths)
+  if(LAYOUT.trilhasLuz){
+    LAYOUT.trilhasLuz.forEach(tr => {
+      if(!tr.pts || tr.pts.length < 2) return;
+      bgCtx.save();
+      bgCtx.shadowColor = '#facc15'; bgCtx.shadowBlur = 8 * K;
+      bgCtx.strokeStyle = 'rgba(250, 204, 21, 0.42)'; bgCtx.lineWidth = 3.4; bgCtx.lineCap = 'round'; bgCtx.lineJoin = 'round';
+      bgCtx.beginPath();
+      tr.pts.forEach((pt, idx) => { if(idx === 0) bgCtx.moveTo(pt.x * T, pt.y * T); else bgCtx.lineTo(pt.x * T, pt.y * T); });
+      bgCtx.stroke();
+      bgCtx.restore();
+
+      bgCtx.strokeStyle = '#fffbeb'; bgCtx.lineWidth = 1.4; bgCtx.lineCap = 'round'; bgCtx.lineJoin = 'round';
+      bgCtx.beginPath();
+      tr.pts.forEach((pt, idx) => { if(idx === 0) bgCtx.moveTo(pt.x * T, pt.y * T); else bgCtx.lineTo(pt.x * T, pt.y * T); });
+      bgCtx.stroke();
+
+      tr.pts.forEach(pt => {
+        bgCtx.fillStyle = '#fef08a'; bgCtx.beginPath(); bgCtx.arc(pt.x * T, pt.y * T, 2.2, 0, 6.3); bgCtx.fill();
+        bgCtx.fillStyle = '#ffffff'; bgCtx.beginPath(); bgCtx.arc(pt.x * T, pt.y * T, 1.0, 0, 6.3); bgCtx.fill();
+      });
+    });
+  }
+
+  // 4. Zonas com molduras de acrílico e efeito Neon Bloom
+  LAYOUT.zonas.forEach(z => {
+    const zx = z.x * T, zy = z.y * T, zw = z.w * T, zh = z.h * T;
+    // Fundo acrílico suavemente translúcido
+    rr(zx, zy, zw, zh, 8, z.bg);
+    // Passada 1: Glow Neon Bloom
+    bgCtx.save();
+    bgCtx.shadowColor = z.cor; bgCtx.shadowBlur = 10 * K;
+    rr(zx, zy, zw, zh, 8, null, z.cor, 2.2);
+    bgCtx.restore();
+    // Passada 2: Núcleo quente branco
+    bgCtx.save();
+    bgCtx.globalAlpha = 0.85;
+    rr(zx, zy, zw, zh, 8, null, '#ffffff', 0.9);
+    bgCtx.restore();
   });
 
-  // ----- paredes -----
-  R(0, 0, CW, 2 * T, '#1e293b'); R(0, 2 * T - 2, CW, 2, '#0f172a');
-  tx('NA HORA CEILÂNDIA', 22, 12, 9.6, '#ffffff', 800, 'left');
-  tx('MAPA DOS POSTOS DE ATENDIMENTO', 22, 24, 5.4, '#94a3b8', 700, 'left');
-  R(0, 2 * T, T, (H - 2) * T, '#334155'); R(T - 2, 2 * T, 2, (H - 3) * T, 'rgba(15,23,42,.35)');
-  R(0, (H - 1) * T, CW, T, '#334155'); R(T, (H - 1) * T, (W - 2) * T, 2, 'rgba(15,23,42,.35)');
-  R(29 * T, 2 * T, T, 7 * T, '#334155'); R(29 * T, 11 * T, T, 15 * T, '#334155'); R(29 * T, 28 * T, T, 3 * T, '#334155');
-  R(29 * T, 9 * T, 2, 2 * T, 'rgba(15,23,42,.35)');
-  // portas
-  R(29 * T, 9 * T, T, 2 * T, '#dbeafe'); R(29 * T, 9 * T - 1.5, T, 1.5, '#1e3a8a'); R(29 * T, 11 * T, T, 1.5, '#1e3a8a');
-  ctx.fillStyle = '#2563eb'; ctx.beginPath(); ctx.moveTo(476, 153); ctx.lineTo(476, 167); ctx.lineTo(467, 160); ctx.closePath(); ctx.fill();
-  R(29 * T, 26 * T, T, 2 * T, '#dcfce7'); R(29 * T, 26 * T - 1.5, T, 1.5, '#14532d'); R(29 * T, 28 * T, T, 1.5, '#14532d');
-  ctx.fillStyle = '#16a34a'; ctx.beginPath(); ctx.moveTo(468, 425); ctx.lineTo(468, 439); ctx.lineTo(477, 432); ctx.closePath(); ctx.fill();
-  // TV de senhas (texto dinâmico na camada frontal)
-  rr(192, 5, 112, 22, 3, '#020617', '#475569', .8);
+  // 5. Paredes externas perimetrais
+  R(pisoX, pisoY, pisoW, 2 * T - bordaMadeira, '#0f121a');
+  tx('NA HORA CEILÂNDIA', 24, 13, 9.6, '#ffffff', 800, 'left');
+  tx('MAPA DOS POSTOS DE ATENDIMENTO', 24, 25, 5.4, '#94a3b8', 700, 'left');
+  R(pisoX, 2 * T, T - bordaMadeira, (H - 2) * T, '#1e2430');
+  R(pisoX, (H - 1) * T, pisoW, T - bordaMadeira, '#1e2430');
+  R(29 * T, 2 * T, T - bordaMadeira, 7 * T, '#1e2430');
+  R(29 * T, 11 * T, T - bordaMadeira, 15 * T, '#1e2430');
+  R(29 * T, 28 * T, T - bordaMadeira, 3 * T, '#1e2430');
 
-  // ----- balcões -----
-  balcao(23 * T, 4 * T, 6 * T, 19);                           // telefones (atrás da recepção)
-  balcao(11 * T, 7 * T, 16 * T, 19);                          // recepção (balcões dos emissores)
-  balcao(14 * T, 4 * T, 7 * T, 14);                           // mesa da supervisão (Leandro e Claudia)
-  [224, 272, 320, 368].forEach(x => rr(x - .5, 103, 1, 26, .5, 'rgba(56,189,248,.65)'));
-  balcao(2 * T, 10 * T, 7 * T, 16);                           // autoatendimento
+  // Portas iluminadas (Entrada em y=9..10 e Saída em y=26..27)
+  R(29 * T, 9 * T, T - bordaMadeira, 2 * T, '#1e3a8a');
+  bgCtx.fillStyle = '#60a5fa';
+  [[467, 153], [471, 157], [467, 161]].forEach(([px, py]) => {
+    bgCtx.beginPath(); bgCtx.moveTo(px, py - 4); bgCtx.lineTo(px, py + 4); bgCtx.lineTo(px - 5, py); bgCtx.closePath(); bgCtx.fill();
+  });
+  R(29 * T, 26 * T, T - bordaMadeira, 2 * T, '#064e3b');
+  bgCtx.fillStyle = '#34d399';
+  [[465, 425], [469, 429], [465, 433]].forEach(([px, py]) => {
+    bgCtx.beginPath(); bgCtx.moveTo(px, py - 4); bgCtx.lineTo(px, py + 4); bgCtx.lineTo(px + 5, py); bgCtx.closePath(); bgCtx.fill();
+  });
 
-  // ----- bancos do salão (3 faixas) -----
-  [13, 17, 21].forEach(y0 => { for(const y of [y0 + 2, y0 + 3]) for(let x = 13; x <= 15; x++){
-    const px = x * T, py = y * T;
-    rr(px + 2, py + 7, 12, 7.5, 2.5, '#5b7fd1'); rr(px + 2, py + 3, 12, 5, 2.2, '#3f63b8');
-    rr(px + 2, py + 7, 12, 1, .5, 'rgba(255,255,255,.35)');
-    SEATS.push({ x, y, ocupado: false });
-  } });
+  // TV central de senhas no cabeçalho
+  rr(188, 5, 120, 23, 4, '#05070d', '#334155', 1);
+  tx('SENHA ATUAL', 248, 11, 4.2, '#94a3b8', 800);
+  tx('A' + String(senhaAtual).padStart(3, '0'), 248, 20.5, 9.5, '#f59e0b', 800);
 
-  // ----- decoração e utilidades -----
-  [[1,13],[8,13],[1,22],[8,22],[21,14],[28,14],[21,20],[28,20],[9,2]].forEach(([x, y]) => planta(x, y));
-  // máquina de bebidas
-  rr(4 * T + 1, 14 * T, 14, 17, 2, '#dc2626'); rr(4 * T + 2.5, 14 * T + 2, 8, 8, 1, '#7dd3fc'); rr(4 * T + 11, 14 * T + 3, 2.4, 2, .5, '#fde047'); rr(4 * T + 11, 14 * T + 7, 2.4, 2, .5, '#4ade80'); rr(4 * T + 3, 14 * T + 12.5, 8, 2.4, .6, '#7f1d1d');
-  tx('BEBIDAS', 4 * T + 8, 14 * T + 22, 5.4, '#64748b', 700);
-  // copa: cafeteira + mesa
-  rr(7 * T + 1, 24 * T + 2, 14, 13, 2.2, '#334155'); rr(7 * T + 3, 24 * T + 4, 6, 4, 1, '#0f172a'); ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(7 * T + 11.5, 24 * T + 5.8, 1.4, 0, 6.3); ctx.fill(); rr(7 * T + 4, 24 * T + 10, 6, 3, 1, '#f1f5f9');
-  tx('CAFÉ', 7 * T + 8, 24 * T + 19.5, 5.4, '#64748b', 700);
-  rr(3 * T, 27 * T + 2, 32, 28, 6, '#d6a56e', '#b07c45', .9); rr(3 * T + 2, 27 * T + 4, 28, 3, 1.5, 'rgba(255,255,255,.25)');
-  ctx.fillStyle = '#fff'; [[9, 14], [23, 14]].forEach(([dx, dy]) => { ctx.beginPath(); ctx.arc(3 * T + dx, 27 * T + dy, 2.6, 0, 6.3); ctx.fill(); }); tx('MESA', 3 * T + 16, 27 * T + 29, 4.6, '#7a4a21', 800);
+  // 6. Desenha todos os móveis e props
+  if(LAYOUT.moveis) LAYOUT.moveis.forEach(desenharProp);
 
-  // ----- títulos das zonas (por cima de tudo) -----
-  ZONAS.forEach(tituloZona);
+  // 7. Títulos das zonas (Pill badges com glow)
+  LAYOUT.zonas.forEach(tituloZona);
+  // Pill oficial centralizada do SALÃO DE ESPERA na base dos 5 painéis
+  pill(14.9 * T, 29.2 * T, 'SALÃO DE ESPERA', '#ea580c', '#ffffff', { size: 7.2, pad: 12, sombra: true, borda: '#fb923c', lw: 1.2 });
   ctx = mainCtx;
 }
-
 /* =====================================================================
    CAMADA FRONTAL (itens que ficam na frente das pessoas + marcadores)
    ===================================================================== */
@@ -742,28 +1258,35 @@ function frontLayer(t){
   const ocup = {}; Object.values(estado.pessoas).forEach(p => { if(p.presente && p.posto) ocup[p.posto] = p.nome; });
   const tela = Math.floor(t * 1.5) % 2 ? '#60a5fa' : '#38bdf8';
 
-  // monitores dos emissores (na borda do balcão)
+  // monitores dos emissores (na borda do balcão, posicionados dinamicamente)
   ['EMISSOR 1','EMISSOR 1.1','EMISSOR 2','EMISSOR 2.1','EMISSOR 3','EMISSOR 3.1','EMISSOR 4','EMISSOR 4.1','EMISSOR 5','EMISSOR 5.1'].forEach(k => {
-    if(POSTOS[k] && ativo(k)) monitor(POSTOS[k].x * T + 8, 106, tela, 10);
+    if(POSTOS[k] && ativo(k)){
+      const cx = POSTOS[k].x * T + 8, cy = POSTOS[k].y * T + 10;
+      monitor(cx, cy, tela, 11);
+      rr(cx - 5, cy + 9.5, 7, 2, 0.5, '#334155');
+      rr(cx + 3.2, cy + 9.5, 2.5, 2.2, 0.4, '#1e293b');
+    }
   });
   // telefones: monitor + aparelho com luz piscando
   ['TELEFONE 1','TELEFONE 2'].forEach((k, i) => {
     if(POSTOS[k] && ativo(k)){
-      const cx = POSTOS[k].x * T + 8;
-      monitor(cx - 4, 57.5, tela, 10);
-      rr(cx + 4.5, 61, 7.5, 5.5, 1.2, '#1e293b'); rr(cx + 5.5, 62, 3, 1, .4, '#64748b'); rr(cx + 5.5, 64, 3, 1, .4, '#64748b');
-      ctx.fillStyle = (Math.floor(t * 2 + i) % 2) ? '#ef4444' : '#7f1d1d'; ctx.beginPath(); ctx.arc(cx + 10.5, 63, 1, 0, 6.3); ctx.fill();
+      const cx = POSTOS[k].x * T + 8, cy = POSTOS[k].y * T + 9.5;
+      monitor(cx - 4, cy, tela, 10);
+      rr(cx + 4.5, cy + 3.5, 7.5, 5.5, 1.2, '#1e293b'); rr(cx + 5.5, cy + 4.5, 3, 1, .4, '#64748b'); rr(cx + 5.5, cy + 6.5, 3, 1, .4, '#64748b');
+      ctx.fillStyle = (Math.floor(t * 2 + i) % 2) ? '#ef4444' : '#7f1d1d'; ctx.beginPath(); ctx.arc(cx + 10.5, cy + 5.5, 1, 0, 6.3); ctx.fill();
     }
   });
   // supervisão: dois monitores + teclado para cada supervisor
   ['SUPERVISÃO 1','SUPERVISÃO 2'].forEach(k => {
-    const cx = POSTOS[k].x * T + 8;
-    monitor(cx - 5.6, 57, tela, 10); monitor(cx + 5.6, 57, Math.floor(t * .7) % 2 ? '#86efac' : '#4ade80', 10);
-    rr(cx - 4.5, 66.4, 9, 2.4, .7, '#cbd5e1', '#94a3b8', .4);
+    if(POSTOS[k]){
+      const cx = POSTOS[k].x * T + 8, cy = POSTOS[k].y * T + 9;
+      monitor(cx - 5.6, cy, tela, 10); monitor(cx + 5.6, cy, Math.floor(t * .7) % 2 ? '#86efac' : '#4ade80', 10);
+      rr(cx - 4.5, cy + 9.5, 9, 2.4, .7, '#cbd5e1', '#94a3b8', .4);
+    }
   });
   // autoatendimento: PC sentado e totens touch
-  if(ativo('AUTO SENTADO')) monitor(POSTOS['AUTO SENTADO'].x * T + 8, 151.5, tela, 11);
-  [['AUTO 1', POSTOS['AUTO 1'].x], ['AUTO 2', POSTOS['AUTO 2'].x]].forEach(([k, tx_]) => {
+  if(ativo('AUTO SENTADO') && POSTOS['AUTO SENTADO']) monitor(POSTOS['AUTO SENTADO'].x * T + 8, POSTOS['AUTO SENTADO'].y * T + 7.5, tela, 11);
+  [['AUTO 1', POSTOS['AUTO 1'] ? POSTOS['AUTO 1'].x : 6], ['AUTO 2', POSTOS['AUTO 2'] ? POSTOS['AUTO 2'].x : 8]].forEach(([k, tx_]) => {
     if(ativo(k) || (k === 'AUTO 1' && estado.postosAtivos && estado.postosAtivos.has('AUTO'))){
       const cx = tx_ * T + 8 + (k === 'AUTO 1' ? 11 : -11);
       rr(cx - 5, 139, 10, 18, 2, '#1e3a8a'); rr(cx - 4, 141, 8, 9.5, 1, '#38bdf8'); rr(cx - 4, 141, 8, 2, 1, '#bae6fd'); rr(cx - 2.5, 152, 5, 2, .6, '#0f172a');
@@ -778,15 +1301,15 @@ function frontLayer(t){
       tx(String(senhaAtual + i * 2).padStart(3, '0'), cx, ty + 4.6, 4.8, '#ef4444', 800); rr(cx - 2.5, ty + 9.4, 5, 2, .6, '#334155');
     }
   });
-  // TV de senhas
-  tx('SENHA ATUAL', 248, 10.5, 4.2, '#94a3b8', 700);
-  tx('A' + String(senhaAtual).padStart(3, '0'), 248, 20, 9.5, (Math.floor(t * 2) % 2) ? '#fde047' : '#fb923c', 800);
+  // TV central de senhas
+  tx('SENHA ATUAL', 248, 11, 4.2, '#94a3b8', 700);
+  tx('A' + String(senhaAtual).padStart(3, '0'), 248, 20.5, 9.5, (Math.floor(t * 2) % 2) ? '#fde047' : '#fb923c', 800);
 
   // marcadores de posto: preenchido = ocupado, vazado = vago
   const sel = estado.sel;
   function marcador(keys, label, cx, cy){
     if(!keys.some(ativo)) return;
-    const k0 = keys.find(ativo) || keys[0], cor = POSTOS[k0].cor;
+    const k0 = keys.find(ativo) || keys[0], cor = POSTOS[k0] ? POSTOS[k0].cor : '#2fae6a';
     const nome = keys.map(k => ocup[k]).find(Boolean);
     const base = { size: 6.3, pad: 4.6 };
     const r = nome ? pill(cx, cy, label, cor, '#fff', Object.assign({ sombra: true }, base))
@@ -794,18 +1317,17 @@ function frontLayer(t){
     if(nome && nome === sel) rr(r.x - 1.3, r.y - 1.3, r.w + 2.6, r.h + 2.6, r.h / 2 + 1.3, null, '#facc15', 1.6);
     TAG_RECTS.push(r);
   }
-  [['E1','EMISSOR 1',12],['1.1','EMISSOR 1.1',13],['E2','EMISSOR 2',15],['2.1','EMISSOR 2.1',16],['E3','EMISSOR 3',18],['3.1','EMISSOR 3.1',19],['E4','EMISSOR 4',21],['4.1','EMISSOR 4.1',22],['E5','EMISSOR 5',24],['5.1','EMISSOR 5.1',25]]
-    .forEach(([l, k, x]) => marcador([k], l, x * T + 8, 121.5));
-  [['TEL 1','TELEFONE 1',25],['TEL 2','TELEFONE 2',27]].forEach(([l, k, x]) => marcador([k], l, x * T + 8, 74));
-  marcador(['AUTO SENTADO'], 'PC', 3 * T + 8, 168);
-  marcador(['AUTO 1', 'AUTO'], 'AUTO 1', 6 * T + 8, 168);
-  marcador(['AUTO 2'], 'AUTO 2', 8 * T + 8, 168);
-  marcador(['ORIENTADOR'], 'ORIENT.', POSTOS['ORIENTADOR'].x * T + 8, (POSTOS['ORIENTADOR'].y + 1) * T + 9);
+  [['E1','EMISSOR 1'],['1.1','EMISSOR 1.1'],['E2','EMISSOR 2'],['2.1','EMISSOR 2.1'],['E3','EMISSOR 3'],['3.1','EMISSOR 3.1'],['E4','EMISSOR 4'],['4.1','EMISSOR 4.1'],['E5','EMISSOR 5'],['5.1','EMISSOR 5.1']]
+    .forEach(([l, k]) => { if(POSTOS[k]) marcador([k], l, POSTOS[k].x * T + 8, POSTOS[k].y * T + 25.5); });
+  [['TEL 1','TELEFONE 1'],['TEL 2','TELEFONE 2']].forEach(([l, k]) => { if(POSTOS[k]) marcador([k], l, POSTOS[k].x * T + 8, POSTOS[k].y * T + 25.5); });
+  if(POSTOS['AUTO SENTADO']) marcador(['AUTO SENTADO'], 'PC', POSTOS['AUTO SENTADO'].x * T + 8, POSTOS['AUTO SENTADO'].y * T + 24);
+  if(POSTOS['AUTO 1']) marcador(['AUTO 1', 'AUTO'], 'AUTO 1', POSTOS['AUTO 1'].x * T + 8, POSTOS['AUTO 1'].y * T + 24);
+  if(POSTOS['AUTO 2']) marcador(['AUTO 2'], 'AUTO 2', POSTOS['AUTO 2'].x * T + 8, POSTOS['AUTO 2'].y * T + 24);
+  if(POSTOS['ORIENTADOR']) marcador(['ORIENTADOR'], 'ORIENT.', POSTOS['ORIENTADOR'].x * T + 8, (POSTOS['ORIENTADOR'].y + 1) * T + 9);
   PAINEIS.forEach(k => { if(POSTOS[k]) marcador([k], k.replace('PAINEL ', 'P'), POSTOS[k].x * T + 8, (POSTOS[k].y + 2) * T + 5); });
-  marcador(['PESQUISA'], 'PESQ 1', POSTOS['PESQUISA'].x * T - 18, POSTOS['PESQUISA'].y * T + 7);
-  marcador(['PESQUISA 2'], 'PESQ 2', POSTOS['PESQUISA 2'].x * T - 18, POSTOS['PESQUISA 2'].y * T + 7);
+  if(POSTOS['PESQUISA']) marcador(['PESQUISA'], 'PESQ 1', POSTOS['PESQUISA'].x * T - 18, POSTOS['PESQUISA'].y * T + 7);
+  if(POSTOS['PESQUISA 2']) marcador(['PESQUISA 2'], 'PESQ 2', POSTOS['PESQUISA 2'].x * T - 18, POSTOS['PESQUISA 2'].y * T + 7);
 }
-
 /* =====================================================================
    PESSOAS (sprites procedurais)
    ===================================================================== */
@@ -884,7 +1406,9 @@ function desenharPessoa(p, t){
   if(!isStaff){ ctx.scale(.88, .88); ctx.globalAlpha *= .9; }
 
   // sombra no chão
-  ctx.fillStyle = 'rgba(15,23,42,.18)'; elipse(0, .5, 6.8, 2.5); ctx.fill();
+  // sombra no chão estilo miniatura 3D
+  ctx.fillStyle = 'rgba(0,0,0,0.48)'; elipse(0, 1.0, 5.2, 2.0); ctx.fill();
+  ctx.fillStyle = 'rgba(15,23,42,0.22)'; elipse(0, 1.2, 8.0, 3.2); ctx.fill();
   // anel luminoso do setor (apenas equipe) — supervisão ganha anel dourado duplo
   if(isStaff){
     ctx.strokeStyle = corSetor; ctx.lineWidth = 1.4; elipse(0, .3, 7.6, 3.0); ctx.stroke();
@@ -933,7 +1457,12 @@ function desenharPessoa(p, t){
   }
   // pescoço + cabeça
   rr(-1.4, hy + 3.2, 2.8, 2.4, .8, L.pele);
-  ctx.fillStyle = L.pele; ctx.beginPath(); ctx.arc(0, hy, 4.4, 0, 6.3); ctx.fill();
+  // cabeça com gradiente radial volumétrico (luz zenital topo-esquerdo)
+  const gradCab = ctx.createRadialGradient(-1.2, hy - 1.2, 0.8, 0, hy, 4.6);
+  gradCab.addColorStop(0, '#fff5ea');
+  gradCab.addColorStop(0.35, L.pele);
+  gradCab.addColorStop(1, sombra(L.pele, 0.74));
+  ctx.fillStyle = gradCab; ctx.beginPath(); ctx.arc(0, hy, 4.4, 0, 6.3); ctx.fill();
   // barba (antes dos olhos/boca)
   if(barba && dir !== 'up'){
     ctx.fillStyle = L.cabelo;
@@ -1427,6 +1956,7 @@ function frame(ts){
     ctx.globalAlpha = 1;
   });
   frontLayer(t);
+  if(typeof estadoEditor !== 'undefined' && estadoEditor.ativo) desenharOverlayEditor();
 
   // etiquetas de nome (evitam sobrepor títulos, marcadores de posto e umas às outras)
   const ocupados = OBST.concat(TAG_RECTS);
@@ -1513,6 +2043,8 @@ function toggleFullscreen(){
   const sc = $('screen'); if(!sc) return;
   sc.addEventListener('mousedown', e => {
     if(e.button !== 0) return;
+    // Se o clique foi no canvas ou se o modo de edição estiver ativo, o canvas gerencia o arrasto dos móveis/PCs
+    if(e.target === cv || (typeof estadoEditor !== 'undefined' && estadoEditor.ativo)) return;
     isDraggingScreen = true; hadDragged = false;
     dragStartX = e.clientX; dragStartY = e.clientY;
     startScrollLeft = sc.scrollLeft; startScrollTop = sc.scrollTop;
@@ -1538,6 +2070,281 @@ function toggleFullscreen(){
 })();
 
 /* =====================================================================
+   SISTEMA DE EDIÇÃO DE LAYOUT & ARRASTO DE MÓVEIS (ADMINISTRADOR)
+   ===================================================================== */
+const estadoEditor = {
+  ativo: false,
+  snap: true,
+  movelSel: null,
+  hoverMovel: null,
+  arrastando: false,
+  dragStart: { mx: 0, my: 0 },
+  movelOrig: { x: 0, y: 0 },
+  undoStack: [],
+  redoStack: []
+};
+
+function getMouseTile(e){
+  const r = cv.getBoundingClientRect();
+  const mx = (e.clientX - r.left) * (W * T) / r.width;
+  const my = (e.clientY - r.top) * (H * T) / r.height;
+  return { mx, my, tileX: mx / T, tileY: my / T };
+}
+
+function movelNoPonto(mx, my){
+  if(!LAYOUT || !LAYOUT.moveis) return null;
+  // Testa em ordem reversa para selecionar o móvel do topo
+  for(let i = LAYOUT.moveis.length - 1; i >= 0; i--){
+    const m = LAYOUT.moveis[i];
+    const x1 = m.x * T, y1 = m.y * T, x2 = (m.x + m.w) * T, y2 = (m.y + m.h) * T;
+    if(mx >= x1 && mx <= x2 && my >= y1 && my <= y2) return m;
+  }
+  return null;
+}
+
+function atualizarInfoCoord(m){
+  const el = $('edCoordInfo');
+  if(!el) return;
+  if(!m){ el.textContent = 'Móvel: nenhum selecionado'; return; }
+  el.textContent = `${m.nome} (X: ${m.x.toFixed(1)}, Y: ${m.y.toFixed(1)})`;
+}
+
+function editorPushUndo(){
+  estadoEditor.undoStack.push(JSON.parse(JSON.stringify(LAYOUT)));
+  if(estadoEditor.undoStack.length > 40) estadoEditor.undoStack.shift();
+  estadoEditor.redoStack = [];
+}
+
+function editorUndo(){
+  if(!estadoEditor.undoStack.length){ mostrarToastLayout('ℹ Nenhuma ação para desfazer'); return; }
+  estadoEditor.redoStack.push(JSON.parse(JSON.stringify(LAYOUT)));
+  LAYOUT = estadoEditor.undoStack.pop();
+  atualizarPostosDoLayout();
+  recalcularMatrizColisao();
+  desenharCenario();
+  if(estadoEditor.movelSel) estadoEditor.movelSel = LAYOUT.moveis.find(m => m.id === estadoEditor.movelSel.id) || null;
+  atualizarInfoCoord(estadoEditor.movelSel);
+  mostrarToastLayout('↩ Ação desfeita');
+}
+
+function editorRedo(){
+  if(!estadoEditor.redoStack.length){ mostrarToastLayout('ℹ Nenhuma ação para refazer'); return; }
+  estadoEditor.undoStack.push(JSON.parse(JSON.stringify(LAYOUT)));
+  LAYOUT = estadoEditor.redoStack.pop();
+  atualizarPostosDoLayout();
+  recalcularMatrizColisao();
+  desenharCenario();
+  if(estadoEditor.movelSel) estadoEditor.movelSel = LAYOUT.moveis.find(m => m.id === estadoEditor.movelSel.id) || null;
+  atualizarInfoCoord(estadoEditor.movelSel);
+  mostrarToastLayout('↪ Ação refeita');
+}
+
+function desenharOverlayEditor(){
+  // 1. Grid magnético de snap 16px (pontinhos discretos nos cruzamentos de tiles)
+  if(estadoEditor.snap){
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.28)';
+    for(let y = 3; y < H - 1; y++){
+      for(let x = 2; x < W - 1; x++){
+        ctx.fillRect(x * T - 0.7, y * T - 0.7, 1.4, 1.4);
+      }
+    }
+  }
+
+  // 2. Contorno pontilhado suave em todos os móveis
+  if(LAYOUT && LAYOUT.moveis){
+    LAYOUT.moveis.forEach(m => {
+      const mx = m.x * T, my = m.y * T, mw = m.w * T, mh = m.h * T;
+      ctx.save();
+      ctx.setLineDash([3, 3]);
+      rr(mx, my, mw, mh, 3, null, 'rgba(148, 163, 184, 0.45)', 1);
+      ctx.restore();
+    });
+  }
+
+  // 3. Destaque em ciano para o móvel em HOVER
+  if(estadoEditor.hoverMovel && estadoEditor.hoverMovel !== estadoEditor.movelSel){
+    const m = estadoEditor.hoverMovel;
+    const mx = m.x * T, my = m.y * T, mw = m.w * T, mh = m.h * T;
+    ctx.save();
+    ctx.setLineDash([4, 2]);
+    ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 6 * K;
+    rr(mx - 1.5, my - 1.5, mw + 3, mh + 3, 4, null, '#38bdf8', 1.8);
+    ctx.restore();
+  }
+
+  // 4. Caixa de seleção com 4 handles nos cantos e crachá para o móvel SELECIONADO / ARRASTANDO
+  if(estadoEditor.movelSel){
+    const m = estadoEditor.movelSel;
+    const mx = m.x * T, my = m.y * T, mw = m.w * T, mh = m.h * T;
+    ctx.save();
+    ctx.shadowColor = '#facc15'; ctx.shadowBlur = 8 * K;
+    rr(mx - 2, my - 2, mw + 4, mh + 4, 4, 'rgba(250, 204, 21, 0.08)', '#facc15', 2.0);
+    [
+      [mx - 3, my - 3], [mx + mw - 1, my - 3],
+      [mx - 3, my + mh - 1], [mx + mw - 1, my + mh - 1]
+    ].forEach(([hx, hy]) => {
+      rr(hx, hy, 4.5, 4.5, 1, '#ffffff', '#0f172a', 1);
+    });
+    ctx.restore();
+
+    // Crachá flutuante de coordenadas
+    const lbl = `📍 ${m.nome} (X: ${m.x.toFixed(1)}, Y: ${m.y.toFixed(1)})`;
+    pill(mx + mw / 2, my - 9, lbl, '#0f172a', '#facc15', { size: 6.5, pad: 8, sombra: true, borda: '#facc15', lw: 1.2 });
+  }
+}
+
+function toggleModoEditor(){
+  if(!document.body.classList.contains('role-admin')){
+    alert('Acesso restrito ao perfil de Administrador (senha Nhce).');
+    return;
+  }
+  estadoEditor.ativo = !estadoEditor.ativo;
+  const bar = $('editorToolbar'), btn = $('btnEditarLayout');
+  if(estadoEditor.ativo){
+    editorPushUndo();
+    if(bar) bar.style.display = 'flex';
+    if(btn) btn.classList.add('g');
+    mostrarToastLayout('🛠️ Modo de Edição Ativado! Arraste os móveis e postos para reposicionar.');
+  } else {
+    if(bar) bar.style.display = 'none';
+    if(btn) btn.classList.remove('g');
+    estadoEditor.movelSel = null;
+    estadoEditor.hoverMovel = null;
+    estadoEditor.arrastando = false;
+  }
+}
+
+function salvarLayout(){
+  try {
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(LAYOUT));
+    if(layoutBroadcast) layoutBroadcast.postMessage({ action: 'layout_update', layout: LAYOUT, ts: Date.now() });
+    fetch(LAYOUT_NTFY_URL, {
+      method: 'POST',
+      headers: { 'Title': 'Layout Atualizado', 'X-Cache': 'yes' },
+      body: JSON.stringify({ action: 'layout_update', layout: LAYOUT, ts: Date.now() })
+    }).catch(e => console.warn('ntfy layout broadcast aviso:', e));
+  } catch(e){}
+  estadoEditor.ativo = false;
+  $('editorToolbar').style.display = 'none';
+  $('btnEditarLayout').classList.remove('g');
+  mostrarToastLayout('💾 Layout salvo e sincronizado com todas as telas!');
+}
+
+function cancelarEdicaoLayout(){
+  LAYOUT = carregarLayout();
+  atualizarPostosDoLayout();
+  recalcularMatrizColisao();
+  desenharCenario();
+  estadoEditor.ativo = false;
+  $('editorToolbar').style.display = 'none';
+  $('btnEditarLayout').classList.remove('g');
+  mostrarToastLayout('Alterações descartadas.');
+}
+
+function restaurarLayoutPadrao(){
+  if(!confirm('Deseja restaurar a disposição original de fábrica de todos os móveis e postos?')) return;
+  editorPushUndo();
+  LAYOUT = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
+  atualizarPostosDoLayout();
+  recalcularMatrizColisao();
+  desenharCenario();
+  atualizarInfoCoord(null);
+  mostrarToastLayout('↺ Layout original restaurado.');
+}
+
+// Atalhos de teclado no modo editor
+window.addEventListener('keydown', e => {
+  if(!estadoEditor.ativo) return;
+  if(e.ctrlKey && (e.key === 'z' || e.key === 'Z')){
+    e.preventDefault();
+    if(e.shiftKey) editorRedo(); else editorUndo();
+  } else if(e.ctrlKey && (e.key === 'y' || e.key === 'Y')){
+    e.preventDefault();
+    editorRedo();
+  }
+});
+
+/* =====================================================================
+   SINCRONIZAÇÃO EM TEMPO REAL MULTI-NAVEGADOR DO LAYOUT (NTFY + BROADCAST)
+   ===================================================================== */
+const LAYOUT_NTFY_TOPIC = 'nahora_ceilandia_layout_v1';
+const LAYOUT_NTFY_URL = 'https://ntfy.sh/' + LAYOUT_NTFY_TOPIC;
+let layoutBroadcast = null, layoutSyncSSE = null, layoutToastTimeout = null;
+
+try {
+  if(typeof BroadcastChannel !== 'undefined'){
+    layoutBroadcast = new BroadcastChannel('nahora_layout_bus');
+    layoutBroadcast.onmessage = e => {
+      if(e.data && e.data.action === 'layout_update' && e.data.layout){
+        aplicarLayoutRecebido(e.data.layout, true);
+      }
+    };
+  }
+} catch(e){}
+
+function mostrarToastLayout(msg){
+  const el = $('layoutToast'), tmsg = $('layoutToastMsg');
+  if(!el || !tmsg) return;
+  tmsg.innerHTML = msg;
+  el.classList.add('show');
+  if(layoutToastTimeout) clearTimeout(layoutToastTimeout);
+  layoutToastTimeout = setTimeout(() => el.classList.remove('show'), 3800);
+}
+
+function aplicarLayoutRecebido(novoLayout, emitirAviso = true){
+  if(!novoLayout || !novoLayout.moveis) return;
+  LAYOUT = novoLayout;
+  try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(LAYOUT)); } catch(e){}
+  atualizarPostosDoLayout();
+  recalcularMatrizColisao();
+  desenharCenario();
+  if(emitirAviso) mostrarToastLayout('🗺️ Planta do salão atualizada pela administração!');
+}
+
+async function sincronizarLayoutNuvem(silencioso = true){
+  try {
+    const res = await fetch(LAYOUT_NTFY_URL + '/json?poll=1&since=24h');
+    if(!res.ok) return;
+    const txt = await res.text();
+    const lines = txt.trim().split('\n').filter(Boolean);
+    let ultimoMsg = null;
+    lines.forEach(l => {
+      try {
+        const ev = JSON.parse(l);
+        if(ev && ev.message){
+          const m = typeof ev.message === 'string' ? JSON.parse(ev.message) : ev.message;
+          if(m && m.action === 'layout_update' && m.layout) ultimoMsg = m;
+        }
+      } catch(e){}
+    });
+    if(ultimoMsg && ultimoMsg.layout){
+      aplicarLayoutRecebido(ultimoMsg.layout, !silencioso);
+    }
+  } catch(e){}
+}
+
+function iniciarLayoutRealtime(){
+  sincronizarLayoutNuvem(true);
+  try {
+    if(typeof EventSource !== 'undefined'){
+      if(layoutSyncSSE) layoutSyncSSE.close();
+      layoutSyncSSE = new EventSource(LAYOUT_NTFY_URL + '/sse');
+      layoutSyncSSE.onmessage = e => {
+        try {
+          const data = JSON.parse(e.data);
+          if(data && data.message){
+            const msg = typeof data.message === 'string' ? JSON.parse(data.message) : data.message;
+            if(msg && msg.action === 'layout_update' && msg.layout){
+              aplicarLayoutRecebido(msg.layout, true);
+            }
+          }
+        } catch(err){}
+      };
+    }
+  } catch(e){}
+}
+
+/* =====================================================================
    TOOLTIP
    ===================================================================== */
 function pessoaNoPonto(e){
@@ -1550,7 +2357,73 @@ function pessoaNoPonto(e){
   });
   return achado;
 }
+cv.addEventListener('mousedown', e => {
+  if(e.button !== 0) return;
+  if(estadoEditor.ativo){
+    const { mx, my, tileX, tileY } = getMouseTile(e);
+    const m = movelNoPonto(mx, my);
+    if(m){
+      e.stopPropagation();
+      e.preventDefault();
+      estadoEditor.movelSel = m;
+      estadoEditor.arrastando = true;
+      estadoEditor.dragStart = { mx, my };
+      estadoEditor.movelOrig = { x: m.x, y: m.y };
+      editorPushUndo();
+      atualizarInfoCoord(m);
+      return;
+    } else {
+      estadoEditor.movelSel = null;
+      atualizarInfoCoord(null);
+    }
+  }
+});
+
+window.addEventListener('mouseup', () => {
+  if(estadoEditor.arrastando){
+    estadoEditor.arrastando = false;
+    cv.style.cursor = estadoEditor.hoverMovel ? 'grab' : 'default';
+  }
+});
+
 cv.addEventListener('mousemove', e => {
+  if(estadoEditor.ativo){
+    const { mx, my, tileX, tileY } = getMouseTile(e);
+    if(estadoEditor.arrastando && estadoEditor.movelSel){
+      $('tip').style.display = 'none';
+      const m = estadoEditor.movelSel;
+      const dx = (mx - estadoEditor.dragStart.mx) / T;
+      const dy = (my - estadoEditor.dragStart.my) / T;
+      let nx = estadoEditor.movelOrig.x + dx;
+      let ny = estadoEditor.movelOrig.y + dy;
+      if(estadoEditor.snap){
+        nx = Math.round(nx * 2) / 2;
+        ny = Math.round(ny * 2) / 2;
+      }
+      nx = Math.max(1, Math.min(W - m.w - 1, nx));
+      ny = Math.max(2.5, Math.min(H - m.h - 1, ny));
+      if(m.x !== nx || m.y !== ny){
+        m.x = nx; m.y = ny;
+        atualizarPostosDoLayout();
+        recalcularMatrizColisao();
+        desenharCenario();
+        atualizarInfoCoord(m);
+      }
+      cv.style.cursor = 'grabbing';
+      return;
+    }
+    const m = movelNoPonto(mx, my);
+    estadoEditor.hoverMovel = m;
+    cv.style.cursor = m ? 'grab' : 'default';
+    if(m){
+      const tip = $('tip');
+      tip.innerHTML = `<span class="t1" style="background:#0284c7">MÓVEL / POSTO</span><br><b>${m.nome}</b><br><span style="color:#64748b">Clique e arraste para reposicionar<br>Posição atual: X=${m.x.toFixed(1)}, Y=${m.y.toFixed(1)}</span>`;
+      tip.style.display = 'block';
+      tip.style.left = Math.min(innerWidth - 280, e.clientX + 14) + 'px';
+      tip.style.top = (e.clientY + 14) + 'px';
+      return;
+    }
+  }
   if(isDraggingScreen){ $('tip').style.display = 'none'; return; }
   const achado = pessoaNoPonto(e), tip = $('tip');
   if(!achado){ tip.style.display = 'none'; cv.style.cursor = 'grab'; return; }
@@ -1562,7 +2435,7 @@ cv.addEventListener('mousemove', e => {
 });
 cv.addEventListener('mouseleave', () => $('tip').style.display = 'none');
 cv.addEventListener('click', e => {
-  if(hadDragged) return;
+  if(hadDragged || (typeof estadoEditor !== 'undefined' && estadoEditor.ativo)) return;
   const achado = pessoaNoPonto(e);
   estado.sel = achado ? (estado.sel === achado.nome ? null : achado.nome) : null; renderLista();
 });
@@ -2323,6 +3196,8 @@ iniciarRelogioReal();
 // Sincronização em tempo real dos avatares entre todos os navegadores
 sincronizarSkinsNuvem();
 iniciarSkinRealtime();
+iniciarLayoutRealtime();
+setInterval(() => sincronizarLayoutNuvem(true), 35000);
 setInterval(() => sincronizarSkinsNuvem(true), 35000);
 
 // Inicialização inteligente: conecta à URL do Google se fornecida via link ou salva no navegador
