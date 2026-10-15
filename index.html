@@ -1572,8 +1572,6 @@ cv.addEventListener('dblclick', e => { const achado = pessoaNoPonto(e); if(achad
 /* =====================================================================
    PERSONALIZAÇÃO DO AVATAR & SINCRONIZAÇÃO EM TEMPO REAL MULTI-NAVEGADOR
    ===================================================================== */
-const SKIN_CLOUD_ID = 'ff808181a09d98f701a13fb55c1268ed';
-const SKIN_CLOUD_URL = 'https://api.restful-api.dev/objects/' + SKIN_CLOUD_ID;
 const SKIN_NTFY_TOPIC = 'nahora_ceilandia_skins_v1';
 const SKIN_NTFY_URL = 'https://ntfy.sh/' + SKIN_NTFY_TOPIC;
 
@@ -1606,7 +1604,7 @@ function aplicarSkinRecebida(nome, skin, emitirAviso = true){
   const k = chaveSkin(nome);
   const atualStr = JSON.stringify(SKINS[k]);
   const novoStr = JSON.stringify(skin);
-  if(atualStr === novoStr) return; // já está idêntico
+  if(atualStr === novoStr) return; // já idêntico
 
   SKINS[k] = Object.assign({}, SKINS[k] || {}, skin);
   try { localStorage.setItem(SKIN_KEY, JSON.stringify(SKINS)); } catch(e){}
@@ -1625,29 +1623,53 @@ function aplicarSkinRecebida(nome, skin, emitirAviso = true){
 
 async function sincronizarSkinsNuvem(silencioso = true){
   try {
-    const res = await fetch(SKIN_CLOUD_URL + '?_t=' + Date.now());
+    const res = await fetch(SKIN_NTFY_URL + '/json?poll=1&since=24h');
     if(!res.ok) return;
-    const json = await res.json();
-    if(json && json.data && typeof json.data === 'object'){
-      let alterados = 0;
-      Object.entries(json.data).forEach(([k, sk]) => {
-        if(sk && typeof sk === 'object'){
-          const atual = JSON.stringify(SKINS[k]);
-          const novo = JSON.stringify(sk);
-          if(atual !== novo){
-            SKINS[k] = sk;
-            alterados++;
+    const txt = await res.text();
+    const lines = txt.trim().split('\n').filter(Boolean);
+    let alterados = 0;
+    lines.forEach(l => {
+      try {
+        const ev = JSON.parse(l);
+        if(ev && ev.message){
+          const msg = typeof ev.message === 'string' ? JSON.parse(ev.message) : ev.message;
+          if(msg && msg.nome && msg.skin){
+            const k = chaveSkin(msg.nome);
+            const atual = JSON.stringify(SKINS[k]);
+            const novo = JSON.stringify(msg.skin);
+            if(atual !== novo){
+              SKINS[k] = Object.assign({}, SKINS[k] || {}, msg.skin);
+              alterados++;
+            }
+          }
+          if(msg && msg.snapshot && typeof msg.snapshot === 'object'){
+            Object.entries(msg.snapshot).forEach(([k, sk]) => {
+              if(sk && typeof sk === 'object'){
+                const atual = JSON.stringify(SKINS[k]);
+                const novo = JSON.stringify(sk);
+                if(atual !== novo){
+                  SKINS[k] = Object.assign({}, SKINS[k] || {}, sk);
+                  alterados++;
+                }
+              }
+            });
           }
         }
-      });
-      if(alterados > 0){
-        try { localStorage.setItem(SKIN_KEY, JSON.stringify(SKINS)); } catch(e){}
-        AV_CACHE.clear();
-        renderLista();
-      }
+      } catch(e){}
+    });
+    if(alterados > 0){
+      try { localStorage.setItem(SKIN_KEY, JSON.stringify(SKINS)); } catch(e){}
+      AV_CACHE.clear();
+      renderLista();
+    }
+    const totalSkins = Object.keys(SKINS).length;
+    const box = $('skStatusBox');
+    if(box){
+      box.className = 'skstatus';
+      box.innerHTML = `<span class="dot-live"></span><span><b>Sincronização em tempo real ativa:</b> Conectado ao vivo com a TV e todos os navegadores (${totalSkins} avatares sincronizados).</span>`;
     }
   } catch(err){
-    console.warn('Erro na sincronização de skins da nuvem:', err);
+    console.warn('Erro ao carregar avatares da rede:', err);
   }
 }
 
@@ -1660,12 +1682,29 @@ function iniciarSkinRealtime(){
       try {
         const ev = JSON.parse(e.data);
         if(ev && ev.message){
-          const msg = JSON.parse(ev.message);
+          const msg = typeof ev.message === 'string' ? JSON.parse(ev.message) : ev.message;
           if(msg && msg.action === 'skin_update' && msg.nome && msg.skin){
             aplicarSkinRecebida(msg.nome, msg.skin, true);
           }
+          if(msg && msg.snapshot && typeof msg.snapshot === 'object'){
+            let mudou = false;
+            Object.entries(msg.snapshot).forEach(([k, sk]) => {
+              if(sk && JSON.stringify(SKINS[k]) !== JSON.stringify(sk)){
+                SKINS[k] = Object.assign({}, SKINS[k] || {}, sk);
+                mudou = true;
+              }
+            });
+            if(mudou){
+              try { localStorage.setItem(SKIN_KEY, JSON.stringify(SKINS)); } catch(e){}
+              AV_CACHE.clear();
+              renderLista();
+            }
+          }
         }
       } catch(err){}
+    };
+    skinSyncSSE.onerror = function(){
+      // reconexão automática pelo navegador
     };
   } catch(e){}
 }
@@ -1728,27 +1767,28 @@ async function salvarSkin(){
 
   mostrarToastSkin(`✅ Visual de <b>${nome}</b> salvo e transmitido para todos!`);
 
-  // 1. Notifica abas locais abertas no mesmo navegador
+  // 1. Notifica abas locais abertas no mesmo navegador (0ms)
   if(skinBroadcast){
     try { skinBroadcast.postMessage({ action: 'skin_update', nome, skin: o, timestamp: Date.now() }); } catch(e){}
   }
 
-  // 2. Transmite instantaneamente para todos os outros computadores/celulares via SSE (ntfy)
+  // 2. Transmite instantaneamente para todos os outros navegadores / TV via ntfy (SSE)
+  // Envia a skin alterada E o snapshot completo com todos os avatares já configurados
   try {
     fetch(SKIN_NTFY_URL, {
       method: 'POST',
-      headers: { 'Title': 'Avatar atualizado' },
-      body: JSON.stringify({ action: 'skin_update', nome, skin: o, timestamp: Date.now() })
+      headers: {
+        'Title': 'Avatar atualizado',
+        'X-Cache': 'yes'
+      },
+      body: JSON.stringify({
+        action: 'skin_update',
+        nome: nome,
+        skin: o,
+        snapshot: SKINS,
+        timestamp: Date.now()
+      })
     }).catch(e => console.warn('ntfy broadcast aviso:', e));
-  } catch(e){}
-
-  // 3. Salva de forma persistente na nuvem para qualquer novo navegador que abrir depois
-  try {
-    fetch(SKIN_CLOUD_URL, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: 'nahora_ceilandia_skins', data: SKINS })
-    }).catch(e => console.warn('cloud skins put aviso:', e));
   } catch(e){}
 }
 function skExportar(){
