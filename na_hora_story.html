@@ -145,9 +145,34 @@
   .lbox input:focus{border-color:var(--brand2);box-shadow:0 0 0 3px rgba(29,78,216,.15)}
   .lbox .btn{width:100%;justify-content:center;margin-top:14px;padding:12px;font-size:14px}
   #lerro{color:#dc2626;font-size:12.5px;min-height:16px;margin-top:8px;font-weight:700}
+  /* ---- personalização de avatar ---- */
+  #modalSkin{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);backdrop-filter:blur(3px);z-index:120;align-items:center;justify-content:center}
+  .skbox{width:96%;max-width:880px;max-height:94vh;overflow:auto;padding:20px}
+  .skgrid{display:grid;grid-template-columns:300px 1fr;gap:16px;margin-top:6px}
+  @media(max-width:760px){.skgrid{grid-template-columns:1fr}}
+  .skprev{background:linear-gradient(180deg,#e6f6ed,#f5f7fb);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px;align-self:start}
+  canvas.skcv{cursor:default;box-shadow:none;background:transparent;margin:0;border-radius:10px;width:280px;height:200px}
+  .skgrp{margin-bottom:11px}
+  .sklbl{font-size:11.5px;font-weight:800;color:#334155;letter-spacing:.04em;margin-bottom:6px}
+  .skopts{display:flex;flex-wrap:wrap;gap:6px}
+  .skopt{font-family:var(--px);font-size:12px;font-weight:700;background:#fff;border:1.5px solid #cbd5e1;border-radius:999px;padding:5px 11px;cursor:pointer;color:#334155}
+  .skopt:hover{border-color:#94a3b8;background:#f8fafc}
+  .skopt.on{border-color:var(--brand2);background:#e0ecff;color:#1d4ed8;box-shadow:0 0 0 2px rgba(29,78,216,.15)}
+  .skcor{width:28px;height:28px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1.5px #cbd5e1;cursor:pointer;padding:0}
+  .skcor.on{box-shadow:0 0 0 3px var(--brand2)}
+  .av img{width:100%;height:100%;border-radius:50%;display:block}
+  .item .skb{border:1px solid #e2e8f0;background:#f8fafc;border-radius:8px;font-size:14px;padding:3px 6px;cursor:pointer;flex-shrink:0}
+  .item .skb:hover{background:#e0ecff;border-color:#a9c6fb}
+  .item.sup{background:linear-gradient(90deg,#fffbeb,#fff)}
+  /* ---- toast de sincronização em tempo real ---- */
+  .skin-toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-30px);opacity:0;pointer-events:none;background:#0f172a;color:#fff;border:1px solid #38bdf8;padding:8px 18px;border-radius:999px;font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 10px 25px rgba(0,0,0,.3);transition:all .35s cubic-bezier(.16,1,.3,1);z-index:200}
+  .skin-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .skstatus{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:8px 12px;font-size:12px;display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .skstatus.err{background:#fef2f2;border-color:#fca5a5;color:#991b1b}
 </style>
 </head>
 <body>
+<div id="skinToast" class="skin-toast"><span class="dot-live"></span><span id="skinToastMsg">🎨 Visual atualizado!</span></div>
 <div class="wrap">
 
   <header class="top box">
@@ -178,6 +203,7 @@
     <button class="btn y admin-only" onclick="abrirModal()">📋 Colar</button>
     <label class="btn b admin-only">📂 .xlsx<input type="file" id="file" accept=".xlsx,.xls" style="display:none" onchange="lerExcel(event)"></label>
     <button class="btn p admin-only" onclick="carregarDemo()">⚡ Demo</button>
+    <button class="btn p" onclick="abrirSkin()" title="Personalize o visual do seu avatar no mapa (roupa, cabelo, barba, óculos, pele)">🎨 Meu avatar</button>
     <span class="sp"></span>
     <button class="btn live-active" id="btnSyncRelogio" onclick="toggleSeguirRelogio()" title="Sincronizado automaticamente com o relógio do seu computador. Clique para pausar ou navegar manualmente."><span class="dot-live"></span> ⏰ AO VIVO</button>
     <button class="btn b" onclick="passo(-1)" title="Horário anterior (pausa o modo ao vivo)">◀</button>
@@ -324,6 +350,36 @@
   </div>
 </div>
 
+<!-- Modal de personalização do avatar -->
+<div id="modalSkin">
+  <div class="mbox box skbox">
+    <h2>🎨 Personalizar avatar</h2>
+    <p>Escolha o colaborador e monte o visual: roupa, cabelo, barba, óculos, tom de pele e acessório. O avatar aparece assim no mapa e na lista.</p>
+    <div id="skStatusBox" class="skstatus"><span class="dot-live"></span><span><b>Sincronização ao vivo ativada:</b> Qualquer alteração feita aqui é transmitida instantaneamente para a TV do salão e para todos os outros navegadores acessando.</span></div>
+    <div class="skgrid">
+      <div class="skprev">
+        <select id="skNome" class="search" onchange="skSelecionar(this.value)"></select>
+        <canvas id="skCanvas" class="skcv"></canvas>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+          <button class="btn" onclick="skAleatorio()">🎲 Aleatório</button>
+          <button class="btn" onclick="skPadrao()">↺ Padrão</button>
+        </div>
+      </div>
+      <div id="skOpcoes"></div>
+    </div>
+    <div class="mfoot" style="justify-content:space-between;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn b" onclick="skExportar()" title="Copia os avatares de todos para colar em outro computador (ex.: TV do salão)">📤 Exportar avatares</button>
+        <button class="btn b" onclick="skImportar()" title="Cola os avatares exportados de outro computador">📥 Importar</button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" onclick="fecharSkin()">Cancelar</button>
+        <button class="btn g" onclick="salvarSkin()">✅ Salvar avatar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 /* =====================================================================
@@ -340,7 +396,7 @@ let ctx = mainCtx;
 const $ = id => document.getElementById(id);
 
 /* ---------- cores dos setores ---------- */
-const COR = { emissor:'#2fae6a', telefone:'#1fb5d4', auto:'#8a5bd6', orient:'#3b6fe0', painel:'#f08a24', pesq:'#e0508a', pausa:'#6b7280' };
+const COR = { emissor:'#2fae6a', telefone:'#1fb5d4', auto:'#8a5bd6', orient:'#3b6fe0', painel:'#f08a24', pesq:'#e0508a', pausa:'#6b7280', superv:'#b45309' };
 const OUT = '#2b2233';
 
 /* ---------- primitivas vetoriais (unidades lógicas; o canvas é ampliado K× para ficar nítido) ---------- */
@@ -378,6 +434,7 @@ function bl(x, y, w = 1, h = 1){ for(let j = 0; j < h; j++) for(let i = 0; i < w
   bl(29, 2, 1, 7); bl(29, 11, 1, 15); bl(29, 28, 1, 3);       // parede direita (portas em y=9..10 e y=26..27)
   bl(23, 4, 6);                                                // bancada dos telefones atrás da recepção (x=23..28, y=4)
   bl(11, 7, 16);                                               // balcão dos emissores na frente (x=11..26, y=7)
+  bl(14, 4, 7);                                                // mesa da supervisão atrás dos emissores (x=14..20, y=4)
   bl(2, 10, 7);                                                // bancada do autoatendimento
   [13, 17, 21].forEach(y0 => { [12, 14, 16].forEach(x => bl(x, y0 + 1)); [13, 14, 15].forEach(x => { bl(x, y0 + 2); bl(x, y0 + 3); }); });
   bl(4, 14); bl(7, 24); bl(3, 27, 2, 2);                       // máquina de bebidas, cafeteira, mesa da copa
@@ -421,6 +478,9 @@ function addPosto(key, o){ POSTOS[key] = Object.assign({ key }, o); }
 [['TELEFONE 1',25],['TELEFONE 2',27]].forEach(([k, x]) => addPosto(k, {
   x, y:3, sit:true, dir:'down', grupo:'TELEFONES', cor:COR.telefone, tipo:'telefone',
   desc:'Na bancada atrás da recepção, atendendo ligações e dando informações.' }));
+[['SUPERVISÃO 1',15],['SUPERVISÃO 2',19]].forEach(([k, x]) => addPosto(k, {
+  x, y:3, sit:true, dir:'down', grupo:'SUPERVISÃO', cor:COR.superv, tipo:'superv',
+  desc:'Supervisão da unidade — dentro da recepção, acompanhando a operação no computador.' }));
 addPosto('AUTO SENTADO', { x:3, y:9, sit:true, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
   desc:'Sentado no computador do autoatendimento, auxiliando o cidadão.' });
 addPosto('AUTO 1', { x:6, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto',
@@ -442,6 +502,7 @@ addPosto('PESQUISA 2', { x:27, y:28, sit:false, dir:'right', grupo:'SAÍDA / PES
   desc:'Na porta de saída, aplicando a pesquisa de satisfação do atendimento (dupla).' });
 
 const GRUPOS = [
+  ['SUPERVISÃO', COR.superv],
   ['RECEPÇÃO', COR.emissor], ['TELEFONES', COR.telefone], ['AUTOATENDIMENTO', COR.auto],
   ['ENTRADA', COR.orient], ['SALÃO DE ESPERA', COR.painel], ['SAÍDA / PESQUISA', COR.pesq],
   ['☕ PAUSA (NO SALÃO)', COR.pausa],
@@ -641,6 +702,7 @@ function desenharCenario(){
   // ----- balcões -----
   balcao(23 * T, 4 * T, 6 * T, 19);                           // telefones (atrás da recepção)
   balcao(11 * T, 7 * T, 16 * T, 19);                          // recepção (balcões dos emissores)
+  balcao(14 * T, 4 * T, 7 * T, 14);                           // mesa da supervisão (Leandro e Claudia)
   [224, 272, 320, 368].forEach(x => rr(x - .5, 103, 1, 26, .5, 'rgba(56,189,248,.65)'));
   balcao(2 * T, 10 * T, 7 * T, 16);                           // autoatendimento
 
@@ -692,6 +754,12 @@ function frontLayer(t){
       rr(cx + 4.5, 61, 7.5, 5.5, 1.2, '#1e293b'); rr(cx + 5.5, 62, 3, 1, .4, '#64748b'); rr(cx + 5.5, 64, 3, 1, .4, '#64748b');
       ctx.fillStyle = (Math.floor(t * 2 + i) % 2) ? '#ef4444' : '#7f1d1d'; ctx.beginPath(); ctx.arc(cx + 10.5, 63, 1, 0, 6.3); ctx.fill();
     }
+  });
+  // supervisão: dois monitores + teclado para cada supervisor
+  ['SUPERVISÃO 1','SUPERVISÃO 2'].forEach(k => {
+    const cx = POSTOS[k].x * T + 8;
+    monitor(cx - 5.6, 57, tela, 10); monitor(cx + 5.6, 57, Math.floor(t * .7) % 2 ? '#86efac' : '#4ade80', 10);
+    rr(cx - 4.5, 66.4, 9, 2.4, .7, '#cbd5e1', '#94a3b8', .4);
   });
   // autoatendimento: PC sentado e totens touch
   if(ativo('AUTO SENTADO')) monitor(POSTOS['AUTO SENTADO'].x * T + 8, 151.5, tela, 11);
@@ -750,7 +818,8 @@ function criarLook(seed){
   const h = typeof seed === 'string' ? hash(seed) : seed;
   const camisa = CAMISAS[(h >> 3) % CAMISAS.length];
   return { pele: PELES[h % PELES.length], cabelo: CABELOS[(h >> 2) % CABELOS.length], camisa, camSomb: sombra(camisa),
-           estilo: (h >> 5) % 4, oculos: (h >> 7) % 3 === 0, calca: (h >> 9) % 2 ? '#2d3550' : '#3d3a45' };
+           estilo: [0, 1, 2, 7][(h >> 5) % 4], oculos: (h >> 7) % 3 === 0 ? 1 : 0, calca: (h >> 9) % 2 ? '#2d3550' : '#3d3a45',
+           barba: 0, roupa: 0, extra: 0 };
 }
 
 /* Avatar vetorial: camisa na cor do setor (identifica o posto de longe), anel no chão e adereços por função. */
@@ -760,14 +829,54 @@ const BRB_AZUL = '#005ea6';       // Azul Royal característico do BRB
 const BRB_AZUL_SOMB = '#003a6b';  // Gola polo e sombra do uniforme BRB
 const BRB_CALCA = '#1e293b';      // Calça social corporativa escura
 
+/* ---------- personalização (skins) ---------- */
+const SKIN_KEY = 'nahora_skins_v1';
+const SK = {
+  pele: ['#ffe4c9','#ffdbb0','#f1c27d','#d9a066','#a86b3c','#7a4a2a','#4a2c1a'],
+  cabeloCor: ['#1c1410','#3e2a1a','#6b4423','#c98f3a','#e8c25a','#8a8a92','#e5e7eb','#b3361f','#7c3aed','#2563eb','#ec4899','#10b981'],
+  estilo: ['Curto','Comprido','Coque','Careca','Cacheado','Moicano','Rabo de cavalo','Franja'],
+  barba: ['Sem barba','Bigode','Cavanhaque','Barba cheia','Por fazer'],
+  oculos: ['Sem óculos','Redondo','Quadrado','Escuro'],
+  roupa: ['Polo BRB','Camisa social','Colete BRB','Jaqueta BRB','Camiseta Na Hora','Blazer executivo'],
+  extra: ['Nenhum','Boné BRB','Laço','Fone','Brincos']
+};
+const SKIN_CAMPOS = ['pele','cabelo','estilo','barba','oculos','roupa','extra'];
+/* Supervisores fixos da unidade: sempre sentados na recepção, no computador */
+const SUPERVISORES = [
+  { nome:'LEANDRO', posto:'SUPERVISÃO 1', look:{ pele:'#d9a066', cabelo:'#1c1410', estilo:0, barba:0, oculos:0, roupa:5, extra:0 } },
+  { nome:'CLAUDIA', posto:'SUPERVISÃO 2', look:{ pele:'#f1c27d', cabelo:'#6b4423', estilo:1, barba:0, oculos:1, roupa:5, extra:4 } }
+];
+const ehSupervisor = nome => SUPERVISORES.some(sp => sp.nome === nome);
+let SKINS = {};
+try { SKINS = JSON.parse(localStorage.getItem(SKIN_KEY) || '{}') || {}; } catch(e){ SKINS = {}; }
+const chaveSkin = nome => norm(nome || '').trim();
+function lookDe(p){
+  if(!p.staff || p._preview) return p.look;
+  const sk = SKINS[chaveSkin(p.nome)];
+  return sk ? Object.assign({}, p.look, sk) : p.look;
+}
+function roupaDe(L, isStaff){
+  if(!isStaff){ const c = L.camisa || '#dc2626'; return { torso:c, manga:c, somb:sombra(c, .74), tipo:'civil' }; }
+  switch(L.roupa | 0){
+    case 1: return { torso:'#9cc7ef', manga:'#9cc7ef', somb:'#6a9fd0', tipo:'social' };
+    case 2: return { torso:'#1e3a8a', manga:'#f8fafc', somb:'#172554', tipo:'colete' };
+    case 3: return { torso:'#0b3f73', manga:'#0b3f73', somb:'#082c52', tipo:'jaqueta' };
+    case 4: return { torso:'#1d4ed8', manga:'#1d4ed8', somb:'#1e3a8a', tipo:'camiseta' };
+    case 5: return { torso:'#1f2937', manga:'#1f2937', somb:'#111827', tipo:'blazer' };
+    default: return { torso:BRB_AZUL, manga:BRB_AZUL, somb:BRB_AZUL_SOMB, tipo:'polo' };
+  }
+}
+function tri(x1, y1, x2, y2, x3, y3, c){ ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3); ctx.closePath(); ctx.fill(); }
+
 function desenharPessoa(p, t){
-  const L = p.look, andando = p.moving, sit = p.sitting, dir = p.dir;
-  const isStaff = p.staff;
-  // ATENDENTE: Uniforme oficial Azul BRB | CIDADÃO: Roupas civis coloridas
-  const corCamisa = isStaff ? BRB_AZUL : (L.camisa || '#dc2626');
-  const corSomb = isStaff ? BRB_AZUL_SOMB : sombra(corCamisa, .74);
+  const L = lookDe(p), andando = p.moving, sit = p.sitting, dir = p.dir;
+  const isStaff = p.staff, isSup = !!p.supervisor;
+  // ATENDENTE: uniforme BRB (com variações escolhidas) | CIDADÃO: roupas civis coloridas
+  const RP = roupaDe(L, isStaff);
   const corCalca = isStaff ? BRB_CALCA : (L.calca || '#475569');
   const corSetor = p.cor || COR.pausa;
+  const est = L.estilo | 0, barba = L.barba | 0, ocl = L.oculos === true ? 1 : (L.oculos | 0), extra = L.extra | 0;
+  const PI = Math.PI;
 
   const f = Math.sin(t * 11 + p.seed * 3);
   const bob = andando ? -Math.abs(f) * 1.3 : 0, base = sit ? 3 : 0;
@@ -776,11 +885,13 @@ function desenharPessoa(p, t){
 
   // sombra no chão
   ctx.fillStyle = 'rgba(15,23,42,.18)'; elipse(0, .5, 6.8, 2.5); ctx.fill();
-  // Anel luminoso do setor (apenas para atendentes)
-  if(isStaff){ ctx.strokeStyle = corSetor; ctx.lineWidth = 1.4; elipse(0, .3, 7.6, 3.0); ctx.stroke(); }
+  // anel luminoso do setor (apenas equipe) — supervisão ganha anel dourado duplo
+  if(isStaff){
+    ctx.strokeStyle = corSetor; ctx.lineWidth = 1.4; elipse(0, .3, 7.6, 3.0); ctx.stroke();
+    if(isSup){ ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = .8; elipse(0, .3, 9.4, 3.8); ctx.stroke(); }
+  }
 
   const topo = -14 + base + bob;           // topo do tronco
-  // cadeira (quando sentado)
   if(sit){ rr(-6.5, topo + 1, 13, 10, 3.2, '#475569'); }
   // pernas
   if(!sit){
@@ -789,49 +900,107 @@ function desenharPessoa(p, t){
     rr(.7, -6.5 + bob, 3.2, 6.5 - Math.max(0, -sw) - bob, 1.4, corCalca);
     rr(-4.1, -1.6 - Math.max(0, sw), 3.6, 1.7, .8, '#1e293b'); rr(.5, -1.6 - Math.max(0, -sw), 3.6, 1.7, .8, '#1e293b');
   }
-  // cabelo comprido atrás da cabeça
   const hy = topo - 4.4;
-  if(L.estilo === 1 && dir !== 'up'){ rr(-5, hy - 1, 10, 9, 3.5, L.cabelo); }
-  // braços (com a manga da camisa)
+  const lado = dir === 'left' ? -1 : 1;
+  // cabelo atrás da cabeça (comprido, cacheado, rabo de cavalo)
+  if(est === 1 && dir !== 'up'){ rr(-5, hy - 1, 10, 9, 3.5, L.cabelo); }
+  if(est === 4){ ctx.fillStyle = L.cabelo; ctx.beginPath(); ctx.arc(0, hy - .6, 6, 0, 6.3); ctx.fill(); }
+  if(est === 6){
+    if(dir === 'up') rr(-1.6, hy + 1.5, 3.2, 6.5, 1.5, L.cabelo);
+    else if(dir === 'left' || dir === 'right') rr(-lado * 4.6 - 1.6, hy - 1, 3.2, 7, 1.5, L.cabelo);
+  }
+  // braços (manga da roupa) + mãos
   const sb = andando ? f * 1.2 : (sit ? Math.sin(t * 6 + p.seed) * .8 : 0);
-  rr(-6.8, topo + 1.4 + sb, 2.5, 6.4, 1.2, corCamisa); rr(4.3, topo + 1.4 - sb, 2.5, 6.4, 1.2, corCamisa);
+  rr(-6.8, topo + 1.4 + sb, 2.5, 6.4, 1.2, RP.manga); rr(4.3, topo + 1.4 - sb, 2.5, 6.4, 1.2, RP.manga);
   ctx.fillStyle = L.pele; ctx.beginPath(); ctx.arc(-5.5, topo + 8.2 + sb, 1.4, 0, 6.3); ctx.fill(); ctx.beginPath(); ctx.arc(5.5, topo + 8.2 - sb, 1.4, 0, 6.3); ctx.fill();
-  // tronco (uniforme azul BRB ou roupa casual)
-  rr(-5, topo, 10, 9.6, 3.2, corCamisa);
-  ctx.fillStyle = corSomb; ctx.fillRect(-5 + 1, topo + 7.8, 8, 1.4);
-  // Detalhes exclusivos do atendente: gola polo azul BRB + crachá funcional Na Hora
+  // tronco
+  rr(-5, topo, 10, 9.6, 3.2, RP.torso);
+  ctx.fillStyle = RP.somb; ctx.fillRect(-4, topo + 7.8, 8, 1.4);
+  // detalhes da roupa da equipe + crachá funcional Na Hora
   if(isStaff && dir !== 'up'){
-    // gola polo elegante BRB
-    ctx.fillStyle = BRB_AZUL_SOMB; ctx.beginPath(); ctx.moveTo(-2.8, topo); ctx.lineTo(0, topo + 2.5); ctx.lineTo(2.8, topo); ctx.closePath(); ctx.fill();
-    // cordão do crachá
+    const tp = RP.tipo;
+    if(tp === 'polo') tri(-2.8, topo, 0, topo + 2.5, 2.8, topo, BRB_AZUL_SOMB);
+    if(tp === 'social'){ tri(-2.8, topo, -.3, topo + 1.8, -.3, topo, '#fff'); tri(2.8, topo, .3, topo + 1.8, .3, topo, '#fff'); rr(-.6, topo + 1.2, 1.2, 5, .4, '#003a6b'); }
+    if(tp === 'colete'){ tri(-3, topo, 0, topo + 4, 3, topo, '#f8fafc'); ctx.fillStyle = '#facc15'; [5, 6.8].forEach(dy => { ctx.beginPath(); ctx.arc(.9, topo + dy, .45, 0, 6.3); ctx.fill(); }); }
+    if(tp === 'jaqueta'){ rr(-3, topo - .3, 6, 1.4, .6, '#082c52'); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = .5; ctx.beginPath(); ctx.moveTo(0, topo + 1); ctx.lineTo(0, topo + 9.2); ctx.stroke(); rr(3.2, topo + 1.6, 1, 6, .4, '#facc15'); }
+    if(tp === 'camiseta'){ rr(-5, topo + 4.6, 10, 1.3, .3, '#facc15'); ctx.strokeStyle = '#1e3a8a'; ctx.lineWidth = .6; ctx.beginPath(); ctx.arc(0, topo, 2, .1, PI - .1); ctx.stroke(); }
+    if(tp === 'blazer'){ tri(-2.6, topo, 0, topo + 4.4, 2.6, topo, '#fff'); rr(-.55, topo + 1, 1.1, 4.2, .4, BRB_AZUL); ctx.strokeStyle = '#4b5563'; ctx.lineWidth = .5; ctx.beginPath(); ctx.moveTo(-2.6, topo); ctx.lineTo(-.6, topo + 5.2); ctx.moveTo(2.6, topo); ctx.lineTo(.6, topo + 5.2); ctx.stroke(); }
+    // cordão + crachá no peito
     ctx.strokeStyle = '#003666'; ctx.lineWidth = .7; ctx.beginPath(); ctx.moveTo(-1.6, topo + 1); ctx.lineTo(-2.2, topo + 3.2); ctx.stroke();
-    // crachá funcional no peito
     rr(-3.8, topo + 2.8, 3.6, 4.8, .8, '#ffffff', '#cbd5e1', .5);
-    rr(-3.2, topo + 3.3, 2.4, 1.2, .3, BRB_AZUL); // logo azul BRB
-    rr(-3.2, topo + 5.1, 2.4, .8, .2, corSetor);   // tarja da cor do setor
+    rr(-3.2, topo + 3.3, 2.4, 1.2, .3, BRB_AZUL);
+    rr(-3.2, topo + 5.1, 2.4, .8, .2, isSup ? '#fbbf24' : corSetor);
   }
   // pescoço + cabeça
   rr(-1.4, hy + 3.2, 2.8, 2.4, .8, L.pele);
   ctx.fillStyle = L.pele; ctx.beginPath(); ctx.arc(0, hy, 4.4, 0, 6.3); ctx.fill();
-  // cabelo
+  // barba (antes dos olhos/boca)
+  if(barba && dir !== 'up'){
+    ctx.fillStyle = L.cabelo;
+    const ox = dir === 'down' ? 0 : lado * 1.3;
+    if(barba === 3 || barba === 4){
+      ctx.save(); if(barba === 4) ctx.globalAlpha *= .32;
+      ctx.beginPath(); ctx.arc(0, hy, 4.5, .06 * PI, .94 * PI); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, hy + .2, 4.5, .06 * PI, .94 * PI); ctx.lineTo(-4.3, hy + .4); ctx.fill();
+      ctx.restore();
+    }
+    if(barba === 1 || barba === 2 || barba === 3) rr(ox - 1.9, hy + 1.2, 3.8, 1, .5, L.cabelo);
+    if(barba === 2) rr(ox - 1.1, hy + 3, 2.2, 1.7, .8, L.cabelo);
+  }
+  // cabelo (frente)
   ctx.fillStyle = L.cabelo;
-  if(dir === 'up'){ ctx.beginPath(); ctx.arc(0, hy, 4.6, 0, 6.3); ctx.fill(); }
-  else { ctx.beginPath(); ctx.arc(0, hy, 4.7, Math.PI * 1.03, Math.PI * 1.97); ctx.closePath(); ctx.fill(); }
-  if(L.estilo === 2){ ctx.beginPath(); ctx.arc(0, hy - 5, 1.9, 0, 6.3); ctx.fill(); }
+  if(est === 3){
+    if(dir !== 'up'){ ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = .7; ctx.beginPath(); ctx.arc(-1, hy - 1.5, 2.2, PI * 1.15, PI * 1.55); ctx.stroke(); }
+  } else if(est === 5){
+    ctx.save(); ctx.globalAlpha *= .3; ctx.beginPath(); ctx.arc(0, hy, 4.6, PI * 1.03, PI * 1.97); ctx.closePath(); ctx.fill(); ctx.restore();
+    if(dir === 'left' || dir === 'right') rr(-3, hy - 6.6, 6, 3.4, 1.4, L.cabelo); else rr(-1.3, hy - 6.8, 2.6, dir === 'up' ? 10 : 4.4, 1.2, L.cabelo);
+  } else if(est === 4){
+    if(dir !== 'up'){ for(let a = PI * .98; a <= PI * 2.02; a += PI / 7){ ctx.beginPath(); ctx.arc(Math.cos(a) * 4.4, hy + Math.sin(a) * 4.4, 1.9, 0, 6.3); ctx.fill(); } }
+  } else {
+    if(dir === 'up'){ ctx.beginPath(); ctx.arc(0, hy, 4.6, 0, 6.3); ctx.fill(); }
+    else { ctx.beginPath(); ctx.arc(0, hy, 4.7, PI * 1.03, PI * 1.97); ctx.closePath(); ctx.fill(); }
+    if(est === 7 && dir !== 'up'){ if(dir === 'down') rr(-4.2, hy - 2.8, 8.4, 2.1, 1, L.cabelo); else rr(lado > 0 ? -.5 : -4.5, hy - 2.8, 5, 2, 1, L.cabelo); }
+    if(est === 6 && dir === 'down'){ ctx.beginPath(); ctx.arc(4.6, hy - 1.5, 1.6, 0, 6.3); ctx.fill(); }
+  }
+  if(est === 2){ ctx.beginPath(); ctx.arc(0, hy - 5, 1.9, 0, 6.3); ctx.fill(); }
   // rosto
   if(dir === 'down'){
     ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(-1.7, hy + .5, .62, 0, 6.3); ctx.arc(1.7, hy + .5, .62, 0, 6.3); ctx.fill();
-    ctx.strokeStyle = 'rgba(30,41,59,.7)'; ctx.lineWidth = .5; ctx.beginPath(); ctx.arc(0, hy + 1.9, 1, .2, Math.PI - .2); ctx.stroke();
-    if(L.oculos){ ctx.strokeStyle = '#0f172a'; ctx.lineWidth = .55; ctx.beginPath(); ctx.arc(-1.7, hy + .5, 1.3, 0, 6.3); ctx.moveTo(3, hy + .5); ctx.arc(1.7, hy + .5, 1.3, 0, 6.3); ctx.stroke(); }
+    ctx.strokeStyle = barba === 3 ? 'rgba(255,255,255,.55)' : 'rgba(30,41,59,.7)'; ctx.lineWidth = .5; ctx.beginPath(); ctx.arc(0, hy + 1.9, 1, .2, PI - .2); ctx.stroke();
+    if(ocl === 1){ ctx.strokeStyle = '#0f172a'; ctx.lineWidth = .55; ctx.beginPath(); ctx.arc(-1.7, hy + .5, 1.3, 0, 6.3); ctx.moveTo(3, hy + .5); ctx.arc(1.7, hy + .5, 1.3, 0, 6.3); ctx.stroke(); }
+    if(ocl === 2){ rr(-3.1, hy - .6, 2.7, 2.2, .4, null, '#0f172a', .55); rr(.4, hy - .6, 2.7, 2.2, .4, null, '#0f172a', .55); ctx.beginPath(); ctx.moveTo(-.4, hy + .2); ctx.lineTo(.4, hy + .2); ctx.stroke(); }
+    if(ocl === 3){ rr(-3.2, hy - .5, 2.9, 2.1, .7, '#0f172a'); rr(.3, hy - .5, 2.9, 2.1, .7, '#0f172a'); R(-.4, hy, .8, .5, '#0f172a'); rr(-2.7, hy - .2, 1, .5, .2, 'rgba(255,255,255,.4)'); }
+    if(extra === 4){ ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(-4.5, hy + 1.8, .75, 0, 6.3); ctx.arc(4.5, hy + 1.8, .75, 0, 6.3); ctx.fill(); }
   } else if(dir === 'left' || dir === 'right'){
-    const s = dir === 'left' ? -1 : 1;
-    ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(s * 2.3, hy + .5, .62, 0, 6.3); ctx.fill();
+    ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(lado * 2.3, hy + .5, .62, 0, 6.3); ctx.fill();
+    if(ocl){
+      if(ocl === 3) rr(lado * 2.3 - 1.3, hy - .4, 2.6, 1.9, .6, '#0f172a');
+      else { ctx.strokeStyle = '#0f172a'; ctx.lineWidth = .55; ctx.beginPath(); if(ocl === 1) ctx.arc(lado * 2.3, hy + .5, 1.3, 0, 6.3); else ctx.rect(lado * 2.3 - 1.3, hy - .5, 2.6, 2); ctx.stroke(); }
+      ctx.strokeStyle = '#0f172a'; ctx.lineWidth = .5; ctx.beginPath(); ctx.moveTo(lado * 1, hy + .3); ctx.lineTo(-lado * 1.6, hy + .1); ctx.stroke();
+    }
+    if(extra === 4){ ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(-lado * 1.4, hy + 2, .75, 0, 6.3); ctx.fill(); }
+  }
+  // acessórios
+  if(extra === 1){
+    ctx.fillStyle = BRB_AZUL; ctx.beginPath(); ctx.arc(0, hy - .6, 4.9, PI, PI * 2); ctx.closePath(); ctx.fill();
+    if(dir === 'down'){ rr(-4.6, hy - 1.5, 9.2, 1.7, .8, '#003a6b'); ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(0, hy - 3.2, .9, 0, 6.3); ctx.fill(); }
+    else if(dir === 'up'){ ctx.beginPath(); ctx.arc(0, hy, 4.7, 0, 6.3); ctx.fill(); }
+    else rr(lado > 0 ? 1 : -7, hy - 1.5, 6, 1.6, .8, '#003a6b');
+  }
+  if(extra === 2){
+    const bx = dir === 'left' ? -2.5 : 2.8, by = hy - 4.4;
+    tri(bx, by, bx + 2.4, by - 1.6, bx + 2.4, by + 1.6, '#ec4899'); tri(bx, by, bx - 2.4, by - 1.6, bx - 2.4, by + 1.6, '#ec4899');
+    ctx.fillStyle = '#be185d'; ctx.beginPath(); ctx.arc(bx, by, .8, 0, 6.3); ctx.fill();
+  }
+  if(extra === 3 && p.tipo !== 'telefone'){
+    ctx.strokeStyle = '#334155'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(0, hy - .3, 5.2, PI * .98, PI * 2.02); ctx.stroke();
+    if(dir !== 'up' || true){ rr(-6.4, hy - .8, 2.4, 3.4, 1, '#ef4444'); rr(4, hy - .8, 2.4, 3.4, 1, '#ef4444'); }
   }
   // adereços por função
   if(p.staff){
     const tp = p.tipo;
     if(tp === 'telefone'){
-      ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(0, hy - .3, 5.3, Math.PI * .98, Math.PI * 2.02); ctx.stroke();
+      ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(0, hy - .3, 5.3, PI * .98, PI * 2.02); ctx.stroke();
       rr(-6.6, hy - .6, 2.2, 3.6, 1, '#0f172a'); ctx.beginPath(); ctx.moveTo(-5.4, hy + 3); ctx.quadraticCurveTo(-4, hy + 5.4, -1.6, hy + 4.6); ctx.stroke();
     }
     if(tp === 'orient' && !sit){ rr(5.4, topo + 3.6, 5.4, 7.6, 1.2, '#0f172a'); rr(6.1, topo + 4.4, 4, 6, .6, '#7dd3fc'); }
@@ -839,6 +1008,22 @@ function desenharPessoa(p, t){
     if(tp === 'painel' && !sit){ rr(5.4, topo + 5, 5, 3.2, .8, '#fbbf24'); }
   }
   ctx.restore();
+}
+
+/* miniatura do avatar (rosto + ombros) para a lista lateral */
+const AV_CACHE = new Map();
+function avatarURL(p){
+  const L = lookDe(p), key = p.nome + '|' + (p.cor || '') + '|' + JSON.stringify(L);
+  if(AV_CACHE.has(key)) return AV_CACHE.get(key);
+  const c = document.createElement('canvas'); c.width = c.height = 96;
+  const prev = ctx; ctx = c.getContext('2d');
+  ctx.translate(48, 48 + 15 * 4.2); ctx.scale(4.2, 4.2);
+  desenharPessoa({ nome:p.nome, staff:true, supervisor:p.supervisor, look:L, _preview:true, seed:0, x:0, y:0, dir:'down', moving:false, sitting:false, cor:p.cor, tipo:null }, 0);
+  ctx = prev;
+  const url = c.toDataURL();
+  if(AV_CACHE.size > 300) AV_CACHE.clear();
+  AV_CACHE.set(key, url);
+  return url;
 }
 
 function realceSelecao(p, t){
@@ -1052,6 +1237,14 @@ function aplicarSlot(idx, animar){
     });
   });
 
+  // supervisores: sempre sentados no computador dentro da recepção
+  SUPERVISORES.slice().reverse().forEach(sp => {
+    const p = estado.pessoas[sp.nome], po = POSTOS[sp.posto]; if(!p || !po) return;
+    p.presente = true; p.cor = po.cor; p.tipo = po.tipo; p.posto = sp.posto; p.destino = { sit: true, dir: 'down' };
+    colocar(p, po.x, po.y); p.sitting = true; p.dir = 'down';
+    estado.info.unshift({ nome: sp.nome, pk: sp.posto, proxPk: sp.posto, antPk: sp.posto, alerta: null, statusPresenca: 'posto', entrada: '', saida: '', supervisor: true });
+  });
+
   $('cPe').textContent = pe;
   $('cSent').textContent = sent;
   $('cPausa').textContent = pausa;
@@ -1061,8 +1254,8 @@ function aplicarSlot(idx, animar){
   $('chipAl').classList.toggle('on', alertas > 0);
 
   // Contadores das abas
-  if($('countTodos')) $('countTodos').textContent = estado.equipe.length;
-  if($('countSalao')) $('countSalao').textContent = pe + sent + pausa;
+  if($('countTodos')) $('countTodos').textContent = estado.equipe.length + SUPERVISORES.length;
+  if($('countSalao')) $('countSalao').textContent = pe + sent + pausa + SUPERVISORES.length;
   if($('countCF')) $('countCF').textContent = chegando + fui;
 
   renderLista();
@@ -1082,9 +1275,16 @@ function carregarEscala(escala, manterSlot = false){
       }
     });
   });
+  // supervisores são fixos (não entram no rodízio da escala)
+  [...nomes].forEach(n => { if(SUPERVISORES.some(sp => matchNome(n, sp.nome))) nomes.delete(n); });
   estado.equipe = [...nomes].sort(); estado.pessoas = {};
   estado.equipe.forEach(n => {
     estado.pessoas[n] = Object.assign(novaPessoa(n, true), { staff: true, presente: true });
+  });
+  SUPERVISORES.forEach(sp => {
+    const p = Object.assign(novaPessoa(sp.nome, true), { staff: true, presente: true, supervisor: true });
+    Object.assign(p.look, sp.look);
+    estado.pessoas[sp.nome] = p;
   });
   estado.jornadas = calcularJornadas(escala, estado.slots, estado.equipe);
 
@@ -1166,6 +1366,10 @@ function renderLista(){
         selo = `<span class="selo cinza">Saiu às ${it.saida || '--:--'}</span>`;
         prox = 'Expediente encerrado hoje';
         icone = '🏠';
+      } else if(it.supervisor){
+        selo = `<span class="selo" style="white-space:nowrap">★ SUPERV.</span>`;
+        prox = 'Supervisão da unidade • no PC';
+        icone = '💻';
       } else {
         const po = it.pk ? POSTOS[it.pk] : null;
         icone = po ? (po.sit ? '💺' : '🚶') : '☕';
@@ -1173,8 +1377,11 @@ function renderLista(){
         const pNome = it.proxPk ? (POSTOS[it.proxPk] ? it.proxPk : '?') : (estado.idx + 1 < estado.slots.length ? 'Pausa' : 'Fim do expediente');
         prox = `Depois: <b>${pNome}</b>`;
       }
-      const ini = norm(it.nome).charAt(0);
-      d.innerHTML = `<div class="av">${ini}</div><div class="inf"><div class="top"><div class="nm">${it.nome}</div>${selo}</div><div class="nx">${prox}</div>${it.alerta ? `<div class="alerta-msg">⚠ ${it.alerta}</div>` : ''}</div><div class="st" title="${po_txt(it)}">${icone}</div>`;
+      const ini = norm(it.nome).charAt(0), pp = estado.pessoas[it.nome];
+      if(it.supervisor) d.classList.add('sup');
+      const avHtml = pp ? `<img src="${avatarURL(pp)}" alt="${ini}">` : ini;
+      const nmEsc = String(it.nome).replace(/'/g, "\\'");
+      d.innerHTML = `<div class="av">${avHtml}</div><div class="inf"><div class="top"><div class="nm">${it.nome}</div>${selo}</div><div class="nx">${prox}</div>${it.alerta ? `<div class="alerta-msg">⚠ ${it.alerta}</div>` : ''}</div><div class="st" title="${it.supervisor ? 'Supervisão' : po_txt(it)}">${icone}</div><button class="skb" title="Personalizar avatar" onclick="event.stopPropagation();abrirSkin('${nmEsc}')">🎨</button>`;
       d.onclick = () => {
         estado.sel = estado.sel === it.nome ? null : it.nome;
         renderLista();
@@ -1225,7 +1432,7 @@ function frame(ts){
   const ocupados = OBST.concat(TAG_RECTS);
   const colide = r => ocupados.some(o => !(r.x + r.w < o.x || o.x + o.w < r.x || r.y + r.h < o.y || o.y + o.h < r.y));
   const itens = presentes.map(p => {
-    const cx = Math.round(p.x), cy = Math.round(p.y), topo = cy - (p.sitting ? 3 : 0) - 22 - (p.look.estilo === 2 ? 2 : 0);
+    const Lp = lookDe(p), cx = Math.round(p.x), cy = Math.round(p.y), topo = cy - (p.sitting ? 3 : 0) - 22 - ((Lp.estilo === 2 || Lp.estilo === 5) ? 2 : 0);
     function formatarNomeCracha(raw){
       if(!raw) return '';
       const str = norm(raw).trim();
@@ -1235,7 +1442,7 @@ function frame(ts){
       if(partes[0].length + partes[1].length + 1 <= 14) return partes[0] + ' ' + partes[1];
       return partes[0] + ' ' + partes[1][0] + '.';
     }
-    const alerta = estado.alertas[p.nome], nome = (alerta ? '⚠ ' : '') + formatarNomeCracha(p.nome);
+    const alerta = estado.alertas[p.nome], nome = (alerta ? '⚠ ' : '') + (p.supervisor ? '★ ' : '') + formatarNomeCracha(p.nome);
     return { p, cx, topo, nome, alerta, w: medir(nome, 6.8, 700) + 7 };
   }).sort((a, b) => (a.p.nome === sel) - (b.p.nome === sel) || a.cx - b.cx);
   itens.forEach(it => {
@@ -1359,6 +1566,228 @@ cv.addEventListener('click', e => {
   const achado = pessoaNoPonto(e);
   estado.sel = achado ? (estado.sel === achado.nome ? null : achado.nome) : null; renderLista();
 });
+
+cv.addEventListener('dblclick', e => { const achado = pessoaNoPonto(e); if(achado) abrirSkin(achado.nome); });
+
+/* =====================================================================
+   PERSONALIZAÇÃO DO AVATAR & SINCRONIZAÇÃO EM TEMPO REAL MULTI-NAVEGADOR
+   ===================================================================== */
+const SKIN_CLOUD_ID = 'ff808181a09d98f701a13fb55c1268ed';
+const SKIN_CLOUD_URL = 'https://api.restful-api.dev/objects/' + SKIN_CLOUD_ID;
+const SKIN_NTFY_TOPIC = 'nahora_ceilandia_skins_v1';
+const SKIN_NTFY_URL = 'https://ntfy.sh/' + SKIN_NTFY_TOPIC;
+
+let skinSyncSSE = null;
+let skinBroadcast = null;
+let toastTimeout = null;
+
+try {
+  if(typeof BroadcastChannel !== 'undefined'){
+    skinBroadcast = new BroadcastChannel('nahora_skins_bus');
+    skinBroadcast.onmessage = e => {
+      if(e.data && e.data.action === 'skin_update' && e.data.nome && e.data.skin){
+        aplicarSkinRecebida(e.data.nome, e.data.skin, false);
+      }
+    };
+  }
+} catch(e){}
+
+function mostrarToastSkin(msg){
+  const el = $('skinToast'), tmsg = $('skinToastMsg');
+  if(!el || !tmsg) return;
+  tmsg.innerHTML = msg;
+  el.classList.add('show');
+  if(toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.classList.remove('show'), 3800);
+}
+
+function aplicarSkinRecebida(nome, skin, emitirAviso = true){
+  if(!nome || !skin) return;
+  const k = chaveSkin(nome);
+  const atualStr = JSON.stringify(SKINS[k]);
+  const novoStr = JSON.stringify(skin);
+  if(atualStr === novoStr) return; // já está idêntico
+
+  SKINS[k] = Object.assign({}, SKINS[k] || {}, skin);
+  try { localStorage.setItem(SKIN_KEY, JSON.stringify(SKINS)); } catch(e){}
+  AV_CACHE.clear();
+  renderLista();
+
+  // se o modal estiver aberto no mesmo atendente, atualiza o editor
+  if(skNomeAtual === nome && $('modalSkin') && $('modalSkin').style.display === 'flex'){
+    skSelecionar(nome);
+  }
+
+  if(emitirAviso){
+    mostrarToastSkin(`🎨 <b>${nome}</b> atualizou o visual do avatar!`);
+  }
+}
+
+async function sincronizarSkinsNuvem(silencioso = true){
+  try {
+    const res = await fetch(SKIN_CLOUD_URL + '?_t=' + Date.now());
+    if(!res.ok) return;
+    const json = await res.json();
+    if(json && json.data && typeof json.data === 'object'){
+      let alterados = 0;
+      Object.entries(json.data).forEach(([k, sk]) => {
+        if(sk && typeof sk === 'object'){
+          const atual = JSON.stringify(SKINS[k]);
+          const novo = JSON.stringify(sk);
+          if(atual !== novo){
+            SKINS[k] = sk;
+            alterados++;
+          }
+        }
+      });
+      if(alterados > 0){
+        try { localStorage.setItem(SKIN_KEY, JSON.stringify(SKINS)); } catch(e){}
+        AV_CACHE.clear();
+        renderLista();
+      }
+    }
+  } catch(err){
+    console.warn('Erro na sincronização de skins da nuvem:', err);
+  }
+}
+
+function iniciarSkinRealtime(){
+  if(typeof EventSource === 'undefined') return;
+  if(skinSyncSSE){ try { skinSyncSSE.close(); } catch(e){} }
+  try {
+    skinSyncSSE = new EventSource(SKIN_NTFY_URL + '/sse');
+    skinSyncSSE.onmessage = function(e){
+      try {
+        const ev = JSON.parse(e.data);
+        if(ev && ev.message){
+          const msg = JSON.parse(ev.message);
+          if(msg && msg.action === 'skin_update' && msg.nome && msg.skin){
+            aplicarSkinRecebida(msg.nome, msg.skin, true);
+          }
+        }
+      } catch(err){}
+    };
+  } catch(e){}
+}
+
+let skEdit = null, skNomeAtual = null, skRAF = null;
+function skPessoas(){ return [...SUPERVISORES.map(sp => sp.nome), ...estado.equipe]; }
+function skBaseLook(nome){
+  const p = estado.pessoas[nome];
+  if(p) return p.look;
+  const sp = SUPERVISORES.find(x => x.nome === nome);
+  return Object.assign(criarLook(nome), sp ? sp.look : {});
+}
+function abrirSkin(nome){
+  const lista = skPessoas(), sel = $('skNome');
+  sel.innerHTML = lista.map(n => `<option value="${n}">${ehSupervisor(n) ? '★ ' : ''}${n}</option>`).join('');
+  const alvo = (nome && lista.includes(nome)) ? nome : (estado.sel && lista.includes(estado.sel) ? estado.sel : lista[0]);
+  sel.value = alvo; skSelecionar(alvo);
+  $('modalSkin').style.display = 'flex';
+  if(!skRAF) skRAF = requestAnimationFrame(skLoop);
+}
+function fecharSkin(){ $('modalSkin').style.display = 'none'; }
+function skSelecionar(nome){
+  skNomeAtual = nome;
+  skEdit = Object.assign({}, skBaseLook(nome), SKINS[chaveSkin(nome)] || {});
+  skEdit.oculos = skEdit.oculos === true ? 1 : (skEdit.oculos | 0);
+  skRenderOpcoes();
+}
+function skSet(campo, val){ skEdit[campo] = val; skRenderOpcoes(); }
+function skRenderOpcoes(){
+  const L = skEdit;
+  const grp = (t, h) => `<div class="skgrp"><div class="sklbl">${t}</div>${h}</div>`;
+  const chips = (campo, arr) => `<div class="skopts">${arr.map((n, i) => `<button class="skopt${(L[campo] | 0) === i ? ' on' : ''}" onclick="skSet('${campo}',${i})">${n}</button>`).join('')}</div>`;
+  const cores = (campo, arr) => `<div class="skopts">${arr.map(c => `<button class="skcor${L[campo] === c ? ' on' : ''}" style="background:${c}" onclick="skSet('${campo}','${c}')"></button>`).join('')}</div>`;
+  $('skOpcoes').innerHTML =
+    grp('👔 ROUPA (UNIFORME BRB)', chips('roupa', SK.roupa)) +
+    grp('🎨 TOM DE PELE', cores('pele', SK.pele)) +
+    grp('💇 CABELO', chips('estilo', SK.estilo)) +
+    grp('🖌️ COR DO CABELO E DA BARBA', cores('cabelo', SK.cabeloCor)) +
+    grp('🧔 BARBA', chips('barba', SK.barba)) +
+    grp('👓 ÓCULOS', chips('oculos', SK.oculos)) +
+    grp('✨ ACESSÓRIO', chips('extra', SK.extra));
+}
+function skAleatorio(){
+  const r = a => Math.floor(Math.random() * a.length);
+  skEdit.pele = SK.pele[r(SK.pele)]; skEdit.cabelo = SK.cabeloCor[r(SK.cabeloCor)];
+  skEdit.estilo = r(SK.estilo); skEdit.barba = Math.random() < .5 ? 0 : r(SK.barba); skEdit.oculos = Math.random() < .5 ? 0 : r(SK.oculos);
+  skEdit.roupa = r(SK.roupa); skEdit.extra = Math.random() < .5 ? 0 : r(SK.extra);
+  skRenderOpcoes();
+}
+function skPadrao(){ skEdit = Object.assign({}, skBaseLook(skNomeAtual)); skEdit.oculos = skEdit.oculos === true ? 1 : (skEdit.oculos | 0); skRenderOpcoes(); }
+function skPersistir(){ try { localStorage.setItem(SKIN_KEY, JSON.stringify(SKINS)); } catch(e){} AV_CACHE.clear(); renderLista(); }
+async function salvarSkin(){
+  if(!skNomeAtual) return;
+  const o = {}; SKIN_CAMPOS.forEach(k => o[k] = skEdit[k]);
+  const nome = skNomeAtual;
+  const k = chaveSkin(nome);
+  SKINS[k] = o;
+  skPersistir();
+  fecharSkin();
+
+  mostrarToastSkin(`✅ Visual de <b>${nome}</b> salvo e transmitido para todos!`);
+
+  // 1. Notifica abas locais abertas no mesmo navegador
+  if(skinBroadcast){
+    try { skinBroadcast.postMessage({ action: 'skin_update', nome, skin: o, timestamp: Date.now() }); } catch(e){}
+  }
+
+  // 2. Transmite instantaneamente para todos os outros computadores/celulares via SSE (ntfy)
+  try {
+    fetch(SKIN_NTFY_URL, {
+      method: 'POST',
+      headers: { 'Title': 'Avatar atualizado' },
+      body: JSON.stringify({ action: 'skin_update', nome, skin: o, timestamp: Date.now() })
+    }).catch(e => console.warn('ntfy broadcast aviso:', e));
+  } catch(e){}
+
+  // 3. Salva de forma persistente na nuvem para qualquer novo navegador que abrir depois
+  try {
+    fetch(SKIN_CLOUD_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'nahora_ceilandia_skins', data: SKINS })
+    }).catch(e => console.warn('cloud skins put aviso:', e));
+  } catch(e){}
+}
+function skExportar(){
+  const txt = 'NAHORA-SKINS:' + btoa(unescape(encodeURIComponent(JSON.stringify(SKINS))));
+  const ok = () => alert('✅ Avatares copiados! Cole no outro computador (ex.: TV do salão) em 🎨 Meu avatar ➔ 📥 Importar.');
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, () => prompt('Copie o código abaixo:', txt));
+  else prompt('Copie o código abaixo:', txt);
+}
+function skImportar(){
+  const txt = (prompt('Cole aqui o código de avatares (começa com NAHORA-SKINS:)') || '').trim();
+  if(!txt) return;
+  try {
+    const obj = JSON.parse(decodeURIComponent(escape(atob(txt.replace(/^NAHORA-SKINS:/, '')))));
+    Object.assign(SKINS, obj); skPersistir(); if(skNomeAtual) skSelecionar(skNomeAtual);
+    alert('✅ ' + Object.keys(obj).length + ' avatar(es) importado(s)!');
+  } catch(e){ alert('❌ Código inválido.'); }
+}
+function skLoop(){
+  if($('modalSkin').style.display !== 'flex' || !skEdit){ skRAF = null; return; }
+  const cvs = $('skCanvas'), c2 = cvs.getContext('2d');
+  if(cvs.width !== 840){ cvs.width = 840; cvs.height = 600; }
+  const t = performance.now() / 1000, prev = ctx; ctx = c2;
+  c2.setTransform(1, 0, 0, 1, 0, 0); c2.clearRect(0, 0, 840, 600); c2.setTransform(3, 0, 0, 3, 0, 0);
+  const nome = skNomeAtual || '', p0 = estado.pessoas[nome], sup = ehSupervisor(nome);
+  const cor = sup ? COR.superv : ((p0 && p0.presente && p0.cor) || COR.emissor);
+  const base = { nome, staff: true, supervisor: sup, look: skEdit, _preview: true, seed: 1, cor, tipo: null };
+  [{ x: 52, dir: 'down', moving: true, sitting: false, lbl: 'Andando' },
+   { x: 140, dir: 'right', moving: false, sitting: false, lbl: 'De lado' },
+   { x: 228, dir: 'down', moving: false, sitting: true, lbl: 'No posto' }].forEach(ps => {
+    ctx.save(); ctx.translate(ps.x, 150); ctx.scale(4, 4);
+    desenharPessoa(Object.assign({}, base, ps, { x: 0, y: 0 }), t);
+    ctx.restore();
+    tx(ps.lbl, ps.x, 182, 9, '#64748b', 700);
+  });
+  pill(140, 16, (sup ? '★ ' : '') + nome, cor, '#fff', { size: 11, pad: 16, sombra: true });
+  ctx = prev;
+  skRAF = requestAnimationFrame(skLoop);
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && $('modalSkin').style.display === 'flex') fecharSkin(); });
 
 /* rola o mapa (quando ampliado) para deixar a pessoa selecionada no centro da tela */
 function focarNaPessoa(nome){
@@ -1850,6 +2279,11 @@ desenharCenario();
 carregarDemo();
 aplicarZoom();
 iniciarRelogioReal();
+
+// Sincronização em tempo real dos avatares entre todos os navegadores
+sincronizarSkinsNuvem();
+iniciarSkinRealtime();
+setInterval(() => sincronizarSkinsNuvem(true), 35000);
 
 // Inicialização inteligente: conecta à URL do Google se fornecida via link ou salva no navegador
 (function bootGoogle(){
