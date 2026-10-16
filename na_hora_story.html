@@ -453,7 +453,7 @@ function pill(cx, cy, s, bg, fg, opt){
 const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
 
 /* ---------- modelo de dados do layout oficial (totalmente customizavel pelo admin) ---------- */
-const LAYOUT_KEY = 'nahora_custom_layout_v1';
+const LAYOUT_KEY = 'nahora_custom_layout_v2';
 const DEFAULT_LAYOUT = {
   versao: 2,
   unidade: 'NH_CEILANDIA',
@@ -535,10 +535,13 @@ const DEFAULT_LAYOUT = {
 };
 function carregarLayout(){
   try {
+    localStorage.removeItem('nahora_custom_layout_v1');
     const salvo = localStorage.getItem(LAYOUT_KEY);
     if(salvo){
       const parsed = JSON.parse(salvo);
-      if(parsed && parsed.moveis && parsed.zonas) return parsed;
+      if(parsed && parsed.versao === DEFAULT_LAYOUT.versao && Array.isArray(parsed.moveis) && Array.isArray(parsed.zonas)){
+        return parsed;
+      }
     }
   } catch(e){}
   return JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
@@ -1246,7 +1249,11 @@ function desenharCenario(){
   LAYOUT.zonas.forEach(tituloZona);
   // Pill oficial centralizada do SALÃO DE ESPERA na base dos 5 painéis
   pill(14.9 * T, 29.2 * T, 'SALÃO DE ESPERA', '#ea580c', '#ffffff', { size: 7.2, pad: 12, sombra: true, borda: '#fb923c', lw: 1.2 });
+  if(!SEATS.length){
+    [[13,16],[14,16],[15,16],[13,20],[14,20],[15,20]].forEach(([sx, sy]) => SEATS.push({ x: sx, y: sy, ocupado: false }));
+  }
   ctx = mainCtx;
+  try { mainCtx.setTransform(1, 0, 0, 1, 0, 0); mainCtx.drawImage(bg, 0, 0); } catch(e){}
 }
 /* =====================================================================
    CAMADA FRONTAL (itens que ficam na frente das pessoas + marcadores)
@@ -1608,12 +1615,15 @@ function mover(p, dt){
 /* ----- cidadãos (NPCs que passam pelo fluxo real do Na Hora) ----- */
 function criarNPCs(){
   npcs = [];
-  SEATS.forEach(s => s.ocupado = false);
+  SEATS.forEach(s => { if(s) s.ocupado = false; });
   for(let i = 0; i < 9; i++){
     const n = novaPessoa('CID' + i, false); n.vel = 40 + Math.random() * 14; n.ativo = false; n.fase = 'nascer'; n.tempoSpawn = i * 2.5 + Math.random() * 2; n.seat = null;
-    if(i < 4){
-      const livres = SEATS.filter(s => !s.ocupado); const s = livres[Math.floor(Math.random() * livres.length)];
-      s.ocupado = true; n.seat = s; colocar(n, s.x, s.y); n.sitting = true; n.dir = 'up'; n.ativo = true; n.fase = 'levantar'; n.espera = 2 + Math.random() * 14;
+    if(i < 4 && SEATS.length > 0){
+      const livres = SEATS.filter(s => s && !s.ocupado);
+      const s = livres[Math.floor(Math.random() * livres.length)];
+      if(s){
+        s.ocupado = true; n.seat = s; colocar(n, s.x, s.y); n.sitting = true; n.dir = 'up'; n.ativo = true; n.fase = 'levantar'; n.espera = 2 + Math.random() * 14;
+      }
     }
     npcs.push(n);
   }
@@ -2269,7 +2279,7 @@ window.addEventListener('keydown', e => {
 /* =====================================================================
    SINCRONIZAÇÃO EM TEMPO REAL MULTI-NAVEGADOR DO LAYOUT (NTFY + BROADCAST)
    ===================================================================== */
-const LAYOUT_NTFY_TOPIC = 'nahora_ceilandia_layout_v1';
+const LAYOUT_NTFY_TOPIC = 'nahora_ceilandia_layout_v2';
 const LAYOUT_NTFY_URL = 'https://ntfy.sh/' + LAYOUT_NTFY_TOPIC;
 let layoutBroadcast = null, layoutSyncSSE = null, layoutToastTimeout = null;
 
@@ -2294,7 +2304,7 @@ function mostrarToastLayout(msg){
 }
 
 function aplicarLayoutRecebido(novoLayout, emitirAviso = true){
-  if(!novoLayout || !novoLayout.moveis) return;
+  if(!novoLayout || novoLayout.versao !== DEFAULT_LAYOUT.versao || !Array.isArray(novoLayout.moveis) || !Array.isArray(novoLayout.zonas)) return;
   LAYOUT = novoLayout;
   try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(LAYOUT)); } catch(e){}
   atualizarPostosDoLayout();
@@ -3190,10 +3200,10 @@ $('legend').innerHTML = '<span><i style="background:#005ea6;border-radius:3px"><
   + '<span>🚶 em pé &nbsp; 💺 sentado</span><span class="lg-dica">Clique num atendente (no mapa ou na lista) para localizar</span>';
 
 /* ---------- início ---------- */
-desenharCenario();
-carregarDemo();
-aplicarZoom();
-iniciarRelogioReal();
+try { desenharCenario(); } catch(e){ console.error('Erro em desenharCenario:', e); }
+try { carregarDemo(); } catch(e){ console.error('Erro em carregarDemo:', e); }
+try { aplicarZoom(); } catch(e){ console.error('Erro em aplicarZoom:', e); }
+try { iniciarRelogioReal(); } catch(e){ console.error('Erro em iniciarRelogioReal:', e); }
 
 // Sincronização em tempo real dos avatares entre todos os navegadores
 sincronizarSkinsNuvem();
