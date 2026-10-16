@@ -672,14 +672,16 @@ function atualizarPostosDoLayout(layout){
   });
 
   // Atualiza imediatamente a posição dos atendentes já presentes nos postos
-  if(typeof estado !== 'undefined' && estado.pessoas){
-    Object.values(estado.pessoas).forEach(p => {
-      if(p.posto && POSTOS[p.posto] && !p.moving){
-        p.x = POSTOS[p.posto].x * T + 8;
-        p.y = POSTOS[p.posto].y * T + 8;
-      }
-    });
-  }
+  try {
+    if(typeof window !== 'undefined' && window.estado && window.estado.pessoas){
+      Object.values(window.estado.pessoas).forEach(p => {
+        if(p.posto && POSTOS[p.posto] && !p.moving){
+          p.x = POSTOS[p.posto].x * T + 8;
+          p.y = POSTOS[p.posto].y * T + 8;
+        }
+      });
+    }
+  } catch(e){}
 }
 atualizarPostosDoLayout();
 recalcularMatrizColisao();
@@ -1576,7 +1578,7 @@ function bolha(cx, cy, s){
 /* =====================================================================
    ESTADO, EQUIPE E CIDADÃOS
    ===================================================================== */
-const estado = { escala:{}, slots:[], idx:0, equipe:[], pessoas:{}, auto:false, timer:null, sel:null, busca:'', info:[], alertas:{}, filtroPresenca:'todos', jornadas:{}, seguirRelogio: true };
+const estado = window.estado = { escala:{}, slots:[], idx:0, equipe:[], pessoas:{}, auto:false, timer:null, sel:null, busca:'', info:[], alertas:{}, filtroPresenca:'todos', jornadas:{}, seguirRelogio: true };
 let npcs = [];
 
 function novaPessoa(nome, staff){
