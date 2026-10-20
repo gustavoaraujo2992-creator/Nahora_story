@@ -217,7 +217,8 @@
     <button class="btn y admin-only" onclick="abrirModal()">📋 Colar</button>
     <label class="btn b admin-only">📂 .xlsx<input type="file" id="file" accept=".xlsx,.xls" style="display:none" onchange="lerExcel(event)"></label>
     <button class="btn p admin-only" onclick="carregarDemo()">⚡ Demo</button>
-    <button class="btn p" onclick="abrirSkin()" title="Personalize o visual do seu avatar no mapa (roupa, cabelo, barba, óculos, pele)">🎨 Meu avatar</button>
+    <button class="btn p" onclick="abrirSkin()" title="Personalize o visual do seu avatar no mapa (roupa, cabelo, barba, olhos, expressão, óculos, pele)">🎨 Meu avatar</button>
+    <button class="btn y" id="btnCheiroso" onclick="acionarCheiroso(true)" title="Faz o NPC especial 'Cheiroso' entrar na unidade agora (ele também entra periodicamente sozinho!)">🤢 Cheiroso</button>
     <button class="btn p admin-only" id="btnEditarLayout" onclick="toggleModoEditor()" title="Editar o layout do salão e reposicionar móveis e postos">🛠️ Editar Layout</button>
     <span class="sp"></span>
     <button class="btn live-active" id="btnSyncRelogio" onclick="toggleSeguirRelogio()" title="Sincronizado automaticamente com o relógio do seu computador. Clique para pausar ou navegar manualmente."><span class="dot-live"></span> ⏰ AO VIVO</button>
@@ -460,7 +461,7 @@ const DEFAULT_LAYOUT = {
   zonas: [
     { id:'z_auto', nome:'AUTOATENDIMENTO', cor:'#a855f7', bg:'rgba(168,85,247,0.08)', x:1.5, y:2.5, w:8.5, h:9.8, tit:'tl' },
     { id:'z_recepcao', nome:'RECEPÇÃO', cor:'#10b981', bg:'rgba(16,185,129,0.08)', x:10.5, y:2.5, w:18.5, h:9.8, tit:'tl' },
-    { id:'z_tel', nome:'TELEFONES', cor:'#06b6d4', bg:'rgba(6,182,212,0.08)', x:22.8, y:2.8, w:5.8, h:4.2, tit:'br' },
+    { id:'z_tel', nome:'TELEFONES', cor:'#06b6d4', bg:'rgba(6,182,212,0.08)', x:22.8, y:2.8, w:5.8, h:4.2, tit:'tr' },
     { id:'z_entrada', nome:'ENTRADA', cor:'#3b82f6', bg:'rgba(59,130,246,0.08)', x:19.8, y:12.5, w:8.8, h:4.5, tit:'tl' },
     // Salão de Espera dividido nos 5 Paineis oficiais conforme imagem de referência
     { id:'z_painel_1', nome:'PAINEL 1', cor:'#10b981', bg:'rgba(16,185,129,0.07)', x:10.5, y:12.2, w:8.8, h:3.1, tit:'tl', painel:true },
@@ -638,30 +639,26 @@ function atualizarPostosDoLayout(layout){
       POSTOS[m.posto].x = Math.round(m.x);
       POSTOS[m.posto].y = Math.round(m.y);
     }
-    // Painel 1
+    // Painel 1..5: posicionamento exato relativo à faixa (sem arredondamento que deslocava P4/P5!)
     if(m.id === 'p_painel_1' && POSTOS['PAINEL 1']){
-      POSTOS['PAINEL 1'].x = Math.round(m.x + m.w / 2);
-      POSTOS['PAINEL 1'].y = Math.round(m.y + 0.6);
+      POSTOS['PAINEL 1'].x = +(m.x + 0.15).toFixed(2);
+      POSTOS['PAINEL 1'].y = +(m.y + 0.82).toFixed(2);
     }
-    // Painel 2
     if(m.id === 'p_painel_2'){
-      if(POSTOS['PAINEL 2']){ POSTOS['PAINEL 2'].x = Math.round(m.x + 1.2); POSTOS['PAINEL 2'].y = Math.round(m.y + 0.6); }
-      if(POSTOS['PAINEL 2.1']){ POSTOS['PAINEL 2.1'].x = Math.round(m.x + m.w - 1.2); POSTOS['PAINEL 2.1'].y = Math.round(m.y + 0.6); }
+      if(POSTOS['PAINEL 2']){ POSTOS['PAINEL 2'].x = +(m.x + 0.15).toFixed(2); POSTOS['PAINEL 2'].y = +(m.y + 0.82).toFixed(2); }
+      if(POSTOS['PAINEL 2.1']){ POSTOS['PAINEL 2.1'].x = +(m.x + m.w - 1.15).toFixed(2); POSTOS['PAINEL 2.1'].y = +(m.y + 0.82).toFixed(2); }
     }
-    // Painel 3
     if(m.id === 'p_painel_3'){
-      if(POSTOS['PAINEL 3']){ POSTOS['PAINEL 3'].x = Math.round(m.x + 1.2); POSTOS['PAINEL 3'].y = Math.round(m.y + 0.6); }
-      if(POSTOS['PAINEL 3.1']){ POSTOS['PAINEL 3.1'].x = Math.round(m.x + m.w - 1.2); POSTOS['PAINEL 3.1'].y = Math.round(m.y + 0.6); }
+      if(POSTOS['PAINEL 3']){ POSTOS['PAINEL 3'].x = +(m.x + 0.15).toFixed(2); POSTOS['PAINEL 3'].y = +(m.y + 0.82).toFixed(2); }
+      if(POSTOS['PAINEL 3.1']){ POSTOS['PAINEL 3.1'].x = +(m.x + m.w - 1.15).toFixed(2); POSTOS['PAINEL 3.1'].y = +(m.y + 0.82).toFixed(2); }
     }
-    // Painel 4
     if(m.id === 'p_painel_4' && POSTOS['PAINEL 4']){
-      POSTOS['PAINEL 4'].x = Math.round(m.x + 1.8);
-      POSTOS['PAINEL 4'].y = Math.round(m.y + 0.6);
+      POSTOS['PAINEL 4'].x = +(m.x + 0.15).toFixed(2);
+      POSTOS['PAINEL 4'].y = +(m.y + 0.82).toFixed(2);
     }
-    // Painel 5
     if(m.id === 'p_painel_5' && POSTOS['PAINEL 5']){
-      POSTOS['PAINEL 5'].x = Math.round(m.x + 1.8);
-      POSTOS['PAINEL 5'].y = Math.round(m.y + 0.6);
+      POSTOS['PAINEL 5'].x = +(m.x + 0.15).toFixed(2);
+      POSTOS['PAINEL 5'].y = +(m.y + 0.82).toFixed(2);
     }
     // Orientador e Pesquisa
     if(m.id === 'm_posto_orientador' && POSTOS['ORIENTADOR']){
@@ -927,103 +924,53 @@ function desenharBalcaoAuto(m){
 // -------------------------------------------------------------
 // RENDERIZADORES DOS 5 TIERS DO SALÃO DE ESPERA (CONFORME FOTO)
 // -------------------------------------------------------------
+function desenharBaseAtendentePainel(x, y, corBorda){
+  // Tapete ergonômico + púlpito compacto do atendente (sem poluição de textos duplicados)
+  rr(x - 7, y + 6, 14, 14, 3.5, 'rgba(15,23,42,0.75)', corBorda, 0.8);
+  rr(x - 5, y + 8, 10, 10, 2.5, '#1e293b');
+}
+
+function desenharAssentosEspera(px, py, corBorda, cores){
+  cores.forEach(([dx, cor]) => {
+    const ax = px + dx;
+    bgCtx.fillStyle = 'rgba(0,0,0,0.38)';
+    bgCtx.beginPath(); bgCtx.ellipse(ax + 7, py + 29, 7, 2.5, 0, 0, 6.3); bgCtx.fill();
+    rr(ax, py + 19, 14, 9, 2.2, cor, corBorda, 0.7);
+    rr(ax + 1.5, py + 20, 11, 2, 0.8, 'rgba(255,255,255,0.32)');
+    SEATS.push({ x: (ax + 7) / T, y: (py + 22) / T, ocupado: false });
+  });
+}
+
 function desenharPainelTier1(m){
-  const px = m.x * T, py = m.y * T, pw = m.w * T, ph = m.h * T;
-  const cx = px + pw / 2;
-  // Cadeira giratória de escritório do atendente
-  rr(cx - 7, py + 4, 14, 14, 3, '#1e293b', '#334155', 0.8);
-  // Display digital de senha vermelha A08 sob o assento
-  rr(cx - 6, py + 18, 12, 6, 1, '#020617', '#ef4444', 0.5);
-  tx('A08', cx, py + 21, 4.2, '#ef4444', 800);
-  // Pedestal Totem P1 em cinza/prata
-  rr(cx - 10, py + 25, 20, 8, 2, '#475569', '#cbd5e1', 0.8);
-  tx('P1', cx, py + 29, 5.2, '#ffffff', 800);
+  const px = m.x * T, py = m.y * T;
+  desenharBaseAtendentePainel(px + 10, py, '#10b981');
+  desenharAssentosEspera(px, py, '#10b981', [[34, '#059669'], [52, '#475569'], [70, '#059669']]);
 }
 
 function desenharPainelTier2(m){
-  const px = m.x * T, py = m.y * T;
-  // Cadeira do atendente à esquerda com display A07
-  rr(px + 4, py + 4, 14, 14, 3, '#1e293b', '#334155', 0.8);
-  rr(px + 5, py + 18, 12, 6, 1, '#020617', '#ef4444', 0.5);
-  tx('A07', px + 11, py + 21, 4.2, '#ef4444', 800);
-  // Badge P2
-  rr(px + 24, py + 11, 14, 8, 2, '#ea580c');
-  tx('P2', px + 31, py + 15, 5.0, '#ffffff', 800);
-  // Fileira de 3 assentos acolchoados (Laranja, Cinza, Laranja)
-  [
-    [px + 39, '#ea580c'], [px + 54, '#475569'], [px + 69, '#ea580c']
-  ].forEach(([ax, cor]) => {
-    bgCtx.fillStyle = 'rgba(0,0,0,0.35)'; bgCtx.beginPath(); bgCtx.ellipse(ax + 6, py + 20, 6, 2.5, 0, 0, 6.3); bgCtx.fill();
-    rr(ax, py + 10, 13, 9, 2, cor, '#f97316', 0.6);
-    rr(ax + 1, py + 11, 11, 2, 0.8, 'rgba(255,255,255,0.35)');
-    SEATS.push({ x: (ax + 6) / T, y: (py + 14) / T, ocupado: false });
-  });
+  const px = m.x * T, py = m.y * T, pw = m.w * T;
+  desenharBaseAtendentePainel(px + 10, py, '#f97316');
+  desenharBaseAtendentePainel(px + pw - 10, py, '#f97316');
+  desenharAssentosEspera(px, py, '#f97316', [[34, '#ea580c'], [52, '#475569'], [70, '#ea580c']]);
 }
 
 function desenharPainelTier3(m){
-  const px = m.x * T, py = m.y * T;
-  // Atendente 1 (Leticia) à esquerda com A09
-  rr(px + 6, py + 4, 14, 14, 3, '#1e293b', '#334155', 0.8);
-  rr(px + 7, py + 18, 12, 6, 1, '#020617', '#ef4444', 0.5);
-  tx('A09', px + 13, py + 21, 4.2, '#ef4444', 800);
-  rr(px + 6, py + 25, 14, 7, 2, '#ea580c'); tx('P3', px + 13, py + 28.5, 4.8, '#fff', 800);
-
-  // Atendente 2 (Thalita) à direita com A10
-  rr(px + 78, py + 4, 14, 14, 3, '#1e293b', '#334155', 0.8);
-  rr(px + 79, py + 18, 12, 6, 1, '#020617', '#ef4444', 0.5);
-  tx('A10', px + 85, py + 21, 4.2, '#ef4444', 800);
-  rr(px + 78, py + 25, 14, 7, 2, '#ea580c'); tx('P3', px + 85, py + 28.5, 4.8, '#fff', 800);
-
-  // Assentos acolchoados centrais
-  [
-    [px + 24, '#ea580c'], [px + 42, '#475569'], [px + 60, '#ea580c']
-  ].forEach(([ax, cor]) => {
-    bgCtx.fillStyle = 'rgba(0,0,0,0.35)'; bgCtx.beginPath(); bgCtx.ellipse(ax + 7, py + 24, 7, 2.5, 0, 0, 6.3); bgCtx.fill();
-    rr(ax, py + 14, 14, 9, 2, cor, '#facc15', 0.6);
-    rr(ax + 1, py + 15, 12, 2, 0.8, 'rgba(255,255,255,0.35)');
-    SEATS.push({ x: (ax + 7) / T, y: (py + 18) / T, ocupado: false });
-  });
+  const px = m.x * T, py = m.y * T, pw = m.w * T;
+  desenharBaseAtendentePainel(px + 10, py, '#eab308');
+  desenharBaseAtendentePainel(px + pw - 10, py, '#eab308');
+  desenharAssentosEspera(px, py, '#eab308', [[34, '#ca8a04'], [52, '#475569'], [70, '#ca8a04']]);
 }
 
 function desenharPainelTier4(m){
   const px = m.x * T, py = m.y * T;
-  // Cadeira do atendente com display A07
-  const cx = px + 22;
-  rr(cx - 7, py + 4, 14, 14, 3, '#1e293b', '#334155', 0.8);
-  rr(cx - 6, py + 18, 12, 6, 1, '#020617', '#ef4444', 0.5);
-  tx('A07', cx, py + 21, 4.2, '#ef4444', 800);
-  // Badges P4
-  rr(px + 8, py + 22, 14, 8, 2, '#ea580c'); tx('P4', px + 15, py + 26, 5.0, '#fff', 800);
-  rr(px + 78, py + 22, 14, 8, 2, '#ea580c'); tx('P4', px + 85, py + 26, 5.0, '#fff', 800);
-  // Assentos com cidadãos sentados
-  [
-    [px + 26, '#475569'], [px + 44, '#475569'], [px + 62, '#ea580c']
-  ].forEach(([ax, cor]) => {
-    bgCtx.fillStyle = 'rgba(0,0,0,0.35)'; bgCtx.beginPath(); bgCtx.ellipse(ax + 7, py + 24, 7, 2.5, 0, 0, 6.3); bgCtx.fill();
-    rr(ax, py + 14, 14, 9, 2, cor, '#3b82f6', 0.6);
-    SEATS.push({ x: (ax + 7) / T, y: (py + 18) / T, ocupado: false });
-  });
+  desenharBaseAtendentePainel(px + 10, py, '#3b82f6');
+  desenharAssentosEspera(px, py, '#3b82f6', [[34, '#2563eb'], [52, '#475569'], [70, '#ea580c']]);
 }
 
 function desenharPainelTier5(m){
   const px = m.x * T, py = m.y * T;
-  // Cadeira do atendente com display A07
-  const cx = px + 22;
-  rr(cx - 7, py + 4, 14, 14, 3, '#1e293b', '#334155', 0.8);
-  rr(cx - 6, py + 18, 12, 6, 1, '#020617', '#ef4444', 0.5);
-  tx('A07', cx, py + 21, 4.2, '#ef4444', 800);
-  // Badges P5
-  rr(px + 4, py + 22, 14, 8, 2, '#ea580c'); tx('P5', px + 11, py + 26, 5.0, '#fff', 800);
-  rr(px + 82, py + 22, 14, 8, 2, '#ea580c'); tx('P5', px + 89, py + 26, 5.0, '#fff', 800);
-  // 3 assentos laranjas contíguos
-  [
-    px + 22, px + 42, px + 62
-  ].forEach(ax => {
-    bgCtx.fillStyle = 'rgba(0,0,0,0.35)'; bgCtx.beginPath(); bgCtx.ellipse(ax + 9, py + 24, 8, 2.5, 0, 0, 6.3); bgCtx.fill();
-    rr(ax, py + 14, 18, 9, 2, '#ea580c', '#c2410c', 0.8);
-    rr(ax + 1, py + 15, 16, 2, 0.8, 'rgba(255,255,255,0.35)');
-    SEATS.push({ x: (ax + 9) / T, y: (py + 18) / T, ocupado: false });
-  });
+  desenharBaseAtendentePainel(px + 10, py, '#a855f7');
+  desenharAssentosEspera(px, py, '#a855f7', [[34, '#9333ea'], [52, '#ea580c'], [70, '#9333ea']]);
 }
 
 function desenharMaquinaBebidas(m){
@@ -1137,6 +1084,20 @@ function desenharProp(m){
   }
 }
 function tituloZona(z){
+  if(z.painel){
+    // Placar eletrônico alinhado sobre os assentos centrais (deixando a coluna do atendente 100% livre!)
+    const w = 66, h = 11.0;
+    const x = (z.x + z.w / 2) * T - w / 2 + 14;
+    const y = z.y * T + 2.5;
+    bgCtx.save();
+    bgCtx.shadowColor = z.cor; bgCtx.shadowBlur = 3 * K;
+    rr(x, y, w, h, 3, '#090d16', z.cor, 1.1);
+    bgCtx.restore();
+    rr(x + 1.2, y + 1.2, 40, h - 2.4, 2, z.cor);
+    tx(z.nome, x + 21.0, y + h / 2 + 0.3, 5.6, '#ffffff', 800);
+    OBST.push({ x: x - 1, y: y - 1, w: w + 2, h: h + 2 });
+    return;
+  }
   const w = medir(z.nome, 6.8, 800) + 12, h = 12;
   let x, y;
   if(z.tit === 'tl'){ x = z.x * T + 6; y = z.y * T + 6; }
@@ -1144,7 +1105,6 @@ function tituloZona(z){
   else if(z.tit === 'tr'){ x = (z.x + z.w) * T - 6 - w; y = z.y * T + 6; }
   else { x = (z.x + z.w) * T - 6 - w; y = (z.y + z.h) * T - 13; }
 
-  // Sombra e pill do título de setor
   bgCtx.save();
   bgCtx.shadowColor = z.cor; bgCtx.shadowBlur = 4 * K;
   rr(x, y, w, h, h / 2, z.cor);
@@ -1301,39 +1261,46 @@ function frontLayer(t){
       rr(cx - 5, 139, 10, 18, 2, '#1e3a8a'); rr(cx - 4, 141, 8, 9.5, 1, '#38bdf8'); rr(cx - 4, 141, 8, 2, 1, '#bae6fd'); rr(cx - 2.5, 152, 5, 2, .6, '#0f172a');
     }
   });
-  // totens de painel (senha) abaixo de cada atendente
+  // Placar digital de senha integrado no cabeçalho central de cada um dos 5 Painéis (sem poluir o piso!)
+  if(LAYOUT && LAYOUT.zonas){
+    LAYOUT.zonas.filter(z => z.painel).forEach((z, idx) => {
+      const cx = (z.x + z.w / 2) * T + 34.0;
+      const cy = z.y * T + 8.2;
+      const senhaStr = 'A' + String((senhaAtual + idx * 3) % 999).padStart(3, '0');
+      tx(senhaStr, cx, cy, 5.2, (Math.floor(t * 2 + idx) % 2) ? '#fde047' : '#f87171', 800);
+    });
+  }
   const PAINEIS = ['PAINEL 1','PAINEL 2','PAINEL 2.1','PAINEL 3','PAINEL 3.1','PAINEL 4','PAINEL 5'];
-  PAINEIS.forEach((k, i) => {
-    if(POSTOS[k] && ativo(k)){
-      const cx = POSTOS[k].x * T + 8, ty = (POSTOS[k].y + 1) * T + 1.5;
-      rr(cx - 6, ty, 12, 13, 2, '#1e293b'); rr(cx - 5, ty + 1.4, 10, 6, 1, '#020617');
-      tx(String(senhaAtual + i * 2).padStart(3, '0'), cx, ty + 4.6, 4.8, '#ef4444', 800); rr(cx - 2.5, ty + 9.4, 5, 2, .6, '#334155');
-    }
-  });
   // TV central de senhas
   tx('SENHA ATUAL', 248, 11, 4.2, '#94a3b8', 700);
   tx('A' + String(senhaAtual).padStart(3, '0'), 248, 20.5, 9.5, (Math.floor(t * 2) % 2) ? '#fde047' : '#fb923c', 800);
 
-  // marcadores de posto: preenchido = ocupado, vazado = vago
+  // marcadores de posto: design técnico retangular chanfrado (distinto do crachá de nome do atendente!)
   const sel = estado.sel;
   function marcador(keys, label, cx, cy){
     if(!keys.some(ativo)) return;
     const k0 = keys.find(ativo) || keys[0], cor = POSTOS[k0] ? POSTOS[k0].cor : '#2fae6a';
     const nome = keys.map(k => ocup[k]).find(Boolean);
-    const base = { size: 6.3, pad: 4.6 };
-    const r = nome ? pill(cx, cy, label, cor, '#fff', Object.assign({ sombra: true }, base))
-                   : pill(cx, cy, label, '#ffffff', cor, Object.assign({ borda: cor, lw: .9 }, base));
-    if(nome && nome === sel) rr(r.x - 1.3, r.y - 1.3, r.w + 2.6, r.h + 2.6, r.h / 2 + 1.3, null, '#facc15', 1.6);
-    TAG_RECTS.push(r);
+    const size = 5.4, w = medir(label, size, 800) + 6.4, h = 9.2, x = cx - w / 2, y = cy - h / 2;
+    if(nome){
+      rr(x, y, w, h, 2.4, '#0f172a', cor, 1.1);
+      tx(label, cx, cy + 0.2, size, '#ffffff', 800);
+    } else {
+      rr(x, y, w, h, 2.4, 'rgba(15,23,42,0.75)', '#64748b', 0.8);
+      tx(label, cx, cy + 0.2, size, '#cbd5e1', 700);
+    }
+    if(nome && nome === sel) rr(x - 1.2, y - 1.2, w + 2.4, h + 2.4, 3.2, null, '#facc15', 1.5);
+    TAG_RECTS.push({ x: x - 1, y: y - 1, w: w + 2, h: h + 2 });
   }
   [['E1','EMISSOR 1'],['1.1','EMISSOR 1.1'],['E2','EMISSOR 2'],['2.1','EMISSOR 2.1'],['E3','EMISSOR 3'],['3.1','EMISSOR 3.1'],['E4','EMISSOR 4'],['4.1','EMISSOR 4.1'],['E5','EMISSOR 5'],['5.1','EMISSOR 5.1']]
-    .forEach(([l, k]) => { if(POSTOS[k]) marcador([k], l, POSTOS[k].x * T + 8, POSTOS[k].y * T + 25.5); });
-  [['TEL 1','TELEFONE 1'],['TEL 2','TELEFONE 2']].forEach(([l, k]) => { if(POSTOS[k]) marcador([k], l, POSTOS[k].x * T + 8, POSTOS[k].y * T + 25.5); });
-  if(POSTOS['AUTO SENTADO']) marcador(['AUTO SENTADO'], 'PC', POSTOS['AUTO SENTADO'].x * T + 8, POSTOS['AUTO SENTADO'].y * T + 24);
-  if(POSTOS['AUTO 1']) marcador(['AUTO 1', 'AUTO'], 'AUTO 1', POSTOS['AUTO 1'].x * T + 8, POSTOS['AUTO 1'].y * T + 24);
-  if(POSTOS['AUTO 2']) marcador(['AUTO 2'], 'AUTO 2', POSTOS['AUTO 2'].x * T + 8, POSTOS['AUTO 2'].y * T + 24);
-  if(POSTOS['ORIENTADOR']) marcador(['ORIENTADOR'], 'ORIENT.', POSTOS['ORIENTADOR'].x * T + 8, (POSTOS['ORIENTADOR'].y + 1) * T + 9);
-  PAINEIS.forEach(k => { if(POSTOS[k]) marcador([k], k.replace('PAINEL ', 'P'), POSTOS[k].x * T + 8, (POSTOS[k].y + 2) * T + 5); });
+    .forEach(([l, k]) => { if(POSTOS[k]) marcador([k], l, POSTOS[k].x * T + 8, POSTOS[k].y * T + 24.5); });
+  [['TEL 1','TELEFONE 1'],['TEL 2','TELEFONE 2']].forEach(([l, k]) => { if(POSTOS[k]) marcador([k], l, POSTOS[k].x * T + 8, POSTOS[k].y * T + 24.5); });
+  if(POSTOS['AUTO SENTADO']) marcador(['AUTO SENTADO'], 'PC', POSTOS['AUTO SENTADO'].x * T + 8, POSTOS['AUTO SENTADO'].y * T + 23);
+  if(POSTOS['AUTO 1']) marcador(['AUTO 1', 'AUTO'], 'AUTO 1', POSTOS['AUTO 1'].x * T + 8, POSTOS['AUTO 1'].y * T + 23);
+  if(POSTOS['AUTO 2']) marcador(['AUTO 2'], 'AUTO 2', POSTOS['AUTO 2'].x * T + 8, POSTOS['AUTO 2'].y * T + 23);
+  if(POSTOS['ORIENTADOR']) marcador(['ORIENTADOR'], 'ORIENT.', POSTOS['ORIENTADOR'].x * T + 8, POSTOS['ORIENTADOR'].y * T + 21);
+  // Nos painéis, a plaqueta técnica P1..P5 fica colada na base do púlpito do atendente (dentro da própria faixa!)
+  PAINEIS.forEach(k => { if(POSTOS[k]) marcador([k], k.replace('PAINEL ', 'P'), POSTOS[k].x * T + 8, POSTOS[k].y * T + 20.5); });
   if(POSTOS['PESQUISA']) marcador(['PESQUISA'], 'PESQ 1', POSTOS['PESQUISA'].x * T - 18, POSTOS['PESQUISA'].y * T + 7);
   if(POSTOS['PESQUISA 2']) marcador(['PESQUISA 2'], 'PESQ 2', POSTOS['PESQUISA 2'].x * T - 18, POSTOS['PESQUISA 2'].y * T + 7);
 }
@@ -1363,15 +1330,38 @@ const BRB_CALCA = '#1e293b';      // Calça social corporativa escura
 /* ---------- personalização (skins) ---------- */
 const SKIN_KEY = 'nahora_skins_v1';
 const SK = {
-  pele: ['#ffe4c9','#ffdbb0','#f1c27d','#d9a066','#a86b3c','#7a4a2a','#4a2c1a'],
-  cabeloCor: ['#1c1410','#3e2a1a','#6b4423','#c98f3a','#e8c25a','#8a8a92','#e5e7eb','#b3361f','#7c3aed','#2563eb','#ec4899','#10b981'],
-  estilo: ['Curto','Comprido','Coque','Careca','Cacheado','Moicano','Rabo de cavalo','Franja'],
-  barba: ['Sem barba','Bigode','Cavanhaque','Barba cheia','Por fazer'],
-  oculos: ['Sem óculos','Redondo','Quadrado','Escuro'],
-  roupa: ['Polo BRB','Camisa social','Colete BRB','Jaqueta BRB','Camiseta Na Hora','Blazer executivo'],
-  extra: ['Nenhum','Boné BRB','Laço','Fone','Brincos']
+  pele: ['#ffe9d6','#ffe4c9','#ffdbb0','#f1c27d','#e0ac69','#d9a066','#a86b3c','#7a4a2a','#4a2c1a'],
+  cabeloCor: ['#1c1410','#3e2a1a','#6b4423','#a16207','#c98f3a','#e8c25a','#fde047','#8a8a92','#e5e7eb','#b3361f','#dc2626','#7c3aed','#2563eb','#06b6d4','#ec4899','#10b981'],
+  estilo: [
+    'Curto','Comprido','Coque','Careca','Cacheado','Moicano','Rabo de cavalo','Franja',
+    'Topete','Black Power','Coque Duplo','Tranças/Dreads','Ondulado','Militar/Fade'
+  ],
+  barba: [
+    'Sem barba','Bigode','Cavanhaque','Barba cheia','Por fazer',
+    'Barba lenhador','Bigode imperial','Costeletas','Mosca (Soul Patch)'
+  ],
+  olhos: [
+    'Castanho','Azul Safira','Verde Esmeralda','Mel / Âmbar',
+    'Brilhantes (Anime)','Cílios Destacados','Semicerrados (Cool)','Piscando 😉'
+  ],
+  expressao: [
+    'Sorriso Padrão','Feliz / Rindo 😄','Confiante 😏','Sério / Focado 😐',
+    'Surpreso 😮','Assobiando 😗','Língua 😛','Café na Veia 🤩'
+  ],
+  oculos: [
+    'Sem óculos','Redondo','Quadrado','Escuro',
+    'Aviador Dourado','Gatinho Retrô','Tech/Azul','Monóculo'
+  ],
+  roupa: [
+    'Polo BRB','Camisa social','Colete BRB','Jaqueta BRB','Camiseta Na Hora','Blazer executivo',
+    'Moletom BRB','Terno & Gravata Ouro','Jaleco Saúde','Cardigan Tricô','Polo Listrada VIP'
+  ],
+  extra: [
+    'Nenhum','Boné BRB','Laço Rosa','Headset','Brincos',
+    'Coroa 👑','Café na Mão ☕','Cachecol 🧣','Chapéu Fedora 🎩','Flor no Cabelo 🌸'
+  ]
 };
-const SKIN_CAMPOS = ['pele','cabelo','estilo','barba','oculos','roupa','extra'];
+const SKIN_CAMPOS = ['pele','cabelo','estilo','barba','olhos','expressao','oculos','roupa','extra'];
 /* Supervisores fixos da unidade: sempre sentados na recepção, no computador */
 const SUPERVISORES = [
   { nome:'LEANDRO', posto:'SUPERVISÃO 1', look:{ pele:'#d9a066', cabelo:'#1c1410', estilo:0, barba:0, oculos:0, roupa:5, extra:0 } },
@@ -1394,6 +1384,11 @@ function roupaDe(L, isStaff){
     case 3: return { torso:'#0b3f73', manga:'#0b3f73', somb:'#082c52', tipo:'jaqueta' };
     case 4: return { torso:'#1d4ed8', manga:'#1d4ed8', somb:'#1e3a8a', tipo:'camiseta' };
     case 5: return { torso:'#1f2937', manga:'#1f2937', somb:'#111827', tipo:'blazer' };
+    case 6: return { torso:'#0284c7', manga:'#0369a1', somb:'#075985', tipo:'moletom' };
+    case 7: return { torso:'#0f172a', manga:'#0f172a', somb:'#020617', tipo:'terno_ouro' };
+    case 8: return { torso:'#f8fafc', manga:'#f8fafc', somb:'#cbd5e1', tipo:'jaleco' };
+    case 9: return { torso:'#334155', manga:'#475569', somb:'#1e293b', tipo:'cardigan' };
+    case 10: return { torso:'#005ea6', manga:'#003a6b', somb:'#00294d', tipo:'polo_vip' };
     default: return { torso:BRB_AZUL, manga:BRB_AZUL, somb:BRB_AZUL_SOMB, tipo:'polo' };
   }
 }
@@ -1401,30 +1396,46 @@ function tri(x1, y1, x2, y2, x3, y3, c){ ctx.fillStyle = c; ctx.beginPath(); ctx
 
 function desenharPessoa(p, t){
   const L = lookDe(p), andando = p.moving, sit = p.sitting, dir = p.dir;
-  const isStaff = p.staff, isSup = !!p.supervisor;
-  // ATENDENTE: uniforme BRB (com variações escolhidas) | CIDADÃO: roupas civis coloridas
+  const isStaff = p.staff, isSup = !!p.supervisor, isCheiroso = !!p.ehCheiroso;
+  const tapandoNariz = !p._preview && !isCheiroso && typeof cheiroso !== 'undefined' && cheiroso.ativo;
   const RP = roupaDe(L, isStaff);
   const corCalca = isStaff ? BRB_CALCA : (L.calca || '#475569');
   const corSetor = p.cor || COR.pausa;
   const est = L.estilo | 0, barba = L.barba | 0, ocl = L.oculos === true ? 1 : (L.oculos | 0), extra = L.extra | 0;
+  const olhos = L.olhos | 0, expressao = L.expressao | 0;
   const PI = Math.PI;
 
   const f = Math.sin(t * 11 + p.seed * 3);
   const bob = andando ? -Math.abs(f) * 1.3 : 0, base = sit ? 3 : 0;
-  ctx.save(); ctx.translate(p.x, p.y);
-  if(!isStaff){ ctx.scale(.88, .88); ctx.globalAlpha *= .9; }
+  // Se o Cheiroso estiver no salão, todo mundo dá um leve tremelique/recuo sincronizado!
+  const recuoX = tapandoNariz ? Math.sin(t * 12) * 0.85 : 0;
+  ctx.save(); ctx.translate(p.x + recuoX, p.y);
+  if(!isStaff && !isCheiroso){ ctx.scale(.88, .88); ctx.globalAlpha *= .92; }
 
-  // sombra no chão
+  // Aura e nuvens de mau cheiro do NPC especial "Cheiroso"
+  if(isCheiroso){
+    const pulse = (Math.sin(t * 5) + 1) * 0.5;
+    ctx.fillStyle = 'rgba(132, 204, 22, 0.26)';
+    elipse(0, 0.5, 12 + pulse * 3, 5 + pulse * 1.2); ctx.fill();
+    for(let i = 0; i < 5; i++){
+      const ang = t * 2.2 + i * 1.25;
+      const gx = Math.cos(ang) * (5 + (i % 2) * 3);
+      const gy = -8 - ((t * 10 + i * 4) % 16);
+      const gr = 2.6 + Math.sin(t * 4 + i) * 0.8;
+      ctx.fillStyle = i % 2 === 0 ? 'rgba(132, 204, 22, 0.42)' : 'rgba(163, 230, 53, 0.35)';
+      ctx.beginPath(); ctx.arc(gx, gy, gr, 0, 6.3); ctx.fill();
+    }
+  }
+
   // sombra no chão estilo miniatura 3D
   ctx.fillStyle = 'rgba(0,0,0,0.48)'; elipse(0, 1.0, 5.2, 2.0); ctx.fill();
   ctx.fillStyle = 'rgba(15,23,42,0.22)'; elipse(0, 1.2, 8.0, 3.2); ctx.fill();
-  // anel luminoso do setor (apenas equipe) — supervisão ganha anel dourado duplo
   if(isStaff){
     ctx.strokeStyle = corSetor; ctx.lineWidth = 1.4; elipse(0, .3, 7.6, 3.0); ctx.stroke();
     if(isSup){ ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = .8; elipse(0, .3, 9.4, 3.8); ctx.stroke(); }
   }
 
-  const topo = -14 + base + bob;           // topo do tronco
+  const topo = -14 + base + bob;
   if(sit){ rr(-6.5, topo + 1, 13, 10, 3.2, '#475569'); }
   // pernas
   if(!sit){
@@ -1435,21 +1446,38 @@ function desenharPessoa(p, t){
   }
   const hy = topo - 4.4;
   const lado = dir === 'left' ? -1 : 1;
-  // cabelo atrás da cabeça (comprido, cacheado, rabo de cavalo)
-  if(est === 1 && dir !== 'up'){ rr(-5, hy - 1, 10, 9, 3.5, L.cabelo); }
+
+  // cabelo atrás da cabeça (comprido, cacheado, rabo de cavalo, black power, tranças, ondulado)
+  if((est === 1 || est === 12) && dir !== 'up'){ rr(-5.2, hy - 1, 10.4, 9.5, 3.5, L.cabelo); }
   if(est === 4){ ctx.fillStyle = L.cabelo; ctx.beginPath(); ctx.arc(0, hy - .6, 6, 0, 6.3); ctx.fill(); }
+  if(est === 9){ ctx.fillStyle = L.cabelo; ctx.beginPath(); ctx.arc(0, hy - 1.2, 7.4, 0, 6.3); ctx.fill(); }
+  if(est === 11 && dir !== 'up'){
+    [-4.2, -2.6, 2.6, 4.2].forEach(dx => rr(dx - 0.7, hy, 1.4, 9.2, 0.7, L.cabelo));
+  }
   if(est === 6){
     if(dir === 'up') rr(-1.6, hy + 1.5, 3.2, 6.5, 1.5, L.cabelo);
     else if(dir === 'left' || dir === 'right') rr(-lado * 4.6 - 1.6, hy - 1, 3.2, 7, 1.5, L.cabelo);
   }
-  // braços (manga da roupa) + mãos
+
+  // braços (se tapandoNariz estiver ativo, o braço esquerdo abana o ar e o direito sobe para tampar o nariz!)
   const sb = andando ? f * 1.2 : (sit ? Math.sin(t * 6 + p.seed) * .8 : 0);
-  rr(-6.8, topo + 1.4 + sb, 2.5, 6.4, 1.2, RP.manga); rr(4.3, topo + 1.4 - sb, 2.5, 6.4, 1.2, RP.manga);
-  ctx.fillStyle = L.pele; ctx.beginPath(); ctx.arc(-5.5, topo + 8.2 + sb, 1.4, 0, 6.3); ctx.fill(); ctx.beginPath(); ctx.arc(5.5, topo + 8.2 - sb, 1.4, 0, 6.3); ctx.fill();
+  if(tapandoNariz){
+    const abano = Math.sin(t * 18) * 1.8;
+    rr(-7.2, topo + 0.2 + abano, 2.5, 6.2, 1.2, RP.manga);
+    ctx.fillStyle = L.pele; ctx.beginPath(); ctx.arc(-6.0, topo + 6.6 + abano, 1.4, 0, 6.3); ctx.fill();
+  } else {
+    rr(-6.8, topo + 1.4 + sb, 2.5, 6.4, 1.2, RP.manga);
+    rr(4.3, topo + 1.4 - sb, 2.5, 6.4, 1.2, RP.manga);
+    ctx.fillStyle = L.pele;
+    ctx.beginPath(); ctx.arc(-5.5, topo + 8.2 + sb, 1.4, 0, 6.3); ctx.fill();
+    ctx.beginPath(); ctx.arc(5.5, topo + 8.2 - sb, 1.4, 0, 6.3); ctx.fill();
+  }
+
   // tronco
   rr(-5, topo, 10, 9.6, 3.2, RP.torso);
   ctx.fillStyle = RP.somb; ctx.fillRect(-4, topo + 7.8, 8, 1.4);
-  // detalhes da roupa da equipe + crachá funcional Na Hora
+
+  // detalhes das roupas da equipe + novas variações + crachá
   if(isStaff && dir !== 'up'){
     const tp = RP.tipo;
     if(tp === 'polo') tri(-2.8, topo, 0, topo + 2.5, 2.8, topo, BRB_AZUL_SOMB);
@@ -1458,67 +1486,193 @@ function desenharPessoa(p, t){
     if(tp === 'jaqueta'){ rr(-3, topo - .3, 6, 1.4, .6, '#082c52'); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = .5; ctx.beginPath(); ctx.moveTo(0, topo + 1); ctx.lineTo(0, topo + 9.2); ctx.stroke(); rr(3.2, topo + 1.6, 1, 6, .4, '#facc15'); }
     if(tp === 'camiseta'){ rr(-5, topo + 4.6, 10, 1.3, .3, '#facc15'); ctx.strokeStyle = '#1e3a8a'; ctx.lineWidth = .6; ctx.beginPath(); ctx.arc(0, topo, 2, .1, PI - .1); ctx.stroke(); }
     if(tp === 'blazer'){ tri(-2.6, topo, 0, topo + 4.4, 2.6, topo, '#fff'); rr(-.55, topo + 1, 1.1, 4.2, .4, BRB_AZUL); ctx.strokeStyle = '#4b5563'; ctx.lineWidth = .5; ctx.beginPath(); ctx.moveTo(-2.6, topo); ctx.lineTo(-.6, topo + 5.2); ctx.moveTo(2.6, topo); ctx.lineTo(.6, topo + 5.2); ctx.stroke(); }
+    if(tp === 'moletom'){ rr(-3.5, topo - 0.6, 7, 2.0, 1, '#0369a1'); rr(-3, topo + 5.2, 6, 2.6, 0.8, '#075985'); ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(-1.2, topo + 1); ctx.lineTo(-1.2, topo + 3.8); ctx.moveTo(1.2, topo + 1); ctx.lineTo(1.2, topo + 3.8); ctx.stroke(); }
+    if(tp === 'terno_ouro'){ tri(-2.8, topo, 0, topo + 4.8, 2.8, topo, '#ffffff'); rr(-0.6, topo + 1, 1.2, 4.8, 0.4, '#eab308'); }
+    if(tp === 'jaleco'){ tri(-2.4, topo, 0, topo + 4.2, 2.4, topo, '#0284c7'); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(0, topo + 4); ctx.lineTo(0, topo + 9.2); ctx.stroke(); }
+    if(tp === 'cardigan'){ tri(-2.8, topo, 0, topo + 5.0, 2.8, topo, '#e2e8f0'); [4.8, 6.4, 8.0].forEach(dy => { ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(0, topo + dy, 0.45, 0, 6.3); ctx.fill(); }); }
+    if(tp === 'polo_vip'){ rr(-5, topo + 2.8, 10, 1.2, 0.2, '#facc15'); rr(-5, topo + 4.5, 10, 0.9, 0.2, '#ffffff'); }
+
     // cordão + crachá no peito
     ctx.strokeStyle = '#003666'; ctx.lineWidth = .7; ctx.beginPath(); ctx.moveTo(-1.6, topo + 1); ctx.lineTo(-2.2, topo + 3.2); ctx.stroke();
     rr(-3.8, topo + 2.8, 3.6, 4.8, .8, '#ffffff', '#cbd5e1', .5);
     rr(-3.2, topo + 3.3, 2.4, 1.2, .3, BRB_AZUL);
     rr(-3.2, topo + 5.1, 2.4, .8, .2, isSup ? '#fbbf24' : corSetor);
   }
+
+  // Acessório Cachecol (extra === 7)
+  if(extra === 7){
+    rr(-4.2, topo - 0.8, 8.4, 2.4, 1.0, '#dc2626', '#991b1b', 0.5);
+    if(dir !== 'up') rr(1.2, topo + 0.6, 2.2, 4.5, 0.8, '#dc2626');
+  }
+  // Acessório Copo de Café na mão (extra === 6)
+  if(extra === 6 && !tapandoNariz && dir !== 'up'){
+    rr(-7.4, topo + 5.5 + sb, 3.2, 4.0, 0.6, '#ffffff', '#cbd5e1', 0.5);
+    rr(-7.4, topo + 6.7 + sb, 3.2, 1.4, 0.2, '#92400e');
+    rr(-7.7, topo + 4.9 + sb, 3.8, 0.9, 0.4, '#1e293b');
+  }
+
   // pescoço + cabeça
   rr(-1.4, hy + 3.2, 2.8, 2.4, .8, L.pele);
-  // cabeça com gradiente radial volumétrico (luz zenital topo-esquerdo)
   const gradCab = ctx.createRadialGradient(-1.2, hy - 1.2, 0.8, 0, hy, 4.6);
   gradCab.addColorStop(0, '#fff5ea');
   gradCab.addColorStop(0.35, L.pele);
   gradCab.addColorStop(1, sombra(L.pele, 0.74));
   ctx.fillStyle = gradCab; ctx.beginPath(); ctx.arc(0, hy, 4.4, 0, 6.3); ctx.fill();
-  // barba (antes dos olhos/boca)
+
+  // Se estiver sentindo o cheiro do Cheiroso, bochechas ficam levemente esverdeadas!
+  if(tapandoNariz && dir !== 'up'){
+    ctx.fillStyle = 'rgba(132, 204, 22, 0.42)';
+    ctx.beginPath(); ctx.arc(-2.2, hy + 1.3, 1.3, 0, 6.3); ctx.arc(2.2, hy + 1.3, 1.3, 0, 6.3); ctx.fill();
+  }
+
+  // barba e bigode (incluindo novas variações 5..8)
   if(barba && dir !== 'up'){
     ctx.fillStyle = L.cabelo;
     const ox = dir === 'down' ? 0 : lado * 1.3;
-    if(barba === 3 || barba === 4){
+    if(barba === 3 || barba === 4 || barba === 5){
       ctx.save(); if(barba === 4) ctx.globalAlpha *= .32;
-      ctx.beginPath(); ctx.arc(0, hy, 4.5, .06 * PI, .94 * PI); ctx.closePath(); ctx.fill();
+      const rB = barba === 5 ? 5.2 : 4.5;
+      ctx.beginPath(); ctx.arc(0, hy + (barba === 5 ? 0.8 : 0), rB, .06 * PI, .94 * PI); ctx.closePath(); ctx.fill();
       ctx.beginPath(); ctx.arc(0, hy + .2, 4.5, .06 * PI, .94 * PI); ctx.lineTo(-4.3, hy + .4); ctx.fill();
       ctx.restore();
     }
-    if(barba === 1 || barba === 2 || barba === 3) rr(ox - 1.9, hy + 1.2, 3.8, 1, .5, L.cabelo);
+    if(barba === 1 || barba === 2 || barba === 3 || barba === 5) rr(ox - 1.9, hy + 1.2, 3.8, 1, .5, L.cabelo);
     if(barba === 2) rr(ox - 1.1, hy + 3, 2.2, 1.7, .8, L.cabelo);
+    if(barba === 6){
+      // Bigode imperial curvado nas pontas
+      rr(ox - 2.6, hy + 1.1, 5.2, 0.9, 0.4, L.cabelo);
+      ctx.beginPath(); ctx.arc(ox - 2.6, hy + 0.9, 0.7, 0, 6.3); ctx.arc(ox + 2.6, hy + 0.9, 0.7, 0, 6.3); ctx.fill();
+    }
+    if(barba === 7){
+      // Costeletas marcadas
+      rr(-4.3, hy - 0.5, 1.3, 3.2, 0.5, L.cabelo);
+      rr(3.0, hy - 0.5, 1.3, 3.2, 0.5, L.cabelo);
+    }
+    if(barba === 8){
+      // Mosca / Soul Patch
+      rr(ox - 0.7, hy + 2.6, 1.4, 1.4, 0.5, L.cabelo);
+    }
   }
-  // cabelo (frente)
+
+  // cabelo (frente + novos estilos 8..13)
   ctx.fillStyle = L.cabelo;
   if(est === 3){
     if(dir !== 'up'){ ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = .7; ctx.beginPath(); ctx.arc(-1, hy - 1.5, 2.2, PI * 1.15, PI * 1.55); ctx.stroke(); }
   } else if(est === 5){
     ctx.save(); ctx.globalAlpha *= .3; ctx.beginPath(); ctx.arc(0, hy, 4.6, PI * 1.03, PI * 1.97); ctx.closePath(); ctx.fill(); ctx.restore();
     if(dir === 'left' || dir === 'right') rr(-3, hy - 6.6, 6, 3.4, 1.4, L.cabelo); else rr(-1.3, hy - 6.8, 2.6, dir === 'up' ? 10 : 4.4, 1.2, L.cabelo);
-  } else if(est === 4){
-    if(dir !== 'up'){ for(let a = PI * .98; a <= PI * 2.02; a += PI / 7){ ctx.beginPath(); ctx.arc(Math.cos(a) * 4.4, hy + Math.sin(a) * 4.4, 1.9, 0, 6.3); ctx.fill(); } }
+  } else if(est === 4 || est === 9){
+    const rC = est === 9 ? 5.2 : 4.4, rBola = est === 9 ? 2.5 : 1.9;
+    if(dir !== 'up'){ for(let a = PI * .92; a <= PI * 2.08; a += PI / 7){ ctx.beginPath(); ctx.arc(Math.cos(a) * rC, hy + Math.sin(a) * rC, rBola, 0, 6.3); ctx.fill(); } }
+  } else if(est === 13){
+    // Militar / Fade
+    rr(-4.0, hy - 4.5, 8.0, 2.2, 0.8, L.cabelo);
   } else {
     if(dir === 'up'){ ctx.beginPath(); ctx.arc(0, hy, 4.6, 0, 6.3); ctx.fill(); }
     else { ctx.beginPath(); ctx.arc(0, hy, 4.7, PI * 1.03, PI * 1.97); ctx.closePath(); ctx.fill(); }
     if(est === 7 && dir !== 'up'){ if(dir === 'down') rr(-4.2, hy - 2.8, 8.4, 2.1, 1, L.cabelo); else rr(lado > 0 ? -.5 : -4.5, hy - 2.8, 5, 2, 1, L.cabelo); }
+    if(est === 8 && dir !== 'up'){ rr(-3.2, hy - 6.2, 6.8, 3.2, 1.5, L.cabelo); } // Topete Pompadour
+    if(est === 12 && dir !== 'up'){ ctx.beginPath(); ctx.arc(-3.2, hy - 1.5, 2.1, 0, 6.3); ctx.arc(3.2, hy - 1.0, 2.2, 0, 6.3); ctx.fill(); }
     if(est === 6 && dir === 'down'){ ctx.beginPath(); ctx.arc(4.6, hy - 1.5, 1.6, 0, 6.3); ctx.fill(); }
   }
   if(est === 2){ ctx.beginPath(); ctx.arc(0, hy - 5, 1.9, 0, 6.3); ctx.fill(); }
-  // rosto
+  if(est === 10){ ctx.beginPath(); ctx.arc(-3.2, hy - 4.4, 1.9, 0, 6.3); ctx.arc(3.2, hy - 4.4, 1.9, 0, 6.3); ctx.fill(); } // Coque Duplo
+
+  // rosto: olhos (cores/formatos) e expressões faciais
+  const CORES_OLHOS = ['#1e293b', '#2563eb', '#059669', '#d97706', '#1e293b', '#1e293b', '#1e293b', '#1e293b'];
+  const corOlho = CORES_OLHOS[olhos] || '#1e293b';
+
   if(dir === 'down'){
-    ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(-1.7, hy + .5, .62, 0, 6.3); ctx.arc(1.7, hy + .5, .62, 0, 6.3); ctx.fill();
-    ctx.strokeStyle = barba === 3 ? 'rgba(255,255,255,.55)' : 'rgba(30,41,59,.7)'; ctx.lineWidth = .5; ctx.beginPath(); ctx.arc(0, hy + 1.9, 1, .2, PI - .2); ctx.stroke();
+    if(tapandoNariz){
+      // Olhos fechados de agonia (> <) pelo mau cheiro!
+      ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 0.65;
+      ctx.beginPath();
+      ctx.moveTo(-2.5, hy - 0.1); ctx.lineTo(-1.3, hy + 0.5); ctx.lineTo(-2.5, hy + 1.1);
+      ctx.moveTo(2.5, hy - 0.1); ctx.lineTo(1.3, hy + 0.5); ctx.lineTo(2.5, hy + 1.1);
+      ctx.stroke();
+    } else if(olhos === 6){
+      // Semicerrados (Cool)
+      rr(-2.6, hy + 0.1, 1.7, 0.7, 0.2, corOlho);
+      rr(0.9, hy + 0.1, 1.7, 0.7, 0.2, corOlho);
+    } else if(olhos === 7){
+      // Piscando 😉
+      ctx.fillStyle = corOlho; ctx.beginPath(); ctx.arc(-1.7, hy + .5, .68, 0, 6.3); ctx.fill();
+      ctx.strokeStyle = corOlho; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.arc(1.7, hy + 0.6, 0.8, PI * 1.1, PI * 1.9); ctx.stroke();
+    } else {
+      const rOlho = olhos === 4 ? 0.88 : 0.66;
+      ctx.fillStyle = corOlho; ctx.beginPath(); ctx.arc(-1.7, hy + .5, rOlho, 0, 6.3); ctx.arc(1.7, hy + .5, rOlho, 0, 6.3); ctx.fill();
+      if(olhos === 4 || olhos === 1 || olhos === 2){
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-1.9, hy + .25, 0.28, 0, 6.3); ctx.arc(1.5, hy + .25, 0.28, 0, 6.3); ctx.fill();
+      }
+      if(olhos === 5){
+        ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(-2.6, hy - 0.1); ctx.lineTo(-2.1, hy + 0.2); ctx.moveTo(2.6, hy - 0.1); ctx.lineTo(2.1, hy + 0.2); ctx.stroke();
+      }
+    }
+
+    // Boca / Expressão
+    if(!tapandoNariz){
+      ctx.strokeStyle = barba === 3 ? 'rgba(255,255,255,.65)' : 'rgba(30,41,59,.8)';
+      ctx.lineWidth = .55;
+      if(expressao === 1){
+        // Feliz / Rindo 😄
+        ctx.fillStyle = '#be123c'; ctx.beginPath(); ctx.arc(0, hy + 1.7, 1.25, 0, PI); ctx.closePath(); ctx.fill();
+      } else if(expressao === 2){
+        // Confiante 😏
+        ctx.beginPath(); ctx.moveTo(-0.9, hy + 2.2); ctx.quadraticCurveTo(0.4, hy + 2.3, 1.4, hy + 1.5); ctx.stroke();
+      } else if(expressao === 3){
+        // Sério 😐
+        ctx.beginPath(); ctx.moveTo(-1.1, hy + 2.1); ctx.lineTo(1.1, hy + 2.1); ctx.stroke();
+      } else if(expressao === 4){
+        // Surpreso 😮
+        ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.arc(0, hy + 2.1, 0.85, 0, 6.3); ctx.fill();
+      } else if(expressao === 5){
+        // Assobiando 😗
+        ctx.fillStyle = '#e11d48'; ctx.beginPath(); ctx.arc(0.4, hy + 2.1, 0.55, 0, 6.3); ctx.fill();
+      } else if(expressao === 6){
+        // Língua 😛
+        ctx.beginPath(); ctx.arc(0, hy + 1.8, 1.0, .15, PI - .15); ctx.stroke();
+        rr(-0.55, hy + 2.0, 1.1, 1.2, 0.5, '#fb7185');
+      } else if(expressao === 7){
+        // Café na Veia 🤩
+        ctx.fillStyle = '#ffffff'; rr(-1.3, hy + 1.6, 2.6, 1.1, 0.4, '#ffffff', '#0f172a', 0.4);
+      } else {
+        ctx.beginPath(); ctx.arc(0, hy + 1.9, 1, .2, PI - .2); ctx.stroke();
+      }
+    }
+
+    // Óculos (1..7)
     if(ocl === 1){ ctx.strokeStyle = '#0f172a'; ctx.lineWidth = .55; ctx.beginPath(); ctx.arc(-1.7, hy + .5, 1.3, 0, 6.3); ctx.moveTo(3, hy + .5); ctx.arc(1.7, hy + .5, 1.3, 0, 6.3); ctx.stroke(); }
     if(ocl === 2){ rr(-3.1, hy - .6, 2.7, 2.2, .4, null, '#0f172a', .55); rr(.4, hy - .6, 2.7, 2.2, .4, null, '#0f172a', .55); ctx.beginPath(); ctx.moveTo(-.4, hy + .2); ctx.lineTo(.4, hy + .2); ctx.stroke(); }
     if(ocl === 3){ rr(-3.2, hy - .5, 2.9, 2.1, .7, '#0f172a'); rr(.3, hy - .5, 2.9, 2.1, .7, '#0f172a'); R(-.4, hy, .8, .5, '#0f172a'); rr(-2.7, hy - .2, 1, .5, .2, 'rgba(255,255,255,.4)'); }
+    if(ocl === 4){ rr(-3.2, hy - .5, 2.9, 2.2, .9, 'rgba(15,23,42,0.8)', '#eab308', .6); rr(.3, hy - .5, 2.9, 2.2, .9, 'rgba(15,23,42,0.8)', '#eab308', .6); R(-.4, hy - .3, .8, .4, '#eab308'); }
+    if(ocl === 5){ rr(-3.3, hy - .7, 2.9, 2.0, .6, null, '#be185d', .65); rr(.4, hy - .7, 2.9, 2.0, .6, null, '#be185d', .65); }
+    if(ocl === 6){ rr(-3.1, hy - .5, 2.7, 2.1, .4, 'rgba(56,189,248,0.35)', '#0284c7', .6); rr(.4, hy - .5, 2.7, 2.1, .4, 'rgba(56,189,248,0.35)', '#0284c7', .6); }
+    if(ocl === 7){ ctx.strokeStyle = '#eab308'; ctx.lineWidth = .65; ctx.beginPath(); ctx.arc(1.7, hy + .5, 1.35, 0, 6.3); ctx.stroke(); }
     if(extra === 4){ ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(-4.5, hy + 1.8, .75, 0, 6.3); ctx.arc(4.5, hy + 1.8, .75, 0, 6.3); ctx.fill(); }
   } else if(dir === 'left' || dir === 'right'){
-    ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(lado * 2.3, hy + .5, .62, 0, 6.3); ctx.fill();
+    ctx.fillStyle = corOlho; ctx.beginPath(); ctx.arc(lado * 2.3, hy + .5, .62, 0, 6.3); ctx.fill();
     if(ocl){
-      if(ocl === 3) rr(lado * 2.3 - 1.3, hy - .4, 2.6, 1.9, .6, '#0f172a');
+      if(ocl === 3 || ocl === 4) rr(lado * 2.3 - 1.3, hy - .4, 2.6, 1.9, .6, '#0f172a');
       else { ctx.strokeStyle = '#0f172a'; ctx.lineWidth = .55; ctx.beginPath(); if(ocl === 1) ctx.arc(lado * 2.3, hy + .5, 1.3, 0, 6.3); else ctx.rect(lado * 2.3 - 1.3, hy - .5, 2.6, 2); ctx.stroke(); }
       ctx.strokeStyle = '#0f172a'; ctx.lineWidth = .5; ctx.beginPath(); ctx.moveTo(lado * 1, hy + .3); ctx.lineTo(-lado * 1.6, hy + .1); ctx.stroke();
     }
     if(extra === 4){ ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(-lado * 1.4, hy + 2, .75, 0, 6.3); ctx.fill(); }
   }
-  // acessórios
+
+  // GESTUAL CÔMICO SINCRONIZADO: Mão direita subindo e tampando o nariz!
+  if(tapandoNariz){
+    ctx.save();
+    ctx.strokeStyle = RP.manga; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(4.6, topo + 2.0); ctx.lineTo(1.2, hy + 1.6); ctx.stroke();
+    // Mão segurando o nariz no centro do rosto
+    ctx.fillStyle = L.pele;
+    ctx.beginPath(); ctx.arc(0.2, hy + 1.2, 1.75, 0, 6.3); ctx.fill();
+    ctx.strokeStyle = sombra(L.pele, 0.65); ctx.lineWidth = 0.5; ctx.stroke();
+    ctx.restore();
+  }
+
+  // acessórios de cabeça (1, 2, 3, 5, 8, 9)
   if(extra === 1){
     ctx.fillStyle = BRB_AZUL; ctx.beginPath(); ctx.arc(0, hy - .6, 4.9, PI, PI * 2); ctx.closePath(); ctx.fill();
     if(dir === 'down'){ rr(-4.6, hy - 1.5, 9.2, 1.7, .8, '#003a6b'); ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(0, hy - 3.2, .9, 0, 6.3); ctx.fill(); }
@@ -1532,10 +1686,46 @@ function desenharPessoa(p, t){
   }
   if(extra === 3 && p.tipo !== 'telefone'){
     ctx.strokeStyle = '#334155'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(0, hy - .3, 5.2, PI * .98, PI * 2.02); ctx.stroke();
-    if(dir !== 'up' || true){ rr(-6.4, hy - .8, 2.4, 3.4, 1, '#ef4444'); rr(4, hy - .8, 2.4, 3.4, 1, '#ef4444'); }
+    rr(-6.4, hy - .8, 2.4, 3.4, 1, '#ef4444'); rr(4, hy - .8, 2.4, 3.4, 1, '#ef4444');
   }
+  if(extra === 5){
+    // Coroa Real 👑
+    rr(-3.4, hy - 6.8, 6.8, 2.4, 0.5, '#facc15', '#ca8a04', 0.5);
+    tri(-3.4, hy - 6.5, -2.0, hy - 8.6, -0.8, hy - 6.5, '#facc15');
+    tri(-1.2, hy - 6.5, 0, hy - 9.2, 1.2, hy - 6.5, '#facc15');
+    tri(0.8, hy - 6.5, 2.0, hy - 8.6, 3.4, hy - 6.5, '#facc15');
+    ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(0, hy - 5.6, 0.55, 0, 6.3); ctx.fill();
+  }
+  if(extra === 8){
+    // Chapéu Fedora 🎩
+    rr(-6.0, hy - 3.6, 12.0, 1.4, 0.7, '#1e293b');
+    rr(-3.8, hy - 6.8, 7.6, 3.5, 1.2, '#334155');
+    rr(-3.8, hy - 4.4, 7.6, 0.9, 0.2, '#facc15');
+  }
+  if(extra === 9){
+    // Flor no Cabelo 🌸
+    const fx = dir === 'left' ? -2.8 : 3.0, fy = hy - 3.8;
+    ctx.fillStyle = '#f472b6';
+    for(let a = 0; a < 5; a++){
+      ctx.beginPath(); ctx.arc(fx + Math.cos(a * 1.25) * 1.2, fy + Math.sin(a * 1.25) * 1.2, 0.9, 0, 6.3); ctx.fill();
+    }
+    ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(fx, fy, 0.7, 0, 6.3); ctx.fill();
+  }
+
+  // Mosquinhas orbitando o NPC "Cheiroso"
+  if(isCheiroso){
+    for(let i = 0; i < 3; i++){
+      const mx = Math.cos(t * 7.5 + i * 2.1) * 7.5;
+      const my = hy - 2 + Math.sin(t * 11 + i * 1.7) * 3.5;
+      ctx.fillStyle = '#ecfccb';
+      ctx.beginPath(); ctx.arc(mx - 0.8, my - 0.6, 0.7, 0, 6.3); ctx.arc(mx + 0.8, my - 0.6, 0.7, 0, 6.3); ctx.fill();
+      ctx.fillStyle = '#1a2e05';
+      ctx.beginPath(); ctx.arc(mx, my, 0.95, 0, 6.3); ctx.fill();
+    }
+  }
+
   // adereços por função
-  if(p.staff){
+  if(p.staff && !tapandoNariz){
     const tp = p.tipo;
     if(tp === 'telefone'){
       ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(0, hy - .3, 5.3, PI * .98, PI * 2.02); ctx.stroke();
@@ -1596,8 +1786,10 @@ function novaPessoa(nome, staff){
 function colocar(p, tx, ty){ p.x = tx * T + 8; p.y = ty * T + 15; p.path = []; p.moving = false; }
 function tileDe(p){ return [Math.min(W - 1, Math.max(0, Math.floor(p.x / T))), Math.min(H - 1, Math.max(0, Math.floor(p.y / T)))]; }
 function irPara(p, tx, ty){
-  const [sx, sy] = tileDe(p), path = achar(sx, sy, tx, ty);
+  const [sx, sy] = tileDe(p), path = achar(sx, sy, Math.round(tx), Math.round(ty));
   if(path === null){ colocar(p, tx, ty); return false; }
+  if(path.length > 0) path[path.length - 1] = [tx, ty];
+  else path.push([tx, ty]);
   p.path = path; return true;
 }
 function chegou(p){ if(p.destino){ p.sitting = p.destino.sit; p.dir = p.destino.dir; } }
@@ -1651,6 +1843,128 @@ function atualizarNPC(n, dt){
     case 'painel': n.espera = R_(4, 6); n.fase = 'sair'; break;
     case 'sair': irPara(n, 29, 26); n.fase = 'fim'; break;
     case 'fim': n.ativo = false; n.fase = 'nascer'; n.tempoSpawn = R_(3, 12); break;
+  }
+}
+
+/* ----- NPC Especial: "CHEIROSO" (entra periodicamente causando reação sincronizada no salão) ----- */
+const FALAS_CHEIROSO = [
+  'Esqueci o desodorante hoje...',
+  'Ué, por que todo mundo tampou o nariz?!',
+  'Qual é o guichê pra tirar 2ª via?!',
+  'Alguém tem um perfuminho aí?',
+  'Vim direto da academia sem tomar banho!'
+];
+const REACOES_SALAO = [
+  '🤢 Tampa o nariz!',
+  '😷 Que cheiro é esse?!',
+  '💨 Socorro, abre a janela!',
+  '🤢 Meu Deus, que inhaca!',
+  '😷 Cadê o Bom Ar?!'
+];
+const cheiroso = window.cheiroso = {
+  ativo: false,
+  nome: 'CHEIROSO',
+  staff: false,
+  ehCheiroso: true,
+  x: 28 * T + 8,
+  y: 9 * T + 15,
+  dir: 'left',
+  sitting: false,
+  moving: false,
+  path: [],
+  vel: 34,
+  espera: 0,
+  fase: 'aguardando',
+  timerProximo: 14, // Primeira entrada automática após 14s, depois periodicamente!
+  seed: 7.7,
+  cor: '#65a30d',
+  look: { pele:'#d9a066', cabelo:'#3e2a1a', camisa:'#65a30d', camSomb:'#3f6212', calca:'#422006', estilo:4, barba:3, olhos:6, expressao:2, oculos:0, roupa:0, extra:0 }
+};
+
+function acionarCheiroso(emitirRede = false){
+  if(cheiroso.ativo){
+    // Se já está ativo, reinicia o passeio a partir do ponto atual ou foca nele
+    mostrarToastSkin('🤢 O <b>Cheiroso</b> já está circulando pelo salão! Veja todos tampando o nariz!');
+    return;
+  }
+  colocar(cheiroso, 28, 9);
+  cheiroso.ativo = true;
+  cheiroso.fase = 'entrar';
+  cheiroso.espera = 0.2;
+  const btn = $('btnCheiroso');
+  if(btn) btn.classList.add('g');
+  mostrarToastSkin('🤢💨 <b>O Cheiroso</b> acabou de entrar na unidade! Todos tampando o nariz!');
+
+  if(emitirRede){
+    try { if(skinBroadcast) skinBroadcast.postMessage({ action: 'cheiroso_spawn', timestamp: Date.now() }); } catch(e){}
+    try {
+      fetch(SKIN_NTFY_URL, {
+        method: 'POST',
+        headers: { 'Title': 'Cheiroso Entrou' },
+        body: JSON.stringify({ action: 'cheiroso_spawn', timestamp: Date.now() })
+      }).catch(() => {});
+    } catch(e){}
+  }
+}
+
+function atualizarCheiroso(dt){
+  if(!cheiroso.ativo){
+    cheiroso.timerProximo -= dt;
+    if(cheiroso.timerProximo <= 0){
+      acionarCheiroso(false);
+    }
+    return;
+  }
+  mover(cheiroso, dt);
+  if(cheiroso.moving || cheiroso.path.length || cheiroso.espera > 0) return;
+  switch(cheiroso.fase){
+    case 'entrar':
+      irPara(cheiroso, 24, 10);
+      cheiroso.fase = 'recepcao_dir';
+      cheiroso.espera = 2.0;
+      break;
+    case 'recepcao_dir':
+      irPara(cheiroso, 21, 8);
+      cheiroso.fase = 'recepcao_esq';
+      cheiroso.espera = 2.8;
+      break;
+    case 'recepcao_esq':
+      irPara(cheiroso, 14, 8);
+      cheiroso.fase = 'paineis_topo';
+      cheiroso.espera = 2.8;
+      break;
+    case 'paineis_topo':
+      irPara(cheiroso, 15, 14);
+      cheiroso.fase = 'auto_visita';
+      cheiroso.espera = 2.8;
+      break;
+    case 'auto_visita':
+      irPara(cheiroso, 7, 11);
+      cheiroso.fase = 'paineis_meio';
+      cheiroso.espera = 2.5;
+      break;
+    case 'paineis_meio':
+      irPara(cheiroso, 15, 20);
+      cheiroso.fase = 'paineis_baixo';
+      cheiroso.espera = 2.8;
+      break;
+    case 'paineis_baixo':
+      irPara(cheiroso, 15, 26);
+      cheiroso.fase = 'sair';
+      cheiroso.espera = 2.5;
+      break;
+    case 'sair':
+      irPara(cheiroso, 28, 26);
+      cheiroso.fase = 'fim';
+      break;
+    case 'fim':
+      cheiroso.ativo = false;
+      cheiroso.fase = 'aguardando';
+      cheiroso.timerProximo = 45 + Math.random() * 15; // Retorna periodicamente a cada ~45-60s
+      const btn = $('btnCheiroso');
+      if(btn) btn.classList.remove('g');
+      mostrarToastSkin('😮‍💨 Ufa! O <b>Cheiroso</b> saiu da unidade. O ar voltou ao normal!');
+      break;
   }
 }
 
@@ -1955,13 +2269,16 @@ function frame(ts){
   const presentes = Object.values(estado.pessoas).filter(p => p.presente);
   presentes.forEach(p => mover(p, dt));
   npcs.forEach(n => atualizarNPC(n, dt));
+  atualizarCheiroso(dt);
 
   mainCtx.setTransform(1, 0, 0, 1, 0, 0); mainCtx.drawImage(bg, 0, 0);
   mainCtx.setTransform(K, 0, 0, K, 0, 0); ctx = mainCtx;
   const sel = estado.sel;
-  const todos = [...presentes, ...(mostrarCidadaos ? npcs.filter(n => n.ativo) : [])].sort((a, b) => a.y - b.y);
+  const listaNpcs = mostrarCidadaos ? npcs.filter(n => n.ativo) : [];
+  if(cheiroso.ativo) listaNpcs.push(cheiroso);
+  const todos = [...presentes, ...listaNpcs].sort((a, b) => a.y - b.y);
   todos.forEach(p => {
-    const esmaece = sel && (!p.staff || p.nome !== sel);
+    const esmaece = sel && (!p.staff || p.nome !== sel) && !p.ehCheiroso;
     ctx.globalAlpha = esmaece ? .38 : 1;
     if(p.staff && sel === p.nome) realceSelecao(p, t);
     desenharPessoa(p, t);
@@ -1970,40 +2287,86 @@ function frame(ts){
   frontLayer(t);
   if(typeof estadoEditor !== 'undefined' && estadoEditor.ativo) desenharOverlayEditor();
 
-  // etiquetas de nome (evitam sobrepor títulos, marcadores de posto e umas às outras)
+  // Crachás de nome dos atendentes (design escuro com borda colorida e seta apontadora, sem sobrepor painéis!)
   const ocupados = OBST.concat(TAG_RECTS);
   const colide = r => ocupados.some(o => !(r.x + r.w < o.x || o.x + o.w < r.x || r.y + r.h < o.y || o.y + o.h < r.y));
+  const candidatosOffset = [
+    [0, 0], [0, -9], [-12, -3], [12, -3], [0, -18], [-18, -8], [18, -8], [-14, 5], [14, 5]
+  ];
   const itens = presentes.map(p => {
-    const Lp = lookDe(p), cx = Math.round(p.x), cy = Math.round(p.y), topo = cy - (p.sitting ? 3 : 0) - 22 - ((Lp.estilo === 2 || Lp.estilo === 5) ? 2 : 0);
+    const Lp = lookDe(p), cx = Math.round(p.x), cy = Math.round(p.y);
+    const topo = cy - (p.sitting ? 3 : 0) - 21 - ((Lp.estilo === 2 || Lp.estilo === 5 || Lp.estilo === 9) ? 2 : 0);
     function formatarNomeCracha(raw){
       if(!raw) return '';
       const str = norm(raw).trim();
       const partes = str.split(/\s+/).filter(Boolean);
       if(!partes.length) return '';
       if(partes.length === 1) return partes[0];
-      if(partes[0].length + partes[1].length + 1 <= 14) return partes[0] + ' ' + partes[1];
+      if(partes[0].length + partes[1].length + 1 <= 13) return partes[0] + ' ' + partes[1];
       return partes[0] + ' ' + partes[1][0] + '.';
     }
-    const alerta = estado.alertas[p.nome], nome = (alerta ? '⚠ ' : '') + (p.supervisor ? '★ ' : '') + formatarNomeCracha(p.nome);
-    return { p, cx, topo, nome, alerta, w: medir(nome, 6.8, 700) + 7 };
-  }).sort((a, b) => (a.p.nome === sel) - (b.p.nome === sel) || a.cx - b.cx);
-  itens.forEach(it => {
-    let ry = it.topo - 6, rect;
-    for(let k = 0; k < 4; k++){
-      ry = it.topo - 6 - k * 11.5; rect = { x: it.cx - it.w / 2, y: ry - 5.8, w: it.w, h: 11.6 };
+    const iconeCheiro = cheiroso.ativo ? '🤢 ' : '';
+    const alerta = estado.alertas[p.nome], nome = iconeCheiro + (alerta ? '⚠ ' : '') + (p.supervisor ? '★ ' : '') + formatarNomeCracha(p.nome);
+    return { p, cx, topo, nome, alerta, w: medir(nome, 6.2, 800) + 8 };
+  }).sort((a, b) => (a.p.nome === sel) - (b.p.nome === sel) || a.p.y - b.p.y || a.cx - b.cx);
+
+  itens.forEach((it, idx) => {
+    let rx = it.cx, ry = it.topo - 5, rect;
+    for(let k = 0; k < candidatosOffset.length; k++){
+      const [dx, dy] = candidatosOffset[k];
+      rx = Math.max(it.w / 2 + 10, Math.min(W * T - it.w / 2 - 10, it.cx + dx));
+      ry = Math.max(12, it.topo - 5 + dy);
+      rect = { x: rx - it.w / 2 - 1, y: ry - 5.5, w: it.w + 2, h: 11 };
       if(!colide(rect)) break;
     }
     ocupados.push(rect);
     const p = it.p, eSel = sel === p.nome, esmaece = sel && !eSel;
     ctx.globalAlpha = esmaece ? .45 : 1;
     const piscar = it.alerta && Math.floor(t * 2) % 2;
-    if(eSel) pill(it.cx, ry, it.nome, '#facc15', '#1e293b', { size: 7.4, pad: 9, sombra: true });
-    else pill(it.cx, ry, it.nome, piscar ? '#dc2626' : p.cor, '#fff', { size: 6.8, pad: 7, sombra: true });
-    if(eSel){ const b = Math.sin(t * 7) * 1.2; ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.moveTo(it.cx - 3.5, ry - 11.5 - b); ctx.lineTo(it.cx + 3.5, ry - 11.5 - b); ctx.lineTo(it.cx, ry - 7 - b); ctx.closePath(); ctx.fill(); }
+
+    // Pequena linha guia se o crachá precisou desviar lateralmente
+    if(Math.hypot(rx - it.cx, ry - (it.topo - 5)) > 4){
+      ctx.strokeStyle = p.cor; ctx.lineWidth = 0.7;
+      ctx.beginPath(); ctx.moveTo(rx, ry + 4.5); ctx.lineTo(it.cx, it.topo - 1); ctx.stroke();
+    } else {
+      // Seta apontando para a cabeça do atendente
+      tri(rx - 2.2, ry + 4.2, rx + 2.2, ry + 4.2, rx, ry + 6.8, eSel ? '#facc15' : p.cor);
+    }
+
+    if(eSel){
+      pill(rx, ry, it.nome, '#facc15', '#0f172a', { size: 6.8, pad: 8, sombra: true });
+      const b = Math.sin(t * 7) * 1.2;
+      ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.moveTo(rx - 3.5, ry - 11 - b); ctx.lineTo(rx + 3.5, ry - 11 - b); ctx.lineTo(rx, ry - 6.5 - b); ctx.closePath(); ctx.fill();
+    } else {
+      // Crachá escuro de alto contraste com borda neon na cor do setor
+      pill(rx, ry, it.nome, piscar ? '#dc2626' : '#0f172a', '#ffffff', { size: 6.1, pad: 6.5, borda: piscar ? '#fca5a5' : p.cor, lw: 1.1 });
+    }
     ctx.globalAlpha = 1;
-    if(p.tipo === 'telefone' && !p.moving && Math.floor(t / 3 + p.seed) % 4 === 0) bolha(it.cx, ry - 14, 'Alô?');
-    if(p.tipo === 'painel' && !p.moving && senhaTempo < 2 && Math.floor(senhaAtual + p.seed * 3) % 3 === 0) bolha(it.cx, ry - 14, 'A' + String((senhaAtual + 3) % 999).padStart(3, '0'));
+
+    // Reação sincronizada quando o Cheiroso está no salão!
+    if(cheiroso.ativo){
+      if((Math.floor(t * 1.5) + idx) % 4 === 0){
+        const frase = REACOES_SALAO[(idx + Math.floor(t)) % REACOES_SALAO.length];
+        bolha(rx, ry - 13, frase);
+      }
+    } else {
+      if(p.tipo === 'telefone' && !p.moving && Math.floor(t / 3 + p.seed) % 4 === 0) bolha(rx, ry - 13, 'Alô?');
+    }
   });
+
+  // Renderiza o crachá especial e balão cômico do NPC "Cheiroso" + reação dos cidadãos da fila
+  if(cheiroso.ativo){
+    listaNpcs.forEach((n, nIdx) => {
+      if(n.ehCheiroso) return;
+      if((Math.floor(t * 2) + nIdx) % 3 === 0){
+        tx('🤢', n.x, n.y - 23 - Math.sin(t * 8 + nIdx) * 1.5, 6.5, '#ffffff', 700);
+      }
+    });
+    const cx = Math.round(cheiroso.x), cy = Math.round(cheiroso.y) - 27;
+    pill(cx, cy, '🤢 CHEIROSO', '#3f6212', '#ecfccb', { size: 6.6, pad: 8, borda: '#a3e635', lw: 1.2 });
+    const fala = FALAS_CHEIROSO[Math.floor(t / 3.5) % FALAS_CHEIROSO.length];
+    bolha(cx, cy - 13, fala);
+  }
   requestAnimationFrame(frame);
 }
 
@@ -2471,6 +2834,9 @@ try {
       if(e.data && e.data.action === 'skin_update' && e.data.nome && e.data.skin){
         aplicarSkinRecebida(e.data.nome, e.data.skin, false);
       }
+      if(e.data && e.data.action === 'cheiroso_spawn'){
+        acionarCheiroso(false);
+      }
     };
   }
 } catch(e){}
@@ -2571,6 +2937,9 @@ function iniciarSkinRealtime(){
           if(msg && msg.action === 'skin_update' && msg.nome && msg.skin){
             aplicarSkinRecebida(msg.nome, msg.skin, true);
           }
+          if(msg && msg.action === 'cheiroso_spawn'){
+            acionarCheiroso(false);
+          }
           if(msg && msg.snapshot && typeof msg.snapshot === 'object'){
             let mudou = false;
             Object.entries(msg.snapshot).forEach(([k, sk]) => {
@@ -2613,8 +2982,10 @@ function abrirSkin(nome){
 function fecharSkin(){ $('modalSkin').style.display = 'none'; }
 function skSelecionar(nome){
   skNomeAtual = nome;
-  skEdit = Object.assign({}, skBaseLook(nome), SKINS[chaveSkin(nome)] || {});
+  skEdit = Object.assign({ olhos: 0, expressao: 0 }, skBaseLook(nome), SKINS[chaveSkin(nome)] || {});
   skEdit.oculos = skEdit.oculos === true ? 1 : (skEdit.oculos | 0);
+  skEdit.olhos = skEdit.olhos | 0;
+  skEdit.expressao = skEdit.expressao | 0;
   skRenderOpcoes();
 }
 function skSet(campo, val){ skEdit[campo] = val; skRenderOpcoes(); }
@@ -2624,19 +2995,23 @@ function skRenderOpcoes(){
   const chips = (campo, arr) => `<div class="skopts">${arr.map((n, i) => `<button class="skopt${(L[campo] | 0) === i ? ' on' : ''}" onclick="skSet('${campo}',${i})">${n}</button>`).join('')}</div>`;
   const cores = (campo, arr) => `<div class="skopts">${arr.map(c => `<button class="skcor${L[campo] === c ? ' on' : ''}" style="background:${c}" onclick="skSet('${campo}','${c}')"></button>`).join('')}</div>`;
   $('skOpcoes').innerHTML =
-    grp('👔 ROUPA (UNIFORME BRB)', chips('roupa', SK.roupa)) +
+    grp('👔 ROUPA & UNIFORME', chips('roupa', SK.roupa)) +
     grp('🎨 TOM DE PELE', cores('pele', SK.pele)) +
-    grp('💇 CABELO', chips('estilo', SK.estilo)) +
-    grp('🖌️ COR DO CABELO E DA BARBA', cores('cabelo', SK.cabeloCor)) +
-    grp('🧔 BARBA', chips('barba', SK.barba)) +
+    grp('💇 ESTILO DE CABELO', chips('estilo', SK.estilo)) +
+    grp('🖌️ COR DO CABELO E BARBA', cores('cabelo', SK.cabeloCor)) +
+    grp('🧔 BARBA E BIGODE', chips('barba', SK.barba)) +
+    grp('👁️ FORMATO / COR DOS OLHOS', chips('olhos', SK.olhos)) +
+    grp('😊 EXPRESSÃO FACIAL', chips('expressao', SK.expressao)) +
     grp('👓 ÓCULOS', chips('oculos', SK.oculos)) +
-    grp('✨ ACESSÓRIO', chips('extra', SK.extra));
+    grp('✨ ACESSÓRIOS ESPECIAIS', chips('extra', SK.extra));
 }
 function skAleatorio(){
   const r = a => Math.floor(Math.random() * a.length);
   skEdit.pele = SK.pele[r(SK.pele)]; skEdit.cabelo = SK.cabeloCor[r(SK.cabeloCor)];
-  skEdit.estilo = r(SK.estilo); skEdit.barba = Math.random() < .5 ? 0 : r(SK.barba); skEdit.oculos = Math.random() < .5 ? 0 : r(SK.oculos);
-  skEdit.roupa = r(SK.roupa); skEdit.extra = Math.random() < .5 ? 0 : r(SK.extra);
+  skEdit.estilo = r(SK.estilo); skEdit.barba = Math.random() < .5 ? 0 : r(SK.barba);
+  skEdit.olhos = r(SK.olhos); skEdit.expressao = r(SK.expressao);
+  skEdit.oculos = Math.random() < .45 ? 0 : r(SK.oculos);
+  skEdit.roupa = r(SK.roupa); skEdit.extra = Math.random() < .45 ? 0 : r(SK.extra);
   skRenderOpcoes();
 }
 function skPadrao(){ skEdit = Object.assign({}, skBaseLook(skNomeAtual)); skEdit.oculos = skEdit.oculos === true ? 1 : (skEdit.oculos | 0); skRenderOpcoes(); }
