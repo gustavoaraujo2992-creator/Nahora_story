@@ -461,7 +461,7 @@ const DEFAULT_LAYOUT = {
   zonas: [
     { id:'z_auto', nome:'AUTOATENDIMENTO', cor:'#a855f7', bg:'rgba(168,85,247,0.08)', x:1.5, y:2.5, w:8.5, h:9.8, tit:'tl' },
     { id:'z_recepcao', nome:'RECEPÇÃO', cor:'#10b981', bg:'rgba(16,185,129,0.08)', x:10.5, y:2.5, w:18.5, h:9.8, tit:'tl' },
-    { id:'z_tel', nome:'TELEFONES', cor:'#06b6d4', bg:'rgba(6,182,212,0.08)', x:22.8, y:2.8, w:5.8, h:4.2, tit:'tr' },
+    { id:'z_tel', nome:'TELEFONES', cor:'#06b6d4', bg:'rgba(6,182,212,0.08)', x:22.8, y:2.8, w:5.8, h:4.2, tit:'br' },
     { id:'z_entrada', nome:'ENTRADA', cor:'#3b82f6', bg:'rgba(59,130,246,0.08)', x:19.8, y:12.5, w:8.8, h:4.5, tit:'tl' },
     // Salão de Espera dividido nos 5 Paineis oficiais conforme imagem de referência
     { id:'z_painel_1', nome:'PAINEL 1', cor:'#10b981', bg:'rgba(16,185,129,0.07)', x:10.5, y:12.2, w:8.8, h:3.1, tit:'tl', painel:true },
@@ -498,11 +498,11 @@ const DEFAULT_LAYOUT = {
     { id:'m_balcao_auto', nome:'Balcão Apoio Autoatendimento', tipo:'balcao_auto', x:2.2, y:9.8, w:7.2, h:1.3, bloqueia:true },
 
     // SALÃO DE ESPERA: 5 Estações de Painel com totens, cadeiras e displays de senha (idêntico à imagem de referência!)
-    { id:'p_painel_1', nome:'Painel 1 - Estação & Totem P1', tipo:'painel_tier_1', x:11.2, y:12.4, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 1'] },
+    { id:'p_painel_1', nome:'Painel 1 - Estação & Totem P1', tipo:'painel_tier_1', x:11.2, y:12.4, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 1','PAINEL 1.1'] },
     { id:'p_painel_2', nome:'Painel 2 - Fila de Cadeiras & Totem P2', tipo:'painel_tier_2', x:11.2, y:15.7, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 2','PAINEL 2.1'] },
     { id:'p_painel_3', nome:'Painel 3 - Fila de Cadeiras & Totens P3', tipo:'painel_tier_3', x:11.2, y:19.0, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 3','PAINEL 3.1'] },
-    { id:'p_painel_4', nome:'Painel 4 - Fila de Cadeiras & Totens P4', tipo:'painel_tier_4', x:11.2, y:22.3, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 4'] },
-    { id:'p_painel_5', nome:'Painel 5 - Fila de Cadeiras & Totens P5', tipo:'painel_tier_5', x:11.2, y:25.6, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 5'] },
+    { id:'p_painel_4', nome:'Painel 4 - Fila de Cadeiras & Totens P4', tipo:'painel_tier_4', x:11.2, y:22.3, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 4','PAINEL 4.1'] },
+    { id:'p_painel_5', nome:'Painel 5 - Fila de Cadeiras & Totens P5', tipo:'painel_tier_5', x:11.2, y:25.6, w:7.4, h:2.6, bloqueia:true, postos:['PAINEL 5','PAINEL 5.1'] },
 
     // Entrada & Saída
     { id:'m_posto_orientador', nome:'Posto Orientador da Entrada', tipo:'ponto_orientador', x:24, y:13.5, w:2, h:1.5, bloqueia:false, postos:['ORIENTADOR'] },
@@ -623,9 +623,8 @@ addPosto('AUTO 1', { x:6, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', c
 addPosto('AUTO 2', { x:8, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto', desc:'Em pé no totem 2 de autoatendimento, auxiliando o cidadão.' });
 addPosto('AUTO', { x:6, y:9, sit:false, dir:'down', grupo:'AUTOATENDIMENTO', cor:COR.auto, tipo:'auto', desc:'Em pé no autoatendimento, auxiliando o cidadão.' });
 addPosto('ORIENTADOR', { x:24, y:10, sit:false, dir:'down', grupo:'ENTRADA', cor:COR.orient, tipo:'orient', desc:'Na porta de entrada, com tablet em mãos, adiantando a triagem da fila.' });
-[['PAINEL 2',12,13],['PAINEL 2.1',16,13],['PAINEL 3',12,17],['PAINEL 3.1',16,17],['PAINEL 4',12,21],['PAINEL 5',16,21]].forEach(([k, x, y]) => addPosto(k, {
+[['PAINEL 1',12,13],['PAINEL 1.1',18,13],['PAINEL 2',12,16],['PAINEL 2.1',18,16],['PAINEL 3',12,19],['PAINEL 3.1',18,19],['PAINEL 4',12,23],['PAINEL 4.1',18,23],['PAINEL 5',12,26],['PAINEL 5.1',18,26]].forEach(([k, x, y]) => addPosto(k, {
   x, y, sit:false, dir:'down', grupo:'SALÃO DE ESPERA', cor:COR.painel, tipo:'painel', desc:'Em pé no salão de espera, chamando senha e orientando o painel.' }));
-addPosto('PAINEL 1', { x:14, y:13, sit:false, dir:'down', grupo:'SALÃO DE ESPERA', cor:COR.painel, tipo:'painel', desc:'Em pé no salão, chamando senha no painel 1.' });
 addPosto('PESQUISA', { x:27, y:25, sit:false, dir:'right', grupo:'SAÍDA / PESQUISA', cor:COR.pesq, tipo:'pesq', desc:'Na porta de saída, aplicando a pesquisa de satisfação do atendimento.' });
 addPosto('PESQUISA 2', { x:27, y:28, sit:false, dir:'right', grupo:'SAÍDA / PESQUISA', cor:COR.pesq, tipo:'pesq', desc:'Na porta de saída, aplicando a pesquisa de satisfação do atendimento (dupla).' });
 
@@ -639,10 +638,10 @@ function atualizarPostosDoLayout(layout){
       POSTOS[m.posto].x = Math.round(m.x);
       POSTOS[m.posto].y = Math.round(m.y);
     }
-    // Painel 1..5: posicionamento exato relativo à faixa (sem arredondamento que deslocava P4/P5!)
-    if(m.id === 'p_painel_1' && POSTOS['PAINEL 1']){
-      POSTOS['PAINEL 1'].x = +(m.x + 0.15).toFixed(2);
-      POSTOS['PAINEL 1'].y = +(m.y + 0.82).toFixed(2);
+    // Painel 1..5: posicionamento exato relativo à faixa (suporta posto principal à esquerda e .1 à direita)
+    if(m.id === 'p_painel_1'){
+      if(POSTOS['PAINEL 1']){ POSTOS['PAINEL 1'].x = +(m.x + 0.15).toFixed(2); POSTOS['PAINEL 1'].y = +(m.y + 0.82).toFixed(2); }
+      if(POSTOS['PAINEL 1.1']){ POSTOS['PAINEL 1.1'].x = +(m.x + m.w - 1.15).toFixed(2); POSTOS['PAINEL 1.1'].y = +(m.y + 0.82).toFixed(2); }
     }
     if(m.id === 'p_painel_2'){
       if(POSTOS['PAINEL 2']){ POSTOS['PAINEL 2'].x = +(m.x + 0.15).toFixed(2); POSTOS['PAINEL 2'].y = +(m.y + 0.82).toFixed(2); }
@@ -652,13 +651,13 @@ function atualizarPostosDoLayout(layout){
       if(POSTOS['PAINEL 3']){ POSTOS['PAINEL 3'].x = +(m.x + 0.15).toFixed(2); POSTOS['PAINEL 3'].y = +(m.y + 0.82).toFixed(2); }
       if(POSTOS['PAINEL 3.1']){ POSTOS['PAINEL 3.1'].x = +(m.x + m.w - 1.15).toFixed(2); POSTOS['PAINEL 3.1'].y = +(m.y + 0.82).toFixed(2); }
     }
-    if(m.id === 'p_painel_4' && POSTOS['PAINEL 4']){
-      POSTOS['PAINEL 4'].x = +(m.x + 0.15).toFixed(2);
-      POSTOS['PAINEL 4'].y = +(m.y + 0.82).toFixed(2);
+    if(m.id === 'p_painel_4'){
+      if(POSTOS['PAINEL 4']){ POSTOS['PAINEL 4'].x = +(m.x + 0.15).toFixed(2); POSTOS['PAINEL 4'].y = +(m.y + 0.82).toFixed(2); }
+      if(POSTOS['PAINEL 4.1']){ POSTOS['PAINEL 4.1'].x = +(m.x + m.w - 1.15).toFixed(2); POSTOS['PAINEL 4.1'].y = +(m.y + 0.82).toFixed(2); }
     }
-    if(m.id === 'p_painel_5' && POSTOS['PAINEL 5']){
-      POSTOS['PAINEL 5'].x = +(m.x + 0.15).toFixed(2);
-      POSTOS['PAINEL 5'].y = +(m.y + 0.82).toFixed(2);
+    if(m.id === 'p_painel_5'){
+      if(POSTOS['PAINEL 5']){ POSTOS['PAINEL 5'].x = +(m.x + 0.15).toFixed(2); POSTOS['PAINEL 5'].y = +(m.y + 0.82).toFixed(2); }
+      if(POSTOS['PAINEL 5.1']){ POSTOS['PAINEL 5.1'].x = +(m.x + m.w - 1.15).toFixed(2); POSTOS['PAINEL 5.1'].y = +(m.y + 0.82).toFixed(2); }
     }
     // Orientador e Pesquisa
     if(m.id === 'm_posto_orientador' && POSTOS['ORIENTADOR']){
@@ -731,7 +730,17 @@ function extrairHora(val){
   if(val === null || val === undefined) return null;
   const s = String(val).trim();
   if(!s) return null;
-  const m = s.match(/^(\d{1,2})[:hH](\d{2})(?::\d{2})?/);
+  // Suporta formato GViz Date(1899,11,30,7,30,0)
+  const md = s.match(/^Date\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*(\d+)\s*,\s*(\d+)/i);
+  if(md){
+    const hh = parseInt(md[1], 10), mm = parseInt(md[2], 10);
+    if(hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59){
+      return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+    }
+  }
+  // Ignora intervalos de almoço/lanche (ex: "12:00 às 13:00" ou "10:00 - 10:15")
+  if(/(?:às|\bas\b|até|\bate\b|-|~)/i.test(s)) return null;
+  const m = s.match(/^(\d{1,2})[:hH](\d{2})(?::\d{2})?(?:\s*(?:AM|PM|H|HS|HRS))?$/i);
   if(m){
     const hh = parseInt(m[1], 10), mm = parseInt(m[2], 10);
     if(hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59){
@@ -739,7 +748,7 @@ function extrairHora(val){
     }
   }
   const num = parseFloat(s.replace(',', '.'));
-  if(!isNaN(num) && num > 0 && num < 1){
+  if(!isNaN(num) && num > 0 && num < 1 && !s.includes(':')){
     const totalMin = Math.round(num * 24 * 60);
     const hh = Math.floor(totalMin / 60) % 24;
     const mm = totalMin % 60;
@@ -962,14 +971,16 @@ function desenharPainelTier3(m){
 }
 
 function desenharPainelTier4(m){
-  const px = m.x * T, py = m.y * T;
+  const px = m.x * T, py = m.y * T, pw = m.w * T;
   desenharBaseAtendentePainel(px + 10, py, '#3b82f6');
+  desenharBaseAtendentePainel(px + pw - 10, py, '#3b82f6');
   desenharAssentosEspera(px, py, '#3b82f6', [[34, '#2563eb'], [52, '#475569'], [70, '#ea580c']]);
 }
 
 function desenharPainelTier5(m){
-  const px = m.x * T, py = m.y * T;
+  const px = m.x * T, py = m.y * T, pw = m.w * T;
   desenharBaseAtendentePainel(px + 10, py, '#a855f7');
+  desenharBaseAtendentePainel(px + pw - 10, py, '#a855f7');
   desenharAssentosEspera(px, py, '#a855f7', [[34, '#9333ea'], [52, '#ea580c'], [70, '#9333ea']]);
 }
 
@@ -1085,17 +1096,16 @@ function desenharProp(m){
 }
 function tituloZona(z){
   if(z.painel){
-    // Placar eletrônico alinhado sobre os assentos centrais (deixando a coluna do atendente 100% livre!)
-    const w = 66, h = 11.0;
-    const x = (z.x + z.w / 2) * T - w / 2 + 14;
-    const y = z.y * T + 2.5;
+    // Placar eletrônico centralizado sobre os 3 assentos (deixando as colunas esquerda e direita dos atendentes livres!)
+    const w = 62, h = 10.8;
+    const x = (z.x + z.w / 2) * T - w / 2;
+    const y = z.y * T + 2.4;
     bgCtx.save();
     bgCtx.shadowColor = z.cor; bgCtx.shadowBlur = 3 * K;
     rr(x, y, w, h, 3, '#090d16', z.cor, 1.1);
     bgCtx.restore();
-    rr(x + 1.2, y + 1.2, 40, h - 2.4, 2, z.cor);
-    tx(z.nome, x + 21.0, y + h / 2 + 0.3, 5.6, '#ffffff', 800);
-    OBST.push({ x: x - 1, y: y - 1, w: w + 2, h: h + 2 });
+    rr(x + 1.2, y + 1.2, 38, h - 2.4, 2, z.cor);
+    tx(z.nome, x + 20.0, y + h / 2 + 0.3, 5.4, '#ffffff', 800);
     return;
   }
   const w = medir(z.nome, 6.8, 800) + 12, h = 12;
@@ -1264,13 +1274,13 @@ function frontLayer(t){
   // Placar digital de senha integrado no cabeçalho central de cada um dos 5 Painéis (sem poluir o piso!)
   if(LAYOUT && LAYOUT.zonas){
     LAYOUT.zonas.filter(z => z.painel).forEach((z, idx) => {
-      const cx = (z.x + z.w / 2) * T + 34.0;
-      const cy = z.y * T + 8.2;
+      const cx = (z.x + z.w / 2) * T + 19.0;
+      const cy = z.y * T + 8.0;
       const senhaStr = 'A' + String((senhaAtual + idx * 3) % 999).padStart(3, '0');
-      tx(senhaStr, cx, cy, 5.2, (Math.floor(t * 2 + idx) % 2) ? '#fde047' : '#f87171', 800);
+      tx(senhaStr, cx, cy, 5.1, (Math.floor(t * 2 + idx) % 2) ? '#fde047' : '#f87171', 800);
     });
   }
-  const PAINEIS = ['PAINEL 1','PAINEL 2','PAINEL 2.1','PAINEL 3','PAINEL 3.1','PAINEL 4','PAINEL 5'];
+  const PAINEIS = ['PAINEL 1','PAINEL 1.1','PAINEL 2','PAINEL 2.1','PAINEL 3','PAINEL 3.1','PAINEL 4','PAINEL 4.1','PAINEL 5','PAINEL 5.1'];
   // TV central de senhas
   tx('SENHA ATUAL', 248, 11, 4.2, '#94a3b8', 700);
   tx('A' + String(senhaAtual).padStart(3, '0'), 248, 20.5, 9.5, (Math.floor(t * 2) % 2) ? '#fde047' : '#fb923c', 800);
@@ -1299,8 +1309,12 @@ function frontLayer(t){
   if(POSTOS['AUTO 1']) marcador(['AUTO 1', 'AUTO'], 'AUTO 1', POSTOS['AUTO 1'].x * T + 8, POSTOS['AUTO 1'].y * T + 23);
   if(POSTOS['AUTO 2']) marcador(['AUTO 2'], 'AUTO 2', POSTOS['AUTO 2'].x * T + 8, POSTOS['AUTO 2'].y * T + 23);
   if(POSTOS['ORIENTADOR']) marcador(['ORIENTADOR'], 'ORIENT.', POSTOS['ORIENTADOR'].x * T + 8, POSTOS['ORIENTADOR'].y * T + 21);
-  // Nos painéis, a plaqueta técnica P1..P5 fica colada na base do púlpito do atendente (dentro da própria faixa!)
-  PAINEIS.forEach(k => { if(POSTOS[k]) marcador([k], k.replace('PAINEL ', 'P'), POSTOS[k].x * T + 8, POSTOS[k].y * T + 20.5); });
+  // Nos painéis, a plaqueta técnica P1..P5 (e P2.1..P5.1 quando ocupado) fica na base do púlpito dentro da própria faixa
+  PAINEIS.forEach(k => {
+    if(!POSTOS[k]) return;
+    if(k.includes('.1') && !ocup[k]) return;
+    marcador([k], k.replace('PAINEL ', 'P'), POSTOS[k].x * T + 8, POSTOS[k].y * T + 20.5);
+  });
   if(POSTOS['PESQUISA']) marcador(['PESQUISA'], 'PESQ 1', POSTOS['PESQUISA'].x * T - 18, POSTOS['PESQUISA'].y * T + 7);
   if(POSTOS['PESQUISA 2']) marcador(['PESQUISA 2'], 'PESQ 2', POSTOS['PESQUISA 2'].x * T - 18, POSTOS['PESQUISA 2'].y * T + 7);
 }
@@ -3243,20 +3257,24 @@ function parseDelimited(text, forceDelimiter = null){
 const parseTSV = parseDelimited;
 
 function processarLinhasImportadas(lin, manterSlot = false){
-  let hi = -1, ch = -1;
-  for(let r = 0; r < Math.min(lin.length, 15) && hi < 0; r++){
+  let hi = -1, ch = -1, melhorScore = 0;
+  for(let r = 0; r < Math.min(lin.length, 25); r++){
+    let postosNaLinha = 0, colHora = -1;
     for(let c = 0; c < lin[r].length; c++){
       const v = norm(lin[r][c] || '').replace(/[\r\n]+/g, ' ').trim();
-      if(v.includes('HORA') || v.includes('EMISSOR') || v.includes('PAINEL') || v.includes('POSTO')){
-        hi = r;
-        if(v.includes('HORA')) ch = c;
-        break;
-      }
+      if(!v) continue;
+      if(v.includes('HORA') && colHora < 0) colHora = c;
+      if(mapPosto(lin[r][c] || '')) postosNaLinha++;
+    }
+    if(postosNaLinha > melhorScore && postosNaLinha >= 2){
+      melhorScore = postosNaLinha;
+      hi = r;
+      if(colHora >= 0) ch = colHora;
     }
   }
   if(hi < 0){ throw new Error('Não achei a linha de cabeçalho (HORÁRIO / EMISSOR / PAINEL...).'); }
   if(ch < 0){
-    for(let r = hi + 1; r < Math.min(lin.length, hi + 8); r++){
+    for(let r = hi + 1; r < Math.min(lin.length, hi + 10); r++){
       for(let c = 0; c < lin[r].length; c++){
         if(extrairHora(lin[r][c])){ ch = c; break; }
       }
@@ -3275,9 +3293,17 @@ function processarLinhasImportadas(lin, manterSlot = false){
 
   const esc = {};
   for(let r = hi + 1; r < lin.length; r++){
-    const valPrimeira = norm(lin[r][ch] || '').trim();
-    if(valPrimeira === 'ALMOCO' || valPrimeira === 'LANCHE') break;
+    const textoLinha = lin[r].map(x => norm(x || '').trim()).join(' ');
+    if(textoLinha.includes('HORARIO DE LANCHE') || textoLinha.includes('TRIAGEM MANHA') || /^\s*ALMOCO\b/.test(norm(lin[r][ch] || ''))) break;
     let key = extrairHora(lin[r][ch]);
+    if(!key){
+      // Caso a hora esteja na coluna vizinha (ex: col 0 ou col 1)
+      for(let c = 0; c <= Math.min(2, lin[r].length - 1); c++){
+        if(c === ch) continue;
+        const kAlt = extrairHora(lin[r][c]);
+        if(kAlt && !cols.some(col => col.c === c)){ key = kAlt; break; }
+      }
+    }
     if(!key) continue;
     if(!esc[key]) esc[key] = {};
     cols.forEach(({ c, k }) => {
@@ -3435,13 +3461,19 @@ function carregarGoogleViaJSONP(sheetId, aba){
 
 function converterGvizParaMatriz(resp){
   const matriz = [];
-  if(!resp || !resp.table || !resp.table.rows) return matriz;
+  if(!resp || !resp.table) return matriz;
+  // IMPORTANTE: Quando a coluna de horários possui tipo datetime/timeofday no Google Planilhas,
+  // a API GViz move a linha de cabeçalho (HORÁRIO, EMISSOR 1, PAINEL 1...) para resp.table.cols[].label!
+  if(Array.isArray(resp.table.cols) && resp.table.cols.some(c => c && c.label && String(c.label).trim())){
+    matriz.push(resp.table.cols.map(c => (c && c.label) ? String(c.label).trim() : ''));
+  }
+  if(!resp.table.rows) return matriz;
   resp.table.rows.forEach(r => {
     const row = [];
     if(r && r.c){
       r.c.forEach(cell => {
         if(!cell) row.push('');
-        else if(cell.f !== undefined && cell.f !== null) row.push(String(cell.f));
+        else if(cell.f !== undefined && cell.f !== null && String(cell.f).trim() !== '') row.push(String(cell.f));
         else if(cell.v !== undefined && cell.v !== null) row.push(String(cell.v));
         else row.push('');
       });
@@ -3449,6 +3481,24 @@ function converterGvizParaMatriz(resp){
     matriz.push(row);
   });
   return matriz;
+}
+
+async function carregarMatrizGoogle(sheetId, aba){
+  // Estratégia dupla: 1º JSONP GViz (funciona em https:// e file:// sem bloqueio CORS), 2º Fallback CSV Export
+  try {
+    const resp = await carregarGoogleViaJSONP(sheetId, aba);
+    const matriz = converterGvizParaMatriz(resp);
+    if(matriz && matriz.length >= 2) return matriz;
+  } catch(errJsonp){
+    console.warn('Tentando fallback CSV após aviso JSONP:', errJsonp);
+  }
+  const csvUrl = aba
+    ? `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(aba)}&_cb=${Date.now()}`
+    : `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&_cb=${Date.now()}`;
+  const res = await fetch(csvUrl);
+  if(!res.ok) throw new Error('Falha ao baixar CSV da planilha do Google.');
+  const csvText = await res.text();
+  return parseDelimited(csvText, ',');
 }
 
 async function sincronizarGoogle(silencioso = false){
@@ -3460,8 +3510,7 @@ async function sincronizarGoogle(silencioso = false){
   atualizarBadgeGoogle('syncing');
 
   try {
-    const resp = await carregarGoogleViaJSONP(cfg.sheetId, cfg.aba);
-    const matriz = converterGvizParaMatriz(resp);
+    const matriz = await carregarMatrizGoogle(cfg.sheetId, cfg.aba);
     if(!matriz || matriz.length < 2){
       throw new Error('A planilha retornou vazia ou com formato não reconhecido.');
     }
@@ -3541,28 +3590,28 @@ function copiarLinkRecepcao(){
 
 /* ---------- grade oficial da unidade (ESCALA CLAUDIA 05/10 a 09/10) ---------- */
 const ESCALA_OFICIAL = {
-  "07:30": {"EMISSOR 1":"ADRIELLE","EMISSOR 2":"CIDA","EMISSOR 3":"DUDA","EMISSOR 4":"GABRIEL","EMISSOR 5":"TATIANA","TELEFONE 1":"LETICIA","AUTO 1":"JACQUELINE","ORIENTADOR":"LUCIANA","PAINEL 2":"VIVIANE","PAINEL 3":"CONCEICAO","PAINEL 5":"OVIDIO"},
-  "08:00": {"EMISSOR 1":"JACQUELINE","EMISSOR 2":"OVIDIO","EMISSOR 3":"VIVIANE","EMISSOR 4":"LUCIANA","TELEFONE 1":"CONCEICAO","AUTO SENTADO":"LETICIA","AUTO 1":"ADRIELLE","ORIENTADOR":"GABRIEL","PAINEL 2":"DUDA","PAINEL 5":"CIDA"},
-  "08:30": {"EMISSOR 1":"CIDA","EMISSOR 2":"ADRIELLE","EMISSOR 3":"GABRIEL","EMISSOR 4":"DUDA","TELEFONE 1":"JACQUELINE","AUTO SENTADO":"LUCIANA","AUTO 1":"LETICIA","ORIENTADOR":"CONCEICAO","PAINEL 2":"OVIDIO","PAINEL 5":"VIVIANE"},
-  "09:00": {"EMISSOR 1":"LETICIA","EMISSOR 2":"VIVIANE","EMISSOR 3":"OVIDIO","EMISSOR 4":"CONCEICAO","TELEFONE 1":"ADRIELLE","AUTO SENTADO":"GABRIEL","AUTO 1":"LUCIANA","ORIENTADOR":"DUDA","PAINEL 2":"CIDA","PAINEL 5":"JACQUELINE"},
-  "09:30": {"EMISSOR 1":"DUDA","EMISSOR 2":"LUCIANA","EMISSOR 3":"CIDA","EMISSOR 4":"JACQUELINE","TELEFONE 1":"OVIDIO","AUTO SENTADO":"CONCEICAO","AUTO 1":"GABRIEL","ORIENTADOR":"VIVIANE","PAINEL 2":"LETICIA","PAINEL 5":"ADRIELLE"},
-  "10:00": {"EMISSOR 1":"GABRIEL","EMISSOR 2":"LETICIA","EMISSOR 3":"LUCIANA","EMISSOR 4":"VIVIANE","TELEFONE 1":"CIDA","AUTO SENTADO":"ADRIELLE","AUTO 1":"DUDA","ORIENTADOR":"OVIDIO","PAINEL 2":"JACQUELINE","PAINEL 5":"CONCEICAO"},
-  "10:30": {"EMISSOR 1":"CONCEICAO","EMISSOR 2":"DUDA","EMISSOR 3":"JACQUELINE","EMISSOR 4":"OVIDIO","TELEFONE 1":"GABRIEL","AUTO SENTADO":"VIVIANE","AUTO 1":"CIDA","ORIENTADOR":"LETICIA","PAINEL 2":"ADRIELLE","PAINEL 5":"LUCIANA"},
-  "11:00": {"EMISSOR 1":"LUCIANA","EMISSOR 1.1":"WISLAINE","EMISSOR 2":"FANTINNY","EMISSOR 2.1":"GUSTAVO","EMISSOR 3":"LETICIA","EMISSOR 3.1":"JULIA","EMISSOR 4":"LUCIELE","EMISSOR 4.1":"ADRIELLE","TELEFONE 1":"MARIA","TELEFONE 2":"CIDA","AUTO SENTADO":"SONIA","AUTO 1":"VIVIANE","AUTO 2":"DVANY","ORIENTADOR":"JACQUELINE","PAINEL 2":"CONCEICAO","PAINEL 2.1":"JUAN","PAINEL 3":"DUDA","PAINEL 4":"THALITA","PAINEL 5":"GABRIEL","PESQUISA":"OVIDIO"},
-  "11:30": {"EMISSOR 1":"DVANY","EMISSOR 1.1":"GABRIEL","EMISSOR 2":"JUAN","EMISSOR 2.1":"OVIDIO","EMISSOR 3":"THALITA","EMISSOR 3.1":"CONCEICAO","EMISSOR 4":"CIDA","EMISSOR 4.1":"DUDA","TELEFONE 1":"VIVIANE","TELEFONE 2":"ADRIELLE","AUTO SENTADO":"JACQUELINE","AUTO 1":"FANTINNY","AUTO 2":"LETICIA","ORIENTADOR":"SONIA","PAINEL 2":"MARIA","PAINEL 2.1":"LUCIANA","PAINEL 3":"WISLAINE","PAINEL 4":"JULIA","PAINEL 5":"LUCIELE","PESQUISA":"GUSTAVO"},
-  "12:00": {"EMISSOR 1":"FANTINNY","EMISSOR 2":"LUCIELE","EMISSOR 3":"MARIA","EMISSOR 4":"SONIA","TELEFONE 1":"WISLAINE","AUTO SENTADO":"GUSTAVO","AUTO 1":"OVIDIO","ORIENTADOR":"DVANY","PAINEL 2":"THALITA","PAINEL 3":"VIVIANE","PAINEL 5":"JUAN"},
-  "12:30": {"EMISSOR 1":"VIVIANE","EMISSOR 1.1":"JULIA","EMISSOR 2":"DVANY","EMISSOR 3":"JUAN","EMISSOR 4":"THALITA","TELEFONE 1":"RAYANE","AUTO SENTADO":"WILLIANA","AUTO 1":"LUCIELE","ORIENTADOR":"WISLAINE","PAINEL 2":"SONIA","PAINEL 3":"GUSTAVO","PAINEL 4":"FANTINNY","PAINEL 5":"MARIA","PESQUISA":"CAMILA"},
-  "13:00": {"EMISSOR 1":"CAMILA","EMISSOR 2":"CONCEICAO","EMISSOR 3":"LUCIANA","EMISSOR 4":"LETICIA","TELEFONE 1":"DUDA","AUTO SENTADO":"VIVIANE","AUTO 1":"RAYANE","ORIENTADOR":"ADRIELLE","PAINEL 2":"GABRIEL","PAINEL 3":"JACQUELINE","PAINEL 4":"CIDA","PAINEL 5":"WILLIANA"},
-  "13:30": {"EMISSOR 1":"RAYANE","EMISSOR 2":"GABRIEL","EMISSOR 3":"ADRIELLE","EMISSOR 4":"JACQUELINE","TELEFONE 1":"WILLIANA","AUTO SENTADO":"CIDA","AUTO 1":"CONCEICAO","ORIENTADOR":"LETICIA","PAINEL 2":"CAMILA","PAINEL 3":"LUCIANA","PAINEL 4":"VIVIANE","PAINEL 5":"DUDA"},
-  "14:00": {"EMISSOR 1":"LUCIELE","EMISSOR 1.1":"LETICIA","EMISSOR 2":"CAMILA","EMISSOR 2.1":"VIVIANE","EMISSOR 3":"CONCEICAO","EMISSOR 3.1":"MARIA","EMISSOR 4":"FANTINNY","EMISSOR 4.1":"SONIA","TELEFONE 1":"LUCIANA","TELEFONE 2":"WISLAINE","AUTO SENTADO":"DUDA","AUTO 1":"WILLIANA","AUTO 2":"CIDA","ORIENTADOR":"JUAN","PAINEL 2":"DVANY","PAINEL 2.1":"GABRIEL","PAINEL 3":"THALITA","PAINEL 3.1":"JACQUELINE","PAINEL 4":"RAYANE","PAINEL 5":"JULIA","PESQUISA":"ADRIELLE","PESQUISA 2":"GUSTAVO"},
-  "14:30": {"EMISSOR 1":"WILLIANA","EMISSOR 1.1":"GUSTAVO","EMISSOR 2":"RAYANE","EMISSOR 2.1":"ADRIELLE","EMISSOR 3":"JULIA","EMISSOR 3.1":"CIDA","EMISSOR 4":"DVANY","EMISSOR 4.1":"GABRIEL","TELEFONE 1":"JUAN","TELEFONE 2":"JACQUELINE","AUTO SENTADO":"THALITA","AUTO 1":"CAMILA","AUTO 2":"LUCIANA","ORIENTADOR":"MARIA","PAINEL 2":"WISLAINE","PAINEL 2.1":"LETICIA","PAINEL 3":"SONIA","PAINEL 3.1":"CONCEICAO","PAINEL 4":"LUCIELE","PAINEL 5":"FANTINNY","PESQUISA":"DUDA","PESQUISA 2":"VIVIANE"},
-  "15:00": {"EMISSOR 1":"MARIA","EMISSOR 1.1":"DUDA","EMISSOR 2":"SONIA","EMISSOR 2.1":"LETICIA","EMISSOR 3":"FANTINNY","EMISSOR 3.1":"LUCIANA","EMISSOR 4":"WISLAINE","EMISSOR 4.1":"CONCEICAO","TELEFONE 1":"CAMILA","TELEFONE 2":"VIVIANE","AUTO SENTADO":"LUCIELE","AUTO 1":"GUSTAVO","AUTO 2":"ADRIELLE","ORIENTADOR":"THALITA","PAINEL 2":"JUAN","PAINEL 2.1":"CIDA","PAINEL 3":"DVANY","PAINEL 3.1":"GABRIEL","PAINEL 4":"WILLIANA","PAINEL 5":"RAYANE","PESQUISA":"JULIA","PESQUISA 2":"JACQUELINE"},
-  "15:30": {"EMISSOR 1":"JULIA","EMISSOR 2":"THALITA","EMISSOR 3":"RAYANE","EMISSOR 4":"JUAN","TELEFONE 1":"WILLIANA","AUTO SENTADO":"DVANY","AUTO 1":"WISLAINE","ORIENTADOR":"LUCIELE","PAINEL 2":"FANTINNY","PAINEL 3":"MARIA","PAINEL 4":"CAMILA","PAINEL 5":"SONIA"},
-  "16:00": {"EMISSOR 1":"SONIA","EMISSOR 2":"MARIA","EMISSOR 3":"CAMILA","EMISSOR 4":"FANTINNY","TELEFONE 1":"LUCIELE","AUTO SENTADO":"WISLAINE","AUTO 1":"DVANY","ORIENTADOR":"WILLIANA","PAINEL 2":"JULIA","PAINEL 3":"RAYANE","PAINEL 4":"GUSTAVO","PAINEL 5":"THALITA","PESQUISA":"JUAN"},
-  "16:30": {"EMISSOR 1":"GUSTAVO","EMISSOR 2":"WILLIANA","EMISSOR 3":"DVANY","EMISSOR 4":"RAYANE","TELEFONE 1":"JULIA","AUTO SENTADO":"JUAN","AUTO 1":"MARIA","ORIENTADOR":"FANTINNY","PAINEL 2":"LUCIELE","PAINEL 3":"CAMILA","PAINEL 4":"SONIA","PAINEL 5":"WISLAINE"},
-  "17:00": {"EMISSOR 1":"WISLAINE","EMISSOR 2":"SONIA","EMISSOR 3":"LUCIELE","EMISSOR 4":"MARIA","TELEFONE 1":"FANTINNY","AUTO SENTADO":"CAMILA","AUTO 1":"JULIA","ORIENTADOR":"RAYANE","PAINEL 2":"WILLIANA","PAINEL 3":"JUAN","PAINEL 4":"DVANY","PAINEL 5":"GUSTAVO","PESQUISA":"THALITA"},
-  "17:30": {"EMISSOR 1":"THALITA","EMISSOR 2":"GUSTAVO","EMISSOR 3":"WILLIANA","EMISSOR 4":"JULIA","TELEFONE 1":"DVANY","AUTO SENTADO":"RAYANE","AUTO 1":"SONIA","ORIENTADOR":"LUCIELE","PAINEL 2":"WISLAINE","PAINEL 3":"FANTINNY","PAINEL 4":"MARIA","PAINEL 5":"CAMILA"},
-  "18:00": {"EMISSOR 1":"LUCIELE","EMISSOR 2":"WISLAINE","EMISSOR 3":"SONIA","EMISSOR 4":"CAMILA","TELEFONE 1":"FANTINNY","AUTO SENTADO":"MARIA","AUTO 1":"THALITA","ORIENTADOR":"JULIA","PAINEL 2":"GUSTAVO","PAINEL 3":"WILLIANA","PAINEL 4":"JUAN","PAINEL 5":"DVANY","PESQUISA":"RAYANE"}
+  "07:30": {"EMISSOR 1": "TATIANA", "EMISSOR 2": "GABRIEL", "EMISSOR 3": "ADRIELLE", "EMISSOR 4": "OVIDIO", "EMISSOR 5": "CIDA", "AUTO 1": "LETICIA", "ORIENTADOR": "DUDA", "PAINEL 2": "JACQUELINE", "PAINEL 5": "LUCIANA"},
+  "08:00": {"EMISSOR 1": "DUDA", "EMISSOR 2": "LUCIANA", "EMISSOR 3": "LETICIA", "EMISSOR 4": "JACQUELINE", "AUTO 1": "OVIDIO", "ORIENTADOR": "GABRIEL", "PAINEL 2": "ADRIELLE", "PAINEL 4": "CIDA", "PAINEL 5": "TATIANA"},
+  "08:30": {"EMISSOR 1": "CIDA", "EMISSOR 2": "OVIDIO", "EMISSOR 3": "GABRIEL", "EMISSOR 4": "TATIANA", "EMISSOR 5": "ADRIELLE", "AUTO 1": "DUDA", "ORIENTADOR": "LUCIANA", "PAINEL 2": "LETICIA", "PAINEL 5": "JACQUELINE"},
+  "09:00": {"EMISSOR 1": "LETICIA", "EMISSOR 3": "JACQUELINE", "EMISSOR 4": "LUCIANA", "EMISSOR 5": "DUDA", "AUTO 1": "GABRIEL", "ORIENTADOR": "OVIDIO", "PAINEL 2": "CIDA", "PAINEL 4": "TATIANA", "PAINEL 5": "ADRIELLE"},
+  "09:30": {"EMISSOR 1": "GABRIEL", "EMISSOR 2": "TATIANA", "EMISSOR 3": "CIDA", "EMISSOR 4": "ADRIELLE", "EMISSOR 5": "OVIDIO", "AUTO 1": "JACQUELINE", "ORIENTADOR": "LETICIA", "PAINEL 2": "LUCIANA", "PAINEL 5": "DUDA"},
+  "10:00": {"EMISSOR 1": "JACQUELINE", "EMISSOR 3": "DUDA", "EMISSOR 4": "LETICIA", "EMISSOR 5": "LUCIANA", "AUTO 1": "CIDA", "ORIENTADOR": "TATIANA", "PAINEL 2": "OVIDIO", "PAINEL 4": "ADRIELLE", "PAINEL 5": "GABRIEL"},
+  "10:30": {"EMISSOR 1": "OVIDIO", "EMISSOR 2": "ADRIELLE", "EMISSOR 3": "TATIANA", "EMISSOR 4": "CIDA", "EMISSOR 5": "GABRIEL", "AUTO 1": "LUCIANA", "ORIENTADOR": "JACQUELINE", "PAINEL 2": "DUDA", "PAINEL 5": "LETICIA"},
+  "11:00": {"EMISSOR 1": "SONIA", "EMISSOR 2": "THALITA", "EMISSOR 3": "JUAN", "EMISSOR 4": "WISLAINE", "EMISSOR 5": "JACQUELINE", "TELEFONE 1": "LETICIA", "TELEFONE 2": "DUDA", "AUTO SENTADO": "LUCIANA", "AUTO 1": "ADRIELLE", "ORIENTADOR": "CIDA", "PAINEL 1": "OVIDIO", "PAINEL 2": "TATIANA", "PAINEL 2.1": "MARIA", "PAINEL 3": "GABRIEL", "PAINEL 4": "FANTINNY", "PAINEL 5": "LUCIELE", "PESQUISA": "DVANY"},
+  "11:30": {"EMISSOR 1": "LUCIELE", "EMISSOR 2": "MARIA", "EMISSOR 3": "OVIDIO", "EMISSOR 4": "FANTINNY", "EMISSOR 5": "DVANY", "TELEFONE 1": "ADRIELLE", "TELEFONE 2": "CIDA", "AUTO SENTADO": "GABRIEL", "AUTO 1": "THALITA", "ORIENTADOR": "SONIA", "PAINEL 1": "LUCIANA", "PAINEL 2": "WISLAINE", "PAINEL 3": "JACQUELINE", "PAINEL 4": "LETICIA", "PAINEL 5": "JUAN", "PESQUISA": "DUDA"},
+  "12:00": {"EMISSOR 1": "WISLAINE", "EMISSOR 2": "JACQUELINE", "EMISSOR 3": "SONIA", "EMISSOR 4": "THALITA", "EMISSOR 5": "JUAN", "AUTO 1": "MARIA", "PAINEL 2": "LUCIELE", "PAINEL 4": "DVANY", "PAINEL 5": "FANTINNY", "PESQUISA": "OVIDIO"},
+  "12:30": {"EMISSOR 1": "RAYANE", "EMISSOR 2": "LUCIELE", "EMISSOR 3": "MARIA", "EMISSOR 4": "WILLIANA", "EMISSOR 5": "FANTINNY", "TELEFONE 1": "OVIDIO", "AUTO SENTADO": "DVANY", "AUTO 1": "SONIA", "PAINEL 1": "JACQUELINE", "PAINEL 2": "THALITA", "PAINEL 4": "CAMILA", "PAINEL 5": "WISLAINE", "PESQUISA": "JUAN"},
+  "13:00": {"EMISSOR 2": "DUDA", "EMISSOR 3": "LUCIANA", "EMISSOR 4": "GABRIEL", "EMISSOR 5": "LETICIA", "TELEFONE 1": "CAMILA", "AUTO 1": "TATIANA", "PAINEL 2": "WILLIANA", "PAINEL 4": "RAYANE", "PAINEL 5": "CIDA", "PESQUISA": "ADRIELLE"},
+  "13:30": {"EMISSOR 1": "ADRIELLE", "EMISSOR 2": "CIDA", "EMISSOR 3": "WILLIANA", "EMISSOR 4": "RAYANE", "EMISSOR 5": "TATIANA", "AUTO 1": "DUDA", "PAINEL 2": "GABRIEL", "PAINEL 4": "LUCIANA", "PAINEL 5": "CAMILA", "PESQUISA": "LETICIA"},
+  "14:00": {"EMISSOR 1": "MARIA", "EMISSOR 2": "LETICIA", "EMISSOR 3": "DVANY", "EMISSOR 4": "CAMILA", "EMISSOR 5": "WISLAINE", "TELEFONE 1": "GABRIEL", "TELEFONE 2": "LUCIANA", "AUTO SENTADO": "DUDA", "AUTO 1": "FANTINNY", "ORIENTADOR": "ADRIELLE", "PAINEL 1": "CIDA", "PAINEL 2": "SONIA", "PAINEL 2.1": "JUAN", "PAINEL 3": "THALITA", "PAINEL 4": "LUCIELE", "PAINEL 5": "WILLIANA", "PAINEL 5.1": "TATIANA", "PESQUISA": "RAYANE"},
+  "14:30": {"EMISSOR 1": "JUAN", "EMISSOR 2": "WILLIANA", "EMISSOR 3": "RAYANE", "EMISSOR 4": "SONIA", "EMISSOR 5": "LUCIELE", "TELEFONE 1": "FANTINNY", "TELEFONE 2": "TATIANA", "AUTO SENTADO": "THALITA", "AUTO 1": "CAMILA", "ORIENTADOR": "WISLAINE", "PAINEL 1": "GABRIEL", "PAINEL 2": "DVANY", "PAINEL 3": "LETICIA", "PAINEL 4": "DUDA", "PAINEL 5": "MARIA", "PESQUISA": "LUCIANA"},
+  "15:00": {"EMISSOR 2": "DVANY", "EMISSOR 3": "WISLAINE", "EMISSOR 4": "MARIA", "EMISSOR 5": "CAMILA", "AUTO 1": "LUCIELE", "PAINEL 1": "WILLIANA", "PAINEL 2": "RAYANE", "PAINEL 3": "FANTINNY", "PAINEL 4": "JUAN", "PAINEL 5": "SONIA", "PESQUISA": "THALITA"},
+  "15:30": {"EMISSOR 1": "WILLIANA", "EMISSOR 2": "FANTINNY", "EMISSOR 3": "LUCIELE", "EMISSOR 4": "JUAN", "EMISSOR 5": "SONIA", "TELEFONE 1": "THALITA", "AUTO SENTADO": "RAYANE", "AUTO 1": "WISLAINE", "PAINEL 2": "CAMILA", "PAINEL 4": "MARIA", "PAINEL 5": "DVANY"},
+  "16:00": {"EMISSOR 2": "WISLAINE", "EMISSOR 3": "CAMILA", "EMISSOR 4": "DVANY", "EMISSOR 5": "MARIA", "AUTO 1": "RAYANE", "PAINEL 1": "LUCIELE", "PAINEL 2": "FANTINNY", "PAINEL 3": "JUAN", "PAINEL 4": "WILLIANA", "PAINEL 5": "THALITA", "PESQUISA": "SONIA"},
+  "16:30": {"EMISSOR 1": "THALITA", "EMISSOR 2": "RAYANE", "EMISSOR 3": "FANTINNY", "EMISSOR 4": "LUCIELE", "EMISSOR 5": "WILLIANA", "TELEFONE 1": "SONIA", "AUTO SENTADO": "JUAN", "AUTO 1": "DVANY", "PAINEL 2": "MARIA", "PAINEL 4": "WISLAINE", "PAINEL 5": "CAMILA"},
+  "17:00": {"EMISSOR 2": "CAMILA", "EMISSOR 3": "WISLAINE", "EMISSOR 4": "DVANY", "EMISSOR 5": "MARIA", "AUTO 1": "WILLIANA", "PAINEL 1": "THALITA", "PAINEL 2": "JUAN", "PAINEL 3": "LUCIELE", "PAINEL 4": "SONIA", "PAINEL 5": "RAYANE", "PESQUISA": "FANTINNY"},
+  "17:30": {"EMISSOR 1": "FANTINNY", "EMISSOR 2": "SONIA", "EMISSOR 3": "THALITA", "EMISSOR 4": "WILLIANA", "EMISSOR 5": "RAYANE", "TELEFONE 1": "JUAN", "AUTO SENTADO": "LUCIELE", "AUTO 1": "WISLAINE", "PAINEL 2": "DVANY", "PAINEL 4": "CAMILA", "PAINEL 5": "MARIA"},
+  "18:00": {"EMISSOR 2": "MARIA", "EMISSOR 3": "DVANY", "EMISSOR 4": "WISLAINE", "EMISSOR 5": "CAMILA", "AUTO 1": "JUAN", "PAINEL 2": "FANTINNY", "PAINEL 4": "THALITA", "PAINEL 5": "SONIA", "PESQUISA": "LUCIELE"}
 };
 
 function carregarDemo(){
