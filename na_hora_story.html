@@ -182,6 +182,46 @@
   .layout-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);opacity:0;pointer-events:none;background:#0b1329;color:#fff;border:1px solid #10b981;padding:10px 22px;border-radius:999px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 12px 35px rgba(0,0,0,.45);transition:all .35s cubic-bezier(.16,1,.3,1);z-index:220}
   .layout-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
+
+  /* ---- Central de Minijogos: Arcade Na Hora ---- */
+  #btnArcade{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;border:none;box-shadow:0 3px 12px rgba(219,39,119,.35);animation:pulseArcade 2.6s infinite}
+  #btnArcade:hover{filter:brightness(1.1);transform:translateY(-1px)}
+  @keyframes pulseArcade{0%,100%{box-shadow:0 3px 12px rgba(219,39,119,.35)}50%{box-shadow:0 0 18px rgba(124,58,237,.75)}}
+  #modalArcade{display:none;position:fixed;inset:0;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);z-index:160;align-items:center;justify-content:center;padding:12px}
+  .arc-box{width:98%;max-width:940px;max-height:95vh;overflow:auto;background:linear-gradient(180deg,#0f172a,#1e293b);color:#f8fafc;border:2px solid #38bdf8;border-radius:18px;padding:18px 22px;box-shadow:0 24px 60px rgba(0,0,0,.65)}
+  .arc-head{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(148,163,184,.2);padding-bottom:12px;margin-bottom:14px;flex-wrap:wrap}
+  .arc-title{display:flex;align-items:center;gap:12px}
+  .arc-title h2{margin:0;font-size:20px;color:#fff;letter-spacing:.02em;display:flex;align-items:center;gap:8px}
+  .arc-title p{margin:2px 0 0;font-size:12.5px;color:#94a3b8}
+  .arc-top-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(30,41,59,.85);border:1px solid rgba(56,189,248,.3);border-radius:12px;padding:10px 14px;margin-bottom:14px;flex-wrap:wrap}
+  .arc-player-sel{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .arc-player-sel label{font-size:12px;font-weight:800;color:#38bdf8;text-transform:uppercase;letter-spacing:.05em}
+  .arc-player-sel select{background:#0f172a;color:#fff;border:1.5px solid #38bdf8;border-radius:8px;padding:6px 10px;font-weight:700;font-size:13px}
+  .arc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+  @media(max-width:820px){.arc-grid{grid-template-columns:1fr}}
+  .arc-card{background:linear-gradient(180deg,#1e293b,#0f172a);border:1.5px solid #334155;border-radius:14px;padding:15px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+  .arc-card:hover{border-color:#38bdf8;transform:translateY(-3px);box-shadow:0 12px 28px rgba(56,189,248,.2)}
+  .arc-badge{align-self:flex-start;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;background:#1d4ed8;color:#fff;letter-spacing:.05em}
+  .arc-badge.b2{background:#dc2626}
+  .arc-badge.b3{background:#059669}
+  .arc-card h3{margin:2px 0;font-size:16px;color:#fff}
+  .arc-card p{margin:0;font-size:12.5px;color:#cbd5e1;line-height:1.45}
+  .arc-rules{background:rgba(15,23,42,.7);border-radius:8px;padding:8px 10px;font-size:11.5px;color:#94a3b8;display:flex;flex-direction:column;gap:4px}
+  .arc-rules b{color:#f8fafc}
+  .arc-hi{font-size:12px;color:#facc15;font-weight:800;display:flex;align-items:center;justify-content:space-between}
+  .arc-hud{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#090d16;border:1px solid #334155;border-radius:10px;padding:8px 12px;margin-bottom:10px;flex-wrap:wrap}
+  .arc-stat{font-size:13px;font-weight:800;color:#cbd5e1;background:#1e293b;padding:5px 11px;border-radius:8px;border:1px solid #334155}
+  .arc-stat b{color:#38bdf8;font-size:14px}
+  .arc-stat.combo b{color:#facc15}
+  .arc-stat.vidas b{color:#f87171}
+  .arc-cv-wrap{position:relative;background:#090d16;border:2px solid #334155;border-radius:12px;overflow:hidden;display:flex;justify-content:center}
+  canvas#arcadeCanvas{width:100%;max-width:860px;height:auto;aspect-ratio:860/460;display:block;cursor:pointer;background:#090d16;margin:0}
+  .arc-controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+  .arc-cbtn{font-family:var(--px);font-size:13px;font-weight:800;padding:10px 16px;border-radius:10px;border:2px solid rgba(255,255,255,.2);color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .1s}
+  .arc-cbtn:active{transform:scale(.95)}
+  .arc-cbtn kbd{background:rgba(0,0,0,.35);padding:2px 6px;border-radius:4px;font-size:11px;border:1px solid rgba(255,255,255,.25)}
+  .arc-ranking{background:rgba(15,23,42,.65);border:1px solid #334155;border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12.5px}
+
 </style>
 </head>
 <body>
@@ -219,6 +259,7 @@
     <button class="btn p admin-only" onclick="carregarDemo()">⚡ Demo</button>
     <button class="btn p" onclick="abrirSkin()" title="Personalize o visual do seu avatar no mapa (roupa, cabelo, barba, olhos, expressão, óculos, pele)">🎨 Meu avatar</button>
     <button class="btn y" id="btnCheiroso" onclick="acionarCheiroso(true)" title="Faz o NPC especial 'Cheiroso' entrar na unidade agora (ele também entra periodicamente sozinho!)">🤢 Cheiroso</button>
+    <button class="btn p" id="btnArcade" onclick="ArcadeNaHora.abrir()" title="Central de Minijogos Na Hora: Expresso da Senha, Painel Azul/Vermelho/Preto (Chame o TI!) e Café vs. Cheiroso">🎮 Minijogos</button>
     <button class="btn p admin-only" id="btnEditarLayout" onclick="toggleModoEditor()" title="Editar o layout do salão e reposicionar móveis e postos">🛠️ Editar Layout</button>
     <span class="sp"></span>
     <button class="btn live-active" id="btnSyncRelogio" onclick="toggleSeguirRelogio()" title="Sincronizado automaticamente com o relógio do seu computador. Clique para pausar ou navegar manualmente."><span class="dot-live"></span> ⏰ AO VIVO</button>
@@ -373,6 +414,120 @@
         <button class="btn" onclick="fecharModalGoogle()">Fechar</button>
         <button class="btn g" onclick="salvarEConectarGoogle()">🔄 Sincronizar agora</button>
       </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal Central de Minijogos: Arcade Na Hora -->
+<div id="modalArcade">
+  <div class="arc-box">
+    <div class="arc-head">
+      <div class="arc-title">
+        <span style="font-size:30px">🎮</span>
+        <div>
+          <h2>ARCADE NA HORA CEILÂNDIA <span style="font-size:11px;background:#7c3aed;padding:2px 8px;border-radius:999px;vertical-align:middle">PASSATEMPO & TREINO</span></h2>
+          <p>Divirta-se nos minijogos da unidade usando o seu próprio avatar customizado e dispute o troféu 🏆 no mapa!</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" id="btnArcMute" onclick="ArcadeNaHora.toggleMute()" style="background:#1e293b;color:#fff;border:1px solid #475569">🔊 Som: ON</button>
+        <button class="btn r" onclick="ArcadeNaHora.fechar()">✕ Fechar</button>
+      </div>
+    </div>
+
+    <!-- TELA 1: HUB DE ESCOLHA DOS MINIJOGOS -->
+    <div id="arcHubView">
+      <div class="arc-top-bar">
+        <div class="arc-player-sel">
+          <label for="arcSelJogador">🧑‍💼 Jogar com o Avatar de:</label>
+          <select id="arcSelJogador" onchange="ArcadeNaHora.selecionarJogador(this.value)"></select>
+          <button class="btn p" onclick="ArcadeNaHora.fechar();abrirSkin(ArcadeNaHora.jogador)" style="padding:5px 10px;font-size:11.5px">🎨 Editar Roupas/Cabelo</button>
+        </div>
+        <div id="arcChampionBanner" style="font-size:12.5px;color:#fde047;font-weight:800">🏆 Recordista Geral: —</div>
+      </div>
+
+      <div class="arc-grid">
+        <!-- MINIJOGO 1 -->
+        <div class="arc-card" onclick="ArcadeNaHora.iniciar(1)">
+          <div>
+            <span class="arc-badge">JOGO 1 • ATENDIMENTO & TRIAGEM</span>
+            <h3>🎫 Expresso da Senha</h3>
+            <p>Cidadãos estão chegando na fila! Entregue a senha certa conforme o pedido de cada cidadão antes que a paciência acabe.</p>
+          </div>
+          <div class="arc-rules">
+            <span>🔵 <b>Tecla [1] Senha P:</b> Preferencial / Idoso 👴</span>
+            <span>🟢 <b>Tecla [2] Senha A:</b> Emissão RG / Cidadão 🪪</span>
+            <span>🟡 <b>Tecla [3] Senha R:</b> Dúvida / Retirada Rápida ⚡</span>
+            <span>✨ <b>Tecla [4] Perfume:</b> Se o <b>Cheiroso</b> 🤢 aparecer!</span>
+          </div>
+          <div>
+            <div class="arc-hi"><span>🏆 Seu Recorde:</span> <span id="arcHi1">0 pts</span></div>
+            <button class="btn g" style="width:100%;justify-content:center;margin-top:8px">▶ JOGAR EXPRESSO DA SENHA</button>
+          </div>
+        </div>
+
+        <!-- MINIJOGO 2 -->
+        <div class="arc-card" onclick="ArcadeNaHora.iniciar(2)">
+          <div>
+            <span class="arc-badge b2">JOGO 2 • PAINÉIS & SUPORTE T.I.</span>
+            <h3>🖥️ Painel Azul, Vermelho & TI!</h3>
+            <p>Corra pelos 5 Painéis do salão! Fique no painel Azul para atender, fuja do Vermelho e chame o TI quando o painel ficar Preto!</p>
+          </div>
+          <div class="arc-rules">
+            <span>🔵 <b>PAINEL AZUL:</b> Fique nele para atender e ganhar pontos!</span>
+            <span>🔴 <b>PAINEL VERMELHO:</b> Saia rápido antes da sobrecarga!</span>
+            <span>⚫ <b>PAINEL PRETO:</b> Vá até ele e aperte <b>🔧 Chamar TI [Espaço]</b>!</span>
+            <span>🏃 <b>Mover:</b> Setas ◀ ▶, Teclas 1..5 ou Clique no Painel</span>
+          </div>
+          <div>
+            <div class="arc-hi"><span>🏆 Seu Recorde:</span> <span id="arcHi2">0 pts</span></div>
+            <button class="btn g" style="width:100%;justify-content:center;margin-top:8px">▶ JOGAR ALERTA NOS PAINÉIS</button>
+          </div>
+        </div>
+
+        <!-- MINIJOGO 3 -->
+        <div class="arc-card" onclick="ArcadeNaHora.iniciar(3)">
+          <div>
+            <span class="arc-badge b3">JOGO 3 • DEFESA DO SALÃO</span>
+            <h3>☕ Café Turbo vs. Cheiroso</h3>
+            <p>Mantenha a equipe acordada levando Café BRB para quem está com sono e borrife perfume quando o Cheiroso invadir o salão!</p>
+          </div>
+          <div class="arc-rules">
+            <span>😴 <b>Colega com Sono:</b> Clique nele ou aperte <b>[1] ☕ Dar Café</b></span>
+            <span>🤢 <b>Invasão do Cheiroso:</b> Clique nele ou aperte <b>[2] ✨ Perfumar</b></span>
+            <span>⚡ <b>Combo Turbo:</b> Não deixe ninguém dormir no posto!</span>
+          </div>
+          <div>
+            <div class="arc-hi"><span>🏆 Seu Recorde:</span> <span id="arcHi3">0 pts</span></div>
+            <button class="btn g" style="width:100%;justify-content:center;margin-top:8px">▶ JOGAR CAFÉ VS. CHEIROSO</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="arc-ranking" id="arcRankingBox">
+        <span>💡 <b>Dica:</b> O recordista de cada minijogo ganha um troféu dourado <b>🏆</b> ao lado do nome na planta baixa do salão!</span>
+        <button class="btn" onclick="ArcadeNaHora.resetarRecordes()" style="background:#1e293b;color:#94a3b8;border:1px solid #334155;font-size:11px;padding:4px 9px">Limpar recordes locais</button>
+      </div>
+    </div>
+
+    <!-- TELA 2: PALCO DO JOGO ATIVO -->
+    <div id="arcStageView" style="display:none">
+      <div class="arc-hud">
+        <button class="btn b" onclick="ArcadeNaHora.voltarHub()">◀ Voltar aos Jogos</button>
+        <div class="arc-stat" id="arcNomeJogoHud">🎫 Expresso da Senha</div>
+        <div class="arc-stat">PONTOS: <b id="arcHudScore">0</b></div>
+        <div class="arc-stat combo">COMBO: <b id="arcHudCombo">x1</b></div>
+        <div class="arc-stat vidas">VIDAS: <b id="arcHudVidas">❤️❤️❤️</b></div>
+        <div class="arc-stat">RECORDE: <b id="arcHudBest">0</b></div>
+        <button class="btn y" onclick="ArcadeNaHora.reiniciar()">↺ Reiniciar</button>
+      </div>
+
+      <div class="arc-cv-wrap">
+        <canvas id="arcadeCanvas" width="860" height="460"></canvas>
+      </div>
+
+      <div class="arc-controls" id="arcControlsBar"></div>
     </div>
   </div>
 </div>
@@ -2299,6 +2454,7 @@ function frame(ts){
     ctx.globalAlpha = 1;
   });
   frontLayer(t);
+  if(typeof desenharParticulasSalao === 'function') desenharParticulasSalao(t);
   if(typeof estadoEditor !== 'undefined' && estadoEditor.ativo) desenharOverlayEditor();
 
   // Crachás de nome dos atendentes (design escuro com borda colorida e seta apontadora, sem sobrepor painéis!)
@@ -2320,7 +2476,8 @@ function frame(ts){
       return partes[0] + ' ' + partes[1][0] + '.';
     }
     const iconeCheiro = cheiroso.ativo ? '🤢 ' : '';
-    const alerta = estado.alertas[p.nome], nome = iconeCheiro + (alerta ? '⚠ ' : '') + (p.supervisor ? '★ ' : '') + formatarNomeCracha(p.nome);
+    const iconeTrofeu = (typeof ArcadeNaHora !== 'undefined' && ArcadeNaHora.ehCampeao(p.nome)) ? '🏆 ' : '';
+    const alerta = estado.alertas[p.nome], nome = iconeCheiro + iconeTrofeu + (alerta ? '⚠ ' : '') + (p.supervisor ? '★ ' : '') + formatarNomeCracha(p.nome);
     return { p, cx, topo, nome, alerta, w: medir(nome, 6.2, 800) + 8 };
   }).sort((a, b) => (a.p.nome === sel) - (b.p.nome === sel) || a.p.y - b.p.y || a.cx - b.cx);
 
@@ -2381,7 +2538,10 @@ function frame(ts){
     const fala = FALAS_CHEIROSO[Math.floor(t / 3.5) % FALAS_CHEIROSO.length];
     bolha(cx, cy - 13, fala);
   }
-  requestAnimationFrame(frame);
+  
+
+
+requestAnimationFrame(frame);
 }
 
 /* =====================================================================
@@ -2851,6 +3011,9 @@ try {
       if(e.data && e.data.action === 'cheiroso_spawn'){
         acionarCheiroso(false);
       }
+      if(e.data && e.data.action === 'arcade_score' && typeof ArcadeNaHora !== 'undefined'){
+        ArcadeNaHora.receberScoresRemotos(e.data.scores);
+      }
     };
   }
 } catch(e){}
@@ -3272,22 +3435,42 @@ function processarLinhasImportadas(lin, manterSlot = false){
       if(colHora >= 0) ch = colHora;
     }
   }
-  if(hi < 0){ throw new Error('Não achei a linha de cabeçalho (HORÁRIO / EMISSOR / PAINEL...).'); }
-  if(ch < 0){
-    for(let r = hi + 1; r < Math.min(lin.length, hi + 10); r++){
-      for(let c = 0; c < lin[r].length; c++){
-        if(extrairHora(lin[r][c])){ ch = c; break; }
+  let cols = [];
+  if(hi >= 0){
+    if(ch < 0){
+      for(let r = hi + 1; r < Math.min(lin.length, hi + 10); r++){
+        for(let c = 0; c < lin[r].length; c++){
+          if(extrairHora(lin[r][c])){ ch = c; break; }
+        }
+        if(ch >= 0) break;
       }
-      if(ch >= 0) break;
     }
-  }
-  if(ch < 0) ch = 0;
-
-  const cols = [];
-  for(let c = 0; c < lin[hi].length; c++){
-    if(c === ch) continue;
-    let k = mapPosto(lin[hi][c] || '');
-    if(k) cols.push({ c, k });
+    if(ch < 0) ch = 0;
+    for(let c = 0; c < lin[hi].length; c++){
+      if(c === ch) continue;
+      let k = mapPosto(lin[hi][c] || '');
+      if(k) cols.push({ c, k });
+    }
+  } else {
+    // Fallback infalível: se a API omitiu a linha de cabeçalho mas há linhas de horário (07:30, 08:00...),
+    // detecta a coluna de horário automaticamente e aplica a ordem oficial de colunas da planilha Na Hora!
+    for(let r = 0; r < Math.min(lin.length, 15) && ch < 0; r++){
+      for(let c = 0; c < Math.min(lin[r].length, 4); c++){
+        if(extrairHora(lin[r][c])){ ch = c; hi = r - 1; break; }
+      }
+    }
+    if(ch >= 0){
+      const ORDEM_PADRAO_NAHORA = [
+        'EMISSOR 1','EMISSOR 2','EMISSOR 3','EMISSOR 4','EMISSOR 5',
+        'TELEFONE 1','TELEFONE 2','AUTO SENTADO','AUTO 1','ORIENTADOR',
+        'PAINEL 1','PAINEL 2','PAINEL 2.1','PAINEL 3','PAINEL 4','PAINEL 4.1','PAINEL 5','PAINEL 5.1','PESQUISA'
+      ];
+      ORDEM_PADRAO_NAHORA.forEach((k, idx) => {
+        cols.push({ c: ch + 1 + idx, k });
+      });
+    } else {
+      throw new Error('Não achei a linha de cabeçalho (HORÁRIO / EMISSOR / PAINEL...).');
+    }
   }
   if(!cols.length){ throw new Error('Nenhuma coluna de posto reconhecida.'); }
 
@@ -3320,7 +3503,19 @@ function processarLinhasImportadas(lin, manterSlot = false){
 }
 
 function colar(){
-  const raw = $('paste').value; if(!raw.trim()) return;
+  const raw = ($('paste').value || '').trim(); if(!raw) return;
+  if(raw.includes('docs.google.com/spreadsheets')){
+    const id = extrairGoogleId(raw);
+    if(id){
+      fecharModal();
+      const cfg = carregarConfigGoogle();
+      cfg.url = raw; cfg.sheetId = id;
+      salvarConfigGoogle(cfg);
+      iniciarGooglePolling();
+      sincronizarGoogle(false);
+      return;
+    }
+  }
   try {
     const lin = parseDelimited(raw);
     processarLinhasImportadas(lin);
@@ -3483,24 +3678,6 @@ function converterGvizParaMatriz(resp){
   return matriz;
 }
 
-async function carregarMatrizGoogle(sheetId, aba){
-  // Estratégia dupla: 1º JSONP GViz (funciona em https:// e file:// sem bloqueio CORS), 2º Fallback CSV Export
-  try {
-    const resp = await carregarGoogleViaJSONP(sheetId, aba);
-    const matriz = converterGvizParaMatriz(resp);
-    if(matriz && matriz.length >= 2) return matriz;
-  } catch(errJsonp){
-    console.warn('Tentando fallback CSV após aviso JSONP:', errJsonp);
-  }
-  const csvUrl = aba
-    ? `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(aba)}&_cb=${Date.now()}`
-    : `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&_cb=${Date.now()}`;
-  const res = await fetch(csvUrl);
-  if(!res.ok) throw new Error('Falha ao baixar CSV da planilha do Google.');
-  const csvText = await res.text();
-  return parseDelimited(csvText, ',');
-}
-
 async function sincronizarGoogle(silencioso = false){
   const cfg = carregarConfigGoogle();
   if(!cfg.sheetId){
@@ -3510,12 +3687,43 @@ async function sincronizarGoogle(silencioso = false){
   atualizarBadgeGoogle('syncing');
 
   try {
-    const matriz = await carregarMatrizGoogle(cfg.sheetId, cfg.aba);
-    if(!matriz || matriz.length < 2){
-      throw new Error('A planilha retornou vazia ou com formato não reconhecido.');
+    const abasParaTentar = cfg.aba ? [cfg.aba, ''] : [''];
+    let importadoComSucesso = false;
+    let ultimoErro = null;
+
+    for(const abaTentativa of abasParaTentar){
+      // 1ª Tentativa: Exportação CSV direta (preserva 100% das linhas originais da planilha)
+      try {
+        const csvUrl = abaTentativa
+          ? `https://docs.google.com/spreadsheets/d/${cfg.sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(abaTentativa)}&_cb=${Date.now()}`
+          : `https://docs.google.com/spreadsheets/d/${cfg.sheetId}/export?format=csv&_cb=${Date.now()}`;
+        const res = await fetch(csvUrl);
+        if(res.ok){
+          const csvText = await res.text();
+          const matrizCsv = parseDelimited(csvText, ',');
+          if(matrizCsv && matrizCsv.length >= 2){
+            processarLinhasImportadas(matrizCsv, true);
+            importadoComSucesso = true;
+            break;
+          }
+        }
+      } catch(eCsv){ ultimoErro = eCsv; }
+
+      // 2ª Tentativa: JSONP GViz (funciona mesmo sem CORS ou em arquivo local file://)
+      try {
+        const resp = await carregarGoogleViaJSONP(cfg.sheetId, abaTentativa);
+        const matrizGviz = converterGvizParaMatriz(resp);
+        if(matrizGviz && matrizGviz.length >= 2){
+          processarLinhasImportadas(matrizGviz, true);
+          importadoComSucesso = true;
+          break;
+        }
+      } catch(eJsonp){ ultimoErro = eJsonp; }
     }
 
-    processarLinhasImportadas(matriz, true);
+    if(!importadoComSucesso){
+      throw (ultimoErro || new Error('A planilha retornou vazia ou com formato não reconhecido.'));
+    }
     ultimaSyncGoogle = new Date();
     const horaFormatada = ultimaSyncGoogle.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
     const detalhe = `Sincronizado às ${horaFormatada} • ${estado.slots.length} horários ativos`;
@@ -3623,6 +3831,1101 @@ $('legend').innerHTML = '<span><i style="background:#005ea6;border-radius:3px"><
   + '<span class="lg-sep"></span><span><i class="tag-on"></i>Posto ocupado</span><span><i class="tag-off"></i>Posto vago</span>'
   + '<span>🚶 em pé &nbsp; 💺 sentado</span><span class="lg-dica">Clique num atendente (no mapa ou na lista) para localizar</span>';
 
+/* =====================================================================
+   PARTÍCULAS AMBIENTAIS & CENTRAL DE MINIJOGOS ("ARCADE NA HORA")
+   ===================================================================== */
+var PARTICULAS_SALAO = Array.from({ length: 18 }, (_, i) => ({
+  x: (3 + (i * 7) % 24) * T,
+  y: (4 + (i * 5) % 25) * T,
+  vx: (Math.random() - 0.5) * 6,
+  vy: -4 - Math.random() * 5,
+  r: 1.0 + (i % 3) * 0.45,
+  cor: ['#38bdf8', '#10b981', '#a855f7', '#f59e0b', '#ec4899'][i % 5],
+  fase: i * 0.9
+}));
+
+function desenharParticulasSalao(t){
+  ctx = mainCtx;
+  (window.PARTICULAS_SALAO || []).forEach(pt => {
+    const px = (pt.x + Math.sin(t * 0.8 + pt.fase) * 14 + W * T) % (W * T);
+    const py = ((pt.y + t * pt.vy) % (H * T) + H * T) % (H * T);
+    const alpha = 0.22 + 0.18 * Math.sin(t * 2.2 + pt.fase);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = pt.cor;
+    ctx.beginPath();
+    ctx.arc(px, py, pt.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+var ArcadeAudio = window.ArcadeAudio = (function(){
+  let actx = null;
+  let mudo = false;
+  try { mudo = localStorage.getItem('nahora_arc_mute') === '1'; } catch(e){}
+  function ensure(){
+    if(!actx){
+      const C = window.AudioContext || window.webkitAudioContext;
+      if(C) actx = new C();
+    }
+    if(actx && actx.state === 'suspended') actx.resume().catch(() => {});
+  }
+  return {
+    isMuted(){ return mudo; },
+    toggle(){
+      mudo = !mudo;
+      try { localStorage.setItem('nahora_arc_mute', mudo ? '1' : '0'); } catch(e){}
+      return mudo;
+    },
+    play(tipo){
+      if(mudo) return;
+      try {
+        ensure();
+        if(!actx) return;
+        const t = actx.currentTime;
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.connect(gain); gain.connect(actx.destination);
+        if(tipo === 'ok'){
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, t);
+          osc.frequency.exponentialRampToValueAtTime(783.99, t + 0.11);
+          gain.gain.setValueAtTime(0.14, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+          osc.start(t); osc.stop(t + 0.14);
+        } else if(tipo === 'combo'){
+          [587.33, 783.99, 1046.5].forEach((f, i) => {
+            const o = actx.createOscillator(), g = actx.createGain();
+            o.type = 'triangle'; o.frequency.value = f;
+            o.connect(g); g.connect(actx.destination);
+            g.gain.setValueAtTime(0.11, t + i * 0.045);
+            g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.045 + 0.13);
+            o.start(t + i * 0.045); o.stop(t + i * 0.045 + 0.13);
+          });
+        } else if(tipo === 'ti'){
+          [440, 554.37, 659.25, 880, 1174.66].forEach((f, i) => {
+            const o = actx.createOscillator(), g = actx.createGain();
+            o.type = 'square'; o.frequency.value = f;
+            o.connect(g); g.connect(actx.destination);
+            g.gain.setValueAtTime(0.08, t + i * 0.04);
+            g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.04 + 0.12);
+            o.start(t + i * 0.04); o.stop(t + i * 0.04 + 0.12);
+          });
+        } else if(tipo === 'alerta'){
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(380, t);
+          osc.frequency.linearRampToValueAtTime(220, t + 0.16);
+          gain.gain.setValueAtTime(0.13, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+          osc.start(t); osc.stop(t + 0.18);
+        } else if(tipo === 'erro'){
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(190, t);
+          osc.frequency.linearRampToValueAtTime(110, t + 0.25);
+          gain.gain.setValueAtTime(0.16, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.27);
+          osc.start(t); osc.stop(t + 0.27);
+        } else if(tipo === 'spray'){
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(980, t);
+          osc.frequency.exponentialRampToValueAtTime(1480, t + 0.14);
+          gain.gain.setValueAtTime(0.12, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+          osc.start(t); osc.stop(t + 0.15);
+        }
+      } catch(e){}
+    }
+  };
+})();
+
+const ARC_SCORE_KEY = 'nahora_arcade_scores_v1';
+var ArcadeNaHora = window.ArcadeNaHora = (function(){
+  let aberto = false;
+  let jogoAtivo = 0; // 0 = hub, 1 = Senhas, 2 = Painéis (Azul/Vermelho/Preto + TI), 3 = Café vs Cheiroso
+  let rafId = null;
+  let lastTs = 0;
+  let jogador = 'GABRIEL';
+  let scores = { g1: 0, g2: 0, g3: 0, champ1: '', champ2: '', champ3: '' };
+  try {
+    const s = localStorage.getItem(ARC_SCORE_KEY);
+    if(s) scores = Object.assign(scores, JSON.parse(s));
+  } catch(e){}
+
+  // Estado compartilhado de partida
+  let st = null;
+
+  function salvarScores(novoRecordeJogo = 0){
+    try { localStorage.setItem(ARC_SCORE_KEY, JSON.stringify(scores)); } catch(e){}
+    atualizarHubScores();
+    if(novoRecordeJogo > 0){
+      const jogosNomes = { 1: 'Expresso da Senha', 2: 'Painel Azul/Vermelho & TI', 3: 'Café vs. Cheiroso' };
+      const pts = scores['g' + novoRecordeJogo];
+      mostrarToastSkin(`🏆 <b>${jogador}</b> bateu o recorde em <b>${jogosNomes[novoRecordeJogo]}</b> (${pts} pts)!`);
+      try { if(skinBroadcast) skinBroadcast.postMessage({ action: 'arcade_score', scores }); } catch(e){}
+    }
+  }
+
+  function getCampeoesSet(){
+    const set = new Set();
+    if(scores.champ1) set.add(scores.champ1);
+    if(scores.champ2) set.add(scores.champ2);
+    if(scores.champ3) set.add(scores.champ3);
+    return set;
+  }
+
+  function atualizarHubScores(){
+    if($('arcHi1')) $('arcHi1').textContent = `${scores.g1 || 0} pts${scores.champ1 ? ' (' + scores.champ1 + ')' : ''}`;
+    if($('arcHi2')) $('arcHi2').textContent = `${scores.g2 || 0} pts${scores.champ2 ? ' (' + scores.champ2 + ')' : ''}`;
+    if($('arcHi3')) $('arcHi3').textContent = `${scores.g3 || 0} pts${scores.champ3 ? ' (' + scores.champ3 + ')' : ''}`;
+    const best = [
+      { n: scores.champ1, p: scores.g1 || 0 },
+      { n: scores.champ2, p: scores.g2 || 0 },
+      { n: scores.champ3, p: scores.g3 || 0 }
+    ].sort((a, b) => b.p - a.p)[0];
+    if($('arcChampionBanner')){
+      $('arcChampionBanner').textContent = (best && best.p > 0 && best.n)
+        ? `🏆 Recordista Geral: ${best.n} (${best.p} pts)`
+        : '🏆 Jogue um minijogo para conquistar o Troféu da Unidade!';
+    }
+    const btnM = $('btnArcMute');
+    if(btnM) btnM.textContent = ArcadeAudio.isMuted() ? '🔇 Som: OFF' : '🔊 Som: ON';
+  }
+
+  function popularSeletorJogador(){
+    const lista = skPessoas();
+    const sel = $('arcSelJogador');
+    if(!sel) return;
+    sel.innerHTML = lista.map(n => `<option value="${n}">${ehSupervisor(n) ? '★ ' : ''}${n}</option>`).join('');
+    if(estado.sel && lista.includes(estado.sel)) jogador = estado.sel;
+    else if(!lista.includes(jogador) && lista.length) jogador = lista[0];
+    sel.value = jogador;
+  }
+
+  function desenharSpriteNoArcade(ac, pObj, t, escala = 2.2){
+    const prevCtx = ctx;
+    ctx = ac;
+    ac.save();
+    ac.translate(pObj.x, pObj.y);
+    ac.scale(escala, escala);
+    const look = pObj.ehCheiroso
+      ? cheiroso.look
+      : (pObj.isPlayer ? skBaseLook(jogador) : (pObj.look || criarLook(pObj.seed || 7)));
+    const mock = {
+      nome: pObj.nome || jogador,
+      staff: pObj.staff !== false,
+      supervisor: !!pObj.supervisor,
+      ehCheiroso: !!pObj.ehCheiroso,
+      look: pObj.isPlayer ? Object.assign({}, look, SKINS[chaveSkin(jogador)] || {}) : look,
+      seed: pObj.seed || 1,
+      x: 0,
+      y: 0,
+      dir: pObj.dir || 'down',
+      moving: !!pObj.moving,
+      sitting: !!pObj.sitting,
+      cor: pObj.cor || '#38bdf8',
+      tipo: pObj.tipo || null,
+      _preview: true
+    };
+    desenharPessoa(mock, t);
+    ac.restore();
+    ctx = prevCtx;
+  }
+
+  function addTextoFlutuante(x, y, txt, cor = '#fde047'){
+    if(!st) return;
+    st.textos.push({ x, y, txt, cor, vida: 1.1 });
+  }
+
+  function addParticulas(x, y, cor = '#38bdf8', qtd = 12){
+    if(!st) return;
+    for(let i = 0; i < qtd; i++){
+      const ang = (Math.PI * 2 * i) / qtd + Math.random() * 0.4;
+      const vel = 45 + Math.random() * 95;
+      st.particulas.push({
+        x, y,
+        vx: Math.cos(ang) * vel,
+        vy: Math.sin(ang) * vel - 20,
+        cor,
+        r: 2.5 + Math.random() * 3,
+        vida: 0.65 + Math.random() * 0.35
+      });
+    }
+  }
+
+  function atualizarHudPartida(){
+    if(!st) return;
+    if($('arcHudScore')) $('arcHudScore').textContent = st.score;
+    if($('arcHudCombo')) $('arcHudCombo').textContent = 'x' + st.combo;
+    if($('arcHudVidas')) $('arcHudVidas').textContent = '❤️'.repeat(Math.max(0, st.vidas)) || '💔';
+    const hiKey = 'g' + jogoAtivo;
+    if($('arcHudBest')) $('arcHudBest').textContent = Math.max(scores[hiKey] || 0, st.score);
+  }
+
+  function verificarRecordeFinal(){
+    if(!st) return;
+    const hiKey = 'g' + jogoAtivo;
+    const chKey = 'champ' + jogoAtivo;
+    if(st.score > (scores[hiKey] || 0)){
+      scores[hiKey] = st.score;
+      scores[chKey] = jogador;
+      salvarScores(jogoAtivo);
+    }
+  }
+
+  /* =================================================================
+     JOGO 1: EXPRESSO DA SENHA (TRIAGEM E ENTREGA DE SENHAS)
+     ================================================================= */
+  const TIPOS_SENHA = [
+    { id: 1, cod: 'P', nome: 'PREFERENCIAL', icone: '👴', cor: '#2563eb', bg: '#dbeafe', tecla: '1' },
+    { id: 2, cod: 'A', nome: 'EMISSÃO RG',   icone: '🪪', cor: '#16a34a', bg: '#dcfce7', tecla: '2' },
+    { id: 3, cod: 'R', nome: 'RÁPIDO / INFO', icone: '⚡', cor: '#ca8a04', bg: '#fef9c3', tecla: '3' },
+    { id: 4, cod: 'S', nome: 'PERFUMAR!',    icone: '🤢', cor: '#9333ea', bg: '#f3e8ff', tecla: '4', ehCheiroso: true }
+  ];
+
+  function iniciarJogo1(){
+    const lanesX = [175, 345, 515, 685];
+    st = {
+      score: 0, combo: 1, vidas: 3, tempo: 0, gameOver: false,
+      lanesX,
+      laneAtual: 1,
+      playerX: lanesX[1],
+      cidadaos: [],
+      projeteis: [],
+      particulas: [],
+      textos: [],
+      spawnTimer: 0.4,
+      atendidos: 0
+    };
+    $('arcNomeJogoHud').textContent = '🎫 Jogo 1: Expresso da Senha';
+    $('arcControlsBar').innerHTML = `
+      <button class="arc-cbtn" style="background:#2563eb" onclick="ArcadeNaHora.acaoJogo1(1)">👴 Entregar Senha P <kbd>1</kbd></button>
+      <button class="arc-cbtn" style="background:#16a34a" onclick="ArcadeNaHora.acaoJogo1(2)">🪪 Entregar Senha A <kbd>2</kbd></button>
+      <button class="arc-cbtn" style="background:#ca8a04" onclick="ArcadeNaHora.acaoJogo1(3)">⚡ Entregar Senha R <kbd>3</kbd></button>
+      <button class="arc-cbtn" style="background:#9333ea" onclick="ArcadeNaHora.acaoJogo1(4)">✨ Borrifar Perfume <kbd>4</kbd></button>
+    `;
+    st.cidadaos.push(
+      { lane: 0, x: st.lanesX[0], y: 185, alvoY: 280, vel: 28, tipo: TIPOS_SENHA[3], paciencia: 0.92, taxaPaciencia: 0.065, seed: 101 },
+      { lane: 1, x: st.lanesX[1], y: 245, alvoY: 280, vel: 28, tipo: TIPOS_SENHA[0], paciencia: 0.85, taxaPaciencia: 0.065, seed: 202 },
+      { lane: 2, x: st.lanesX[2], y: 145, alvoY: 280, vel: 28, tipo: TIPOS_SENHA[1], paciencia: 0.96, taxaPaciencia: 0.065, seed: 303 }
+    );
+    atualizarHudPartida();
+  }
+
+  function spawnCidadaoJogo1(){
+    const ocupadas = new Set(st.cidadaos.map(c => c.lane));
+    const livres = [0, 1, 2, 3].filter(l => !ocupadas.has(l));
+    if(!livres.length) return;
+    const lane = livres[Math.floor(Math.random() * livres.length)];
+    const r = Math.random();
+    const tipoObj = r < 0.18 ? TIPOS_SENHA[3] : TIPOS_SENHA[Math.floor(Math.random() * 3)];
+    const velBase = 26 + Math.min(28, st.atendidos * 1.1);
+    st.cidadaos.push({
+      lane,
+      x: st.lanesX[lane],
+      y: 65,
+      alvoY: 280,
+      vel: velBase,
+      tipo: tipoObj,
+      paciencia: 1.0,
+      taxaPaciencia: 0.065 + Math.min(0.06, st.atendidos * 0.002),
+      seed: Math.floor(Math.random() * 900) + 10
+    });
+  }
+
+  function acaoJogo1(tipoId, laneForcada = null){
+    if(!st || st.gameOver || jogoAtivo !== 1) return;
+    // Escolhe o cidadão mais urgente que pede esse tipo, ou o cidadão na fila selecionada
+    let alvo = null;
+    if(laneForcada !== null){
+      alvo = st.cidadaos.find(c => c.lane === laneForcada);
+    } else {
+      const candidatos = st.cidadaos.filter(c => c.tipo.id === tipoId).sort((a, b) => b.y - a.y);
+      if(candidatos.length) alvo = candidatos[0];
+      else {
+        const naFila = st.cidadaos.find(c => c.lane === st.laneAtual);
+        alvo = naFila || st.cidadaos.sort((a, b) => b.y - a.y)[0];
+      }
+    }
+    if(!alvo){
+      addTextoFlutuante(st.playerX, 340, 'Ninguém na fila!', '#94a3b8');
+      return;
+    }
+    st.laneAtual = alvo.lane;
+    const tInfo = TIPOS_SENHA.find(x => x.id === tipoId);
+    if(alvo.tipo.id === tipoId){
+      // Acertou a senha/perfume!
+      st.cidadaos = st.cidadaos.filter(c => c !== alvo);
+      st.atendidos++;
+      const bonusRapido = alvo.paciencia > 0.65 ? 50 : 0;
+      const pts = (100 + bonusRapido) * st.combo;
+      st.score += pts;
+      st.combo = Math.min(8, st.combo + 1);
+      ArcadeAudio.play(tipoId === 4 ? 'spray' : (st.combo >= 3 ? 'combo' : 'ok'));
+      addParticulas(alvo.x, alvo.y - 20, tInfo.cor, 16);
+      addTextoFlutuante(alvo.x, alvo.y - 45, tipoId === 4 ? `✨ PERFUMADO! +${pts}` : `🎫 SENHA ${tInfo.cod} OK! +${pts}`, '#fde047');
+    } else {
+      // Senha trocada!
+      st.combo = 1;
+      st.vidas--;
+      ArcadeAudio.play('erro');
+      addParticulas(alvo.x, alvo.y - 20, '#ef4444', 12);
+      addTextoFlutuante(alvo.x, alvo.y - 45, `❌ Senha Errada! Pedia ${alvo.tipo.cod}`, '#f87171');
+      if(st.vidas <= 0){
+        st.gameOver = true;
+        verificarRecordeFinal();
+      }
+    }
+    atualizarHudPartida();
+  }
+
+  function updateJogo1(dt, t){
+    if(st.gameOver) return;
+    const alvoX = st.lanesX[st.laneAtual];
+    st.playerX += (alvoX - st.playerX) * Math.min(1, dt * 14);
+
+    st.spawnTimer -= dt;
+    if(st.spawnTimer <= 0){
+      spawnCidadaoJogo1();
+      st.spawnTimer = Math.max(0.75, 1.85 - st.atendidos * 0.03);
+    }
+
+    for(let i = st.cidadaos.length - 1; i >= 0; i--){
+      const c = st.cidadaos[i];
+      if(c.y < c.alvoY){
+        c.y = Math.min(c.alvoY, c.y + c.vel * dt);
+      } else {
+        c.paciencia -= c.taxaPaciencia * dt;
+      }
+      if(c.paciencia <= 0){
+        st.cidadaos.splice(i, 1);
+        st.combo = 1;
+        st.vidas--;
+        ArcadeAudio.play('erro');
+        addParticulas(c.x, c.y, '#ef4444', 14);
+        addTextoFlutuante(c.x, c.y - 30, '😡 Cidadão desistiu! -1 ❤️', '#f87171');
+        atualizarHudPartida();
+        if(st.vidas <= 0){
+          st.gameOver = true;
+          verificarRecordeFinal();
+          break;
+        }
+      }
+    }
+  }
+
+  function drawJogo1(ac, t){
+    // Fundo do salão de triagem
+    const grad = ac.createLinearGradient(0, 0, 0, 460);
+    grad.addColorStop(0, '#0f172a'); grad.addColorStop(1, '#1e293b');
+    ac.fillStyle = grad; ac.fillRect(0, 0, 860, 460);
+
+    // Piso quadriculado executivo
+    ac.strokeStyle = 'rgba(148,163,184,0.08)'; ac.lineWidth = 1;
+    for(let x = 0; x < 860; x += 40){ ac.beginPath(); ac.moveTo(x, 0); ac.lineTo(x, 460); ac.stroke(); }
+    for(let y = 0; y < 460; y += 40){ ac.beginPath(); ac.moveTo(0, y); ac.lineTo(860, y); ac.stroke(); }
+
+    // 4 Tapetes de Fila (Lanes)
+    st.lanesX.forEach((lx, idx) => {
+      const sel = idx === st.laneAtual;
+      ac.fillStyle = sel ? 'rgba(56,189,248,0.13)' : 'rgba(15,23,42,0.45)';
+      ac.strokeStyle = sel ? '#38bdf8' : '#334155';
+      ac.lineWidth = sel ? 2 : 1;
+      ac.beginPath(); ac.roundRect(lx - 62, 35, 124, 275, 10); ac.fill(); ac.stroke();
+      ac.fillStyle = '#64748b'; ac.font = '800 11px sans-serif'; ac.textAlign = 'center';
+      ac.fillText(`FILA ${idx + 1}`, lx, 52);
+    });
+
+    // Cidadãos na fila
+    st.cidadaos.forEach(c => {
+      desenharSpriteNoArcade(ac, {
+        nome: c.tipo.ehCheiroso ? 'CHEIROSO' : 'CIDADÃO',
+        staff: false,
+        ehCheiroso: !!c.tipo.ehCheiroso,
+        seed: c.seed,
+        x: c.x,
+        y: c.y,
+        dir: 'down',
+        moving: c.y < c.alvoY
+      }, t, 2.2);
+
+      // Balão de pedido clicável acima da cabeça
+      const bx = c.x - 54, by = c.y - 88, bw = 108, bh = 38;
+      ac.fillStyle = c.tipo.bg;
+      ac.strokeStyle = c.tipo.cor;
+      ac.lineWidth = 2.5;
+      ac.beginPath(); ac.roundRect(bx, by, bw, bh, 9); ac.fill(); ac.stroke();
+
+      ac.fillStyle = '#0f172a'; ac.font = '900 12px sans-serif'; ac.textAlign = 'center';
+      ac.fillText(`${c.tipo.icone} [${c.tipo.tecla}] ${c.tipo.ehCheiroso ? 'PERFUMAR' : 'SENHA ' + c.tipo.cod}`, c.x, by + 16);
+
+      // Barra de paciência
+      const pw = Math.max(0, (bw - 14) * c.paciencia);
+      ac.fillStyle = '#cbd5e1'; ac.fillRect(bx + 7, by + 24, bw - 14, 7);
+      ac.fillStyle = c.paciencia > 0.5 ? '#16a34a' : (c.paciencia > 0.25 ? '#eab308' : '#dc2626');
+      ac.fillRect(bx + 7, by + 24, pw, 7);
+    });
+
+    // Balcão de Vidro da Recepção
+    ac.fillStyle = '#0f172a';
+    ac.strokeStyle = '#10b981';
+    ac.lineWidth = 2.5;
+    ac.beginPath(); ac.roundRect(70, 315, 720, 34, 8); ac.fill(); ac.stroke();
+    ac.fillStyle = 'rgba(56,189,248,0.22)';
+    ac.fillRect(76, 320, 708, 10);
+
+    // Atendente Jogador atrás do balcão
+    desenharSpriteNoArcade(ac, {
+      nome: jogador,
+      isPlayer: true,
+      staff: true,
+      supervisor: ehSupervisor(jogador),
+      x: st.playerX,
+      y: 392,
+      dir: 'up',
+      moving: Math.abs(st.lanesX[st.laneAtual] - st.playerX) > 4
+    }, t, 2.5);
+
+    // Crachá do jogador
+    ac.fillStyle = '#0f172a'; ac.strokeStyle = '#38bdf8'; ac.lineWidth = 1.5;
+    ac.beginPath(); ac.roundRect(st.playerX - 55, 412, 110, 22, 6); ac.fill(); ac.stroke();
+    ac.fillStyle = '#fff'; ac.font = '800 11px sans-serif'; ac.textAlign = 'center';
+    ac.fillText(`🧑‍💼 ${jogador}`, st.playerX, 427);
+  }
+
+  /* =================================================================
+     JOGO 2: ALERTA NOS PAINÉIS & CHAME O TI! (AZUL / VERMELHO / PRETO)
+     ================================================================= */
+  function iniciarJogo2(){
+    const paineisX = [105, 265, 425, 585, 745];
+    st = {
+      score: 0, combo: 1, vidas: 3, tempo: 0, gameOver: false,
+      paineisX,
+      idxPainel: 0,
+      playerX: paineisX[0],
+      tickScoreTimer: 0,
+      tiNPC: null, // { x, y, alvoIdx, timer }
+      paineis: [0, 1, 2, 3, 4].map(i => ({
+        idx: i,
+        nome: `PAINEL ${i + 1}`,
+        x: paineisX[i],
+        estado: i === 0 ? 'azul' : (i === 1 ? 'vermelho' : (i === 2 ? 'azul' : (i === 3 ? 'preto' : 'neutro'))), // 'azul' | 'aviso_vermelho' | 'vermelho' | 'preto' | 'neutro'
+        timerEstado: 4 + Math.random() * 3,
+        progressoAzul: 0,
+        perigoVermelho: 0,
+        senha: 'A' + String(40 + i * 3).padStart(3, '0')
+      })),
+      particulas: [],
+      textos: []
+    };
+    $('arcNomeJogoHud').textContent = '🖥️ Jogo 2: Painel Azul, Vermelho & Chame o TI!';
+    $('arcControlsBar').innerHTML = `
+      <button class="arc-cbtn" style="background:#334155" onclick="ArcadeNaHora.moverPainel(-1)">◀ Painel Anterior <kbd>A / ◀</kbd></button>
+      <button class="arc-cbtn" style="background:#2563eb" onclick="ArcadeNaHora.irPainelAzul()">🔵 Ir p/ Painel Azul</button>
+      <button class="arc-cbtn" style="background:#059669" onclick="ArcadeNaHora.chamarTI()">🔧 CHAMAR O T.I.! (Consertar Painel Preto) <kbd>Espaço</kbd></button>
+      <button class="arc-cbtn" style="background:#334155" onclick="ArcadeNaHora.moverPainel(1)">Próximo Painel ▶ <kbd>D / ▶</kbd></button>
+    `;
+    atualizarHudPartida();
+  }
+
+  function transicionarPainelJogo2(p){
+    const ativosAzuis = st.paineis.filter(x => x.estado === 'azul').length;
+    const ativosPretos = st.paineis.filter(x => x.estado === 'preto').length;
+    const r = Math.random();
+    if(p.estado === 'azul'){
+      // Um painel azul pode ficar vermelho (alerta!) ou preto (pane!)
+      if(r < 0.55){
+        p.estado = 'aviso_vermelho';
+        p.timerEstado = 1.15; // 1.15s de aviso laranja piscante antes de ficar vermelho!
+        p.perigoVermelho = 0;
+        ArcadeAudio.play('alerta');
+      } else if(ativosPretos < 2){
+        p.estado = 'preto';
+        p.timerEstado = 12.0;
+        ArcadeAudio.play('erro');
+        addTextoFlutuante(p.x, 120, '⚫ TELA PRETA! CHAME O TI!', '#cbd5e1');
+      } else {
+        p.estado = 'neutro';
+        p.timerEstado = 2.0;
+      }
+    } else if(p.estado === 'aviso_vermelho'){
+      p.estado = 'vermelho';
+      p.timerEstado = 3.2;
+      p.perigoVermelho = 0;
+      ArcadeAudio.play('alerta');
+    } else if(p.estado === 'vermelho'){
+      p.estado = ativosAzuis < 2 ? 'azul' : 'neutro';
+      p.timerEstado = 4.5 + Math.random() * 2.5;
+      p.progressoAzul = 0;
+    } else if(p.estado === 'neutro'){
+      if(ativosAzuis === 0 || r < 0.62){
+        p.estado = 'azul';
+        p.timerEstado = 5.0 + Math.random() * 3.0;
+        p.progressoAzul = 0;
+      } else if(r < 0.82 && ativosPretos < 2){
+        p.estado = 'preto';
+        p.timerEstado = 12.0;
+        addTextoFlutuante(p.x, 120, '⚫ PAINEL TRAVOU! CHAME O TI!', '#94a3b8');
+      } else {
+        p.estado = 'aviso_vermelho';
+        p.timerEstado = 1.15;
+      }
+    }
+    // Garante que sempre exista pelo menos 1 painel azul ativo no salão
+    if(!st.paineis.some(x => x.estado === 'azul')){
+      const candidato = st.paineis.find(x => x.idx !== st.idxPainel && x.estado !== 'preto') || st.paineis[0];
+      candidato.estado = 'azul';
+      candidato.timerEstado = 5.5;
+      candidato.progressoAzul = 0;
+    }
+  }
+
+  function chamarTI(){
+    if(!st || st.gameOver || jogoAtivo !== 2) return;
+    // Se o jogador já está num painel preto, conserta ele; senão move até o painel preto mais próximo e chama o TI!
+    let pAlvo = st.paineis[st.idxPainel];
+    if(pAlvo.estado !== 'preto'){
+      const outroPreto = st.paineis.find(x => x.estado === 'preto');
+      if(outroPreto){
+        st.idxPainel = outroPreto.idx;
+        pAlvo = outroPreto;
+      } else {
+        addTextoFlutuante(st.playerX, 310, 'Nenhum painel preto travado agora!', '#38bdf8');
+        return;
+      }
+    }
+    // Aciona o técnico do TI!
+    st.tiNPC = { x: pAlvo.x + 36, y: 245, alvoIdx: pAlvo.idx, timer: 0.75 };
+    pAlvo.estado = 'azul';
+    pAlvo.timerEstado = 6.5;
+    pAlvo.progressoAzul = 0.2;
+    const pts = 300 * st.combo;
+    st.score += pts;
+    st.combo = Math.min(8, st.combo + 1);
+    ArcadeAudio.play('ti');
+    addParticulas(pAlvo.x, 165, '#38bdf8', 22);
+    addTextoFlutuante(pAlvo.x, 115, `🔧 T.I. CONSERTOU O PAINEL! +${pts}`, '#4ade80');
+    atualizarHudPartida();
+  }
+
+  function updateJogo2(dt, t){
+    if(st.gameOver) return;
+    const alvoX = st.paineisX[st.idxPainel];
+    st.playerX += (alvoX - st.playerX) * Math.min(1, dt * 15);
+
+    if(st.tiNPC){
+      st.tiNPC.timer -= dt;
+      if(st.tiNPC.timer <= 0) st.tiNPC = null;
+    }
+
+    st.paineis.forEach(p => {
+      if(p.estado !== 'preto'){
+        p.timerEstado -= dt;
+        if(p.timerEstado <= 0) transicionarPainelJogo2(p);
+      }
+    });
+
+    const pAtual = st.paineis[st.idxPainel];
+    if(pAtual.estado === 'azul'){
+      // Ficando no Painel Azul: ganha pontos continuamente e completa atendimentos!
+      st.tickScoreTimer += dt;
+      if(st.tickScoreTimer >= 0.30){
+        st.tickScoreTimer = 0;
+        const ganho = 25 * st.combo;
+        st.score += ganho;
+        atualizarHudPartida();
+      }
+      pAtual.progressoAzul += dt * 0.42;
+      if(pAtual.progressoAzul >= 1.0){
+        pAtual.progressoAzul = 0;
+        const bonus = 200 * st.combo;
+        st.score += bonus;
+        st.combo = Math.min(8, st.combo + 1);
+        pAtual.senha = 'A' + String(Math.floor(Math.random() * 899) + 100);
+        ArcadeAudio.play('combo');
+        addParticulas(pAtual.x, 175, '#38bdf8', 16);
+        addTextoFlutuante(pAtual.x, 130, `🔵 SENHA ATENDIDA! +${bonus}`, '#fde047');
+        atualizarHudPartida();
+        // Após concluir a chamada, o painel pode mudar para manter o dinamismo
+        if(Math.random() < 0.65) transicionarPainelJogo2(pAtual);
+      }
+    } else if(pAtual.estado === 'vermelho'){
+      // Ficou no Painel Vermelho! Perigo!
+      pAtual.perigoVermelho += dt * 0.85;
+      if(pAtual.perigoVermelho >= 1.0){
+        pAtual.perigoVermelho = 0;
+        pAtual.estado = 'neutro';
+        pAtual.timerEstado = 3.0;
+        st.combo = 1;
+        st.vidas--;
+        ArcadeAudio.play('erro');
+        addParticulas(pAtual.x, 260, '#ef4444', 20);
+        addTextoFlutuante(pAtual.x, 210, '💥 FICOU NO PAINEL VERMELHO! -1 ❤️', '#f87171');
+        atualizarHudPartida();
+        if(st.vidas <= 0){
+          st.gameOver = true;
+          verificarRecordeFinal();
+        }
+      }
+    }
+  }
+
+  function drawJogo2(ac, t){
+    const grad = ac.createLinearGradient(0, 0, 0, 460);
+    grad.addColorStop(0, '#090d16'); grad.addColorStop(1, '#1e293b');
+    ac.fillStyle = grad; ac.fillRect(0, 0, 860, 460);
+
+    // Faixa instrutiva no topo
+    ac.fillStyle = 'rgba(15,23,42,0.9)';
+    ac.fillRect(0, 0, 860, 38);
+    ac.font = '800 11px sans-serif'; ac.textAlign = 'center';
+    ac.fillStyle = '#38bdf8'; ac.fillText('🔵 PAINEL AZUL: Fique nele p/ pontuar!', 145, 24);
+    ac.fillStyle = '#f87171'; ac.fillText('🔴 PAINEL VERMELHO: Saia rápido!', 415, 24);
+    ac.fillStyle = '#fde047'; ac.fillText('⚫ PAINEL PRETO: Aperte [Espaço] p/ Chamar o TI!', 695, 24);
+
+    // Desenha os 5 Painéis
+    st.paineis.forEach((p, idx) => {
+      const sel = idx === st.idxPainel;
+      let corBorda = '#475569', corBg = 'rgba(30,41,59,0.55)', corPlacar = '#1e293b', statusTxt = 'AGUARDANDO';
+      if(p.estado === 'azul'){
+        corBorda = '#38bdf8'; corBg = 'rgba(37,99,235,0.28)'; corPlacar = '#1d4ed8'; statusTxt = '🔵 FIQUE AQUI!';
+      } else if(p.estado === 'aviso_vermelho'){
+        const blink = Math.floor(t * 10) % 2;
+        corBorda = blink ? '#f97316' : '#ef4444'; corBg = 'rgba(249,115,22,0.28)'; corPlacar = '#ea580c'; statusTxt = '⚠️ VAI FICAR VERMELHO!';
+      } else if(p.estado === 'vermelho'){
+        const blink = Math.floor(t * 12) % 2;
+        corBorda = blink ? '#ef4444' : '#ffffff'; corBg = 'rgba(220,38,38,0.42)'; corPlacar = '#b91c1c'; statusTxt = '🔴 SAIA AGORA!';
+      } else if(p.estado === 'preto'){
+        corBorda = '#64748b'; corBg = 'rgba(0,0,0,0.92)'; corPlacar = '#000000'; statusTxt = '⚫ TELA PRETA (TI!)';
+      }
+
+      const px = p.x - 68, py = 52, pw = 136, ph = 290;
+      ac.fillStyle = corBg;
+      ac.strokeStyle = corBorda;
+      ac.lineWidth = sel ? 3.5 : 2;
+      ac.beginPath(); ac.roundRect(px, py, pw, ph, 14); ac.fill(); ac.stroke();
+
+      // Cabeçalho / TV do Painel
+      ac.fillStyle = corPlacar;
+      ac.strokeStyle = corBorda;
+      ac.lineWidth = 2;
+      ac.beginPath(); ac.roundRect(px + 10, py + 12, pw - 20, 74, 8); ac.fill(); ac.stroke();
+
+      ac.fillStyle = '#fff'; ac.font = '900 14px sans-serif'; ac.textAlign = 'center';
+      ac.fillText(p.nome, p.x, py + 32);
+
+      if(p.estado === 'preto'){
+        ac.fillStyle = '#ef4444'; ac.font = '900 12px monospace';
+        ac.fillText('ERR_SYS_BLACK', p.x, py + 54);
+        ac.fillStyle = '#fde047'; ac.font = '800 11px sans-serif';
+        ac.fillText('🔧 CLIQUE: CHAMAR TI', p.x, py + 74);
+      } else {
+        ac.fillStyle = '#fde047'; ac.font = '900 20px monospace';
+        ac.fillText(p.senha, p.x, py + 60);
+        ac.fillStyle = '#fff'; ac.font = '800 11px sans-serif';
+        ac.fillText(statusTxt, p.x, py + 79);
+      }
+
+      // Barra de progresso azul ou perigo vermelho
+      if(p.estado === 'azul'){
+        ac.fillStyle = '#0f172a'; ac.fillRect(px + 14, py + 96, pw - 28, 10);
+        ac.fillStyle = '#38bdf8'; ac.fillRect(px + 14, py + 96, (pw - 28) * Math.min(1, p.progressoAzul), 10);
+      } else if(p.estado === 'vermelho'){
+        ac.fillStyle = '#0f172a'; ac.fillRect(px + 14, py + 96, pw - 28, 10);
+        ac.fillStyle = '#ef4444'; ac.fillRect(px + 14, py + 96, (pw - 28) * Math.min(1, p.perigoVermelho), 10);
+      }
+
+      // Cidadão sentado esperando no painel
+      desenharSpriteNoArcade(ac, {
+        nome: 'CIDADÃO', staff: false, seed: (idx + 1) * 33,
+        x: p.x, y: py + 168, dir: 'down', sitting: true
+      }, t, 2.0);
+
+      // Tecla de atalho na base do painel
+      ac.fillStyle = sel ? '#38bdf8' : '#334155';
+      ac.beginPath(); ac.roundRect(p.x - 42, py + ph - 30, 84, 22, 6); ac.fill();
+      ac.fillStyle = sel ? '#0f172a' : '#cbd5e1'; ac.font = '800 11px sans-serif';
+      ac.fillText(`Tecla [${idx + 1}]`, p.x, py + ph - 15);
+    });
+
+    // Técnico do TI consertando painel preto
+    if(st.tiNPC){
+      desenharSpriteNoArcade(ac, {
+        nome: 'TÉCNICO TI', staff: true, seed: 99,
+        look: { pele:'#f1c27d', cabelo:'#1c1410', camisa:'#059669', camSomb:'#047857', calca:'#1e293b', estilo:8, barba:0, olhos:6, expressao:2, oculos:6, roupa:2, extra:3 },
+        x: st.tiNPC.x, y: st.tiNPC.y, dir: 'up', moving: true
+      }, t, 2.2);
+      ac.fillStyle = '#4ade80'; ac.font = '900 12px sans-serif'; ac.textAlign = 'center';
+      ac.fillText('🛠️ TI CONSERTANDO!', st.tiNPC.x, st.tiNPC.y - 54);
+    }
+
+    // Atendente Jogador
+    desenharSpriteNoArcade(ac, {
+      nome: jogador, isPlayer: true, staff: true, supervisor: ehSupervisor(jogador),
+      x: st.playerX, y: 395, dir: 'up',
+      moving: Math.abs(st.paineisX[st.idxPainel] - st.playerX) > 4
+    }, t, 2.5);
+
+    ac.fillStyle = '#0f172a'; ac.strokeStyle = '#38bdf8'; ac.lineWidth = 1.5;
+    ac.beginPath(); ac.roundRect(st.playerX - 55, 415, 110, 22, 6); ac.fill(); ac.stroke();
+    ac.fillStyle = '#fff'; ac.font = '800 11px sans-serif'; ac.textAlign = 'center';
+    ac.fillText(`🧑‍💼 ${jogador}`, st.playerX, 430);
+  }
+
+  /* =================================================================
+     JOGO 3: CAFÉ TURBO VS. CHEIROSO (DEFESA DO SALÃO)
+     ================================================================= */
+  function iniciarJogo3(){
+    const postos = [
+      { idx: 0, nome: 'ADRIELLE', posto: 'E1', x: 165, y: 155, estado: 'ok', timer: 2.5 },
+      { idx: 1, nome: 'CIDA',     posto: 'E2', x: 430, y: 155, estado: 'sono', timer: 1.0 },
+      { idx: 2, nome: 'DUDA',     posto: 'E3', x: 695, y: 155, estado: 'ok', timer: 3.5 },
+      { idx: 3, nome: 'JACQUELINE', posto: 'P1', x: 165, y: 315, estado: 'ok', timer: 4.0 },
+      { idx: 4, nome: 'LETICIA',  posto: 'P2', x: 430, y: 315, estado: 'ok', timer: 2.0 },
+      { idx: 5, nome: 'LUCIANA',  posto: 'AUTO', x: 695, y: 315, estado: 'ok', timer: 3.0 }
+    ];
+    st = {
+      score: 0, combo: 1, vidas: 3, tempo: 0, gameOver: false,
+      postos,
+      idxSel: 1,
+      playerX: 430,
+      playerY: 235,
+      particulas: [],
+      textos: []
+    };
+    $('arcNomeJogoHud').textContent = '☕ Jogo 3: Café Turbo vs. Cheiroso';
+    $('arcControlsBar').innerHTML = `
+      <button class="arc-cbtn" style="background:#d97706" onclick="ArcadeNaHora.acaoJogo3('cafe')">☕ Entregar Café BRB <kbd>1 / Espaço</kbd></button>
+      <button class="arc-cbtn" style="background:#9333ea" onclick="ArcadeNaHora.acaoJogo3('perfume')">✨ Borrifar Perfume no Cheiroso <kbd>2 / E</kbd></button>
+    `;
+    atualizarHudPartida();
+  }
+
+  function acaoJogo3(tipoAcao, idxForcado = null){
+    if(!st || st.gameOver || jogoAtivo !== 3) return;
+    let alvo = null;
+    if(idxForcado !== null){
+      alvo = st.postos[idxForcado];
+    } else {
+      const estadoBusca = tipoAcao === 'cafe' ? 'sono' : 'cheiroso';
+      const urgentes = st.postos.filter(p => p.estado === estadoBusca).sort((a, b) => a.timer - b.timer);
+      alvo = urgentes[0] || st.postos[st.idxSel];
+    }
+    if(!alvo) return;
+    st.idxSel = alvo.idx;
+    st.playerX = alvo.x;
+    st.playerY = alvo.y + 42;
+
+    if(alvo.estado === 'sono' && (tipoAcao === 'cafe' || idxForcado !== null)){
+      alvo.estado = 'ok';
+      alvo.timer = 3.5 + Math.random() * 3.0;
+      const pts = 150 * st.combo;
+      st.score += pts;
+      st.combo = Math.min(8, st.combo + 1);
+      ArcadeAudio.play('ok');
+      addParticulas(alvo.x, alvo.y - 20, '#f59e0b', 16);
+      addTextoFlutuante(alvo.x, alvo.y - 50, `☕ CAFÉ ENTREGUE! +${pts}`, '#fde047');
+    } else if(alvo.estado === 'cheiroso' && (tipoAcao === 'perfume' || idxForcado !== null)){
+      alvo.estado = 'ok';
+      alvo.timer = 4.0 + Math.random() * 3.0;
+      const pts = 250 * st.combo;
+      st.score += pts;
+      st.combo = Math.min(8, st.combo + 1);
+      ArcadeAudio.play('spray');
+      addParticulas(alvo.x, alvo.y - 20, '#ec4899', 20);
+      addTextoFlutuante(alvo.x, alvo.y - 50, `🌸 CHEIROSO PERFUMADO! +${pts}`, '#f472b6');
+    } else {
+      addTextoFlutuante(alvo.x, alvo.y - 40, 'Posto tranquilo!', '#94a3b8');
+    }
+    atualizarHudPartida();
+  }
+
+  function updateJogo3(dt, t){
+    if(st.gameOver) return;
+    st.postos.forEach(p => {
+      if(p.estado === 'ok'){
+        p.timer -= dt;
+        if(p.timer <= 0){
+          p.estado = Math.random() < 0.42 ? 'cheiroso' : 'sono';
+          p.timer = 1.0; // 1.0 = 100% do tempo para socorrer
+        }
+      } else {
+        p.timer -= dt * 0.19;
+        if(p.timer <= 0){
+          const eraCheiroso = p.estado === 'cheiroso';
+          p.estado = 'ok';
+          p.timer = 3.5;
+          st.combo = 1;
+          st.vidas--;
+          ArcadeAudio.play('erro');
+          addParticulas(p.x, p.y, '#ef4444', 14);
+          addTextoFlutuante(p.x, p.y - 45, eraCheiroso ? '🤢 Cheiroso espantou a fila! -1 ❤️' : '😴 Atendente dormiu no posto! -1 ❤️', '#f87171');
+          atualizarHudPartida();
+          if(st.vidas <= 0){
+            st.gameOver = true;
+            verificarRecordeFinal();
+          }
+        }
+      }
+    });
+  }
+
+  function drawJogo3(ac, t){
+    const grad = ac.createLinearGradient(0, 0, 0, 460);
+    grad.addColorStop(0, '#0f172a'); grad.addColorStop(1, '#1e293b');
+    ac.fillStyle = grad; ac.fillRect(0, 0, 860, 460);
+
+    ac.fillStyle = 'rgba(15,23,42,0.9)'; ac.fillRect(0, 0, 860, 36);
+    ac.fillStyle = '#fde047'; ac.font = '800 13px sans-serif'; ac.textAlign = 'center';
+    ac.fillText('☕ Clique nos colegas com SONO (ou Tecla 1) para dar Café  |  ✨ Clique no CHEIROSO (ou Tecla 2) para Perfumar!', 430, 23);
+
+    st.postos.forEach(p => {
+      const corBorda = p.estado === 'sono' ? '#f59e0b' : (p.estado === 'cheiroso' ? '#84cc16' : '#334155');
+      const corBg = p.estado === 'sono' ? 'rgba(245,158,11,0.22)' : (p.estado === 'cheiroso' ? 'rgba(132,204,22,0.25)' : 'rgba(30,41,59,0.55)');
+      ac.fillStyle = corBg; ac.strokeStyle = corBorda; ac.lineWidth = 2.5;
+      ac.beginPath(); ac.roundRect(p.x - 95, p.y - 68, 190, 122, 14); ac.fill(); ac.stroke();
+
+      desenharSpriteNoArcade(ac, {
+        nome: p.nome, isPlayer: false, staff: true,
+        look: Object.assign({}, skBaseLook(p.nome), SKINS[chaveSkin(p.nome)] || {}),
+        x: p.x - 25, y: p.y + 18, dir: 'down'
+      }, t, 2.1);
+
+      if(p.estado === 'cheiroso'){
+        desenharSpriteNoArcade(ac, {
+          nome: 'CHEIROSO', staff: false, ehCheiroso: true,
+          x: p.x + 32, y: p.y + 20, dir: 'left', moving: true
+        }, t, 2.1);
+      }
+
+      ac.fillStyle = '#fff'; ac.font = '800 12px sans-serif'; ac.textAlign = 'center';
+      ac.fillText(`${p.posto} • ${p.nome}`, p.x, p.y + 44);
+
+      if(p.estado !== 'ok'){
+        const msg = p.estado === 'sono' ? '😴 SONO! [CLIQUE: CAFÉ ☕]' : '🤢 CHEIROSO! [CLIQUE: PERFUME ✨]';
+        ac.fillStyle = p.estado === 'sono' ? '#fef3c7' : '#ecfccb';
+        ac.strokeStyle = corBorda; ac.lineWidth = 2;
+        ac.beginPath(); ac.roundRect(p.x - 86, p.y - 60, 172, 32, 8); ac.fill(); ac.stroke();
+        ac.fillStyle = '#0f172a'; ac.font = '900 10.5px sans-serif';
+        ac.fillText(msg, p.x, p.y - 45);
+        ac.fillStyle = '#cbd5e1'; ac.fillRect(p.x - 74, p.y - 36, 148, 5);
+        ac.fillStyle = p.timer > 0.4 ? '#16a34a' : '#dc2626';
+        ac.fillRect(p.x - 74, p.y - 36, 148 * Math.max(0, p.timer), 5);
+      }
+    });
+
+    // Jogador entregador de café / perfume
+    desenharSpriteNoArcade(ac, {
+      nome: jogador, isPlayer: true, staff: true, supervisor: ehSupervisor(jogador),
+      x: st.playerX, y: st.playerY, dir: 'up', moving: false
+    }, t, 2.3);
+  }
+
+  /* =================================================================
+     LOOP E EVENTOS DO CANVAS DO ARCADE
+     ================================================================= */
+  function loopArcade(ts){
+    if(!aberto || !jogoAtivo){ rafId = null; return; }
+    const dt = Math.min(0.05, (ts - (lastTs || ts)) / 1000);
+    lastTs = ts;
+    const t = ts / 1000;
+
+    const cv = $('arcadeCanvas');
+    if(cv && st){
+      const ac = cv.getContext('2d');
+      if(jogoAtivo === 1){ updateJogo1(dt, t); drawJogo1(ac, t); }
+      else if(jogoAtivo === 2){ updateJogo2(dt, t); drawJogo2(ac, t); }
+      else if(jogoAtivo === 3){ updateJogo3(dt, t); drawJogo3(ac, t); }
+
+      // Partículas
+      for(let i = st.particulas.length - 1; i >= 0; i--){
+        const pt = st.particulas[i];
+        pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.vy += 190 * dt; pt.vida -= dt;
+        if(pt.vida <= 0){ st.particulas.splice(i, 1); continue; }
+        ac.save(); ac.globalAlpha = Math.max(0, pt.vida); ac.fillStyle = pt.cor;
+        ac.beginPath(); ac.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2); ac.fill(); ac.restore();
+      }
+
+      // Textos flutuantes
+      for(let i = st.textos.length - 1; i >= 0; i--){
+        const txObj = st.textos[i];
+        txObj.y -= 32 * dt; txObj.vida -= dt;
+        if(txObj.vida <= 0){ st.textos.splice(i, 1); continue; }
+        ac.save(); ac.globalAlpha = Math.max(0, txObj.vida);
+        ac.font = '900 14px sans-serif'; ac.textAlign = 'center';
+        ac.strokeStyle = '#090d16'; ac.lineWidth = 4;
+        ac.strokeText(txObj.txt, txObj.x, txObj.y);
+        ac.fillStyle = txObj.cor;
+        ac.fillText(txObj.txt, txObj.x, txObj.y);
+        ac.restore();
+      }
+
+      // Overlay de Fim de Partida
+      if(st.gameOver){
+        ac.fillStyle = 'rgba(9,13,22,0.82)';
+        ac.fillRect(0, 0, 860, 460);
+        ac.fillStyle = '#fff'; ac.font = '900 30px sans-serif'; ac.textAlign = 'center';
+        ac.fillText('🏁 FIM DE EXPEDIENTE NO ARCADE!', 430, 175);
+        ac.fillStyle = '#fde047'; ac.font = '900 22px sans-serif';
+        ac.fillText(`Pontuação de ${jogador}: ${st.score} pts`, 430, 220);
+        ac.fillStyle = '#38bdf8'; ac.font = '800 15px sans-serif';
+        ac.fillText('Clique na tela ou aperte [ESPAÇO / ENTER] para jogar novamente!', 430, 270);
+      }
+    }
+    rafId = requestAnimationFrame(loopArcade);
+  }
+
+  // Clique direto no canvas do Arcade (suporte total a Mouse e Touch!)
+  function onCanvasClick(e){
+    if(!aberto || !jogoAtivo || !st) return;
+    const cv = $('arcadeCanvas');
+    const rect = cv.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (cv.width / rect.width);
+    const my = (e.clientY - rect.top) * (cv.height / rect.height);
+
+    if(st.gameOver){
+      ArcadeNaHora.reiniciar();
+      return;
+    }
+
+    if(jogoAtivo === 1){
+      // Verifica se clicou num cidadão específico: entrega automaticamente a senha que ele pediu!
+      const cid = st.cidadaos.find(c => Math.abs(mx - c.x) < 62 && Math.abs(my - (c.y - 35)) < 85);
+      if(cid){
+        acaoJogo1(cid.tipo.id, cid.lane);
+        return;
+      }
+      // Ou seleciona a fila clicada
+      let bestLane = 0, bestD = 9999;
+      st.lanesX.forEach((lx, i) => { const d = Math.abs(mx - lx); if(d < bestD){ bestD = d; bestLane = i; } });
+      st.laneAtual = bestLane;
+    } else if(jogoAtivo === 2){
+      // Descobre em qual dos 5 painéis clicou
+      let bestIdx = 0, bestD = 9999;
+      st.paineisX.forEach((px, i) => { const d = Math.abs(mx - px); if(d < bestD){ bestD = d; bestIdx = i; } });
+      st.idxPainel = bestIdx;
+      // Se clicou num painel PRETO, já chama o TI automaticamente!
+      if(st.paineis[bestIdx].estado === 'preto'){
+        chamarTI();
+      }
+    } else if(jogoAtivo === 3){
+      const pClicado = st.postos.find(p => Math.abs(mx - p.x) < 95 && Math.abs(my - p.y) < 70);
+      if(pClicado){
+        acaoJogo3(pClicado.estado === 'cheiroso' ? 'perfume' : 'cafe', pClicado.idx);
+      }
+    }
+  }
+
+  // Controles de teclado para os minijogos
+  window.addEventListener('keydown', e => {
+    if(!aberto || !jogoAtivo || !st) return;
+    if(e.key === 'Escape'){
+      ArcadeNaHora.voltarHub();
+      return;
+    }
+    if(st.gameOver && (e.key === ' ' || e.key === 'Enter')){
+      e.preventDefault();
+      ArcadeNaHora.reiniciar();
+      return;
+    }
+    if(jogoAtivo === 1){
+      if(e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') st.laneAtual = Math.max(0, st.laneAtual - 1);
+      else if(e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') st.laneAtual = Math.min(3, st.laneAtual + 1);
+      else if(['1', '2', '3', '4'].includes(e.key)) acaoJogo1(parseInt(e.key, 10));
+    } else if(jogoAtivo === 2){
+      if(e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') st.idxPainel = Math.max(0, st.idxPainel - 1);
+      else if(e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') st.idxPainel = Math.min(4, st.idxPainel + 1);
+      else if(['1', '2', '3', '4', '5'].includes(e.key)){
+        const idx = parseInt(e.key, 10) - 1;
+        st.idxPainel = idx;
+        if(st.paineis[idx].estado === 'preto') chamarTI();
+      } else if(e.key === ' ' || e.key === 'Enter'){
+        e.preventDefault();
+        chamarTI();
+      }
+    } else if(jogoAtivo === 3){
+      if(e.key === '1' || e.key === ' ') { e.preventDefault(); acaoJogo3('cafe'); }
+      else if(e.key === '2' || e.key === 'e' || e.key === 'E') acaoJogo3('perfume');
+    }
+  });
+
+  setTimeout(() => {
+    const cv = $('arcadeCanvas');
+    if(cv) cv.addEventListener('click', onCanvasClick);
+  }, 50);
+
+  return {
+    get jogador(){ return jogador; },
+    ehCampeao(nome){ return !!nome && (nome === scores.champ1 || nome === scores.champ2 || nome === scores.champ3); },
+    receberScoresRemotos(rem){
+      if(!rem) return;
+      scores = Object.assign(scores, rem);
+      try { localStorage.setItem(ARC_SCORE_KEY, JSON.stringify(scores)); } catch(e){}
+      atualizarHubScores();
+    },
+    abrir(){
+      aberto = true;
+      popularSeletorJogador();
+      atualizarHubScores();
+      $('arcHubView').style.display = 'block';
+      $('arcStageView').style.display = 'none';
+      $('modalArcade').style.display = 'flex';
+      jogoAtivo = 0;
+    },
+    fechar(){
+      aberto = false;
+      jogoAtivo = 0;
+      if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+      $('modalArcade').style.display = 'none';
+    },
+    selecionarJogador(nome){
+      if(nome) jogador = nome;
+    },
+    toggleMute(){
+      ArcadeAudio.toggle();
+      atualizarHubScores();
+    },
+    iniciar(num){
+      if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+      jogoAtivo = num;
+      $('arcHubView').style.display = 'none';
+      $('arcStageView').style.display = 'block';
+      if(num === 1) iniciarJogo1();
+      else if(num === 2) iniciarJogo2();
+      else if(num === 3) iniciarJogo3();
+      lastTs = performance.now();
+      loopArcade(lastTs + 16);
+    },
+    voltarHub(){
+      if(st && !st.gameOver) verificarRecordeFinal();
+      jogoAtivo = 0;
+      if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+      atualizarHubScores();
+      $('arcStageView').style.display = 'none';
+      $('arcHubView').style.display = 'block';
+    },
+    reiniciar(){
+      if(jogoAtivo) this.iniciar(jogoAtivo);
+    },
+    resetarRecordes(){
+      scores = { g1: 0, g2: 0, g3: 0, champ1: '', champ2: '', champ3: '' };
+      salvarScores(0);
+    },
+    acaoJogo1,
+    moverPainel(delta){
+      if(!st || jogoAtivo !== 2) return;
+      st.idxPainel = Math.max(0, Math.min(4, st.idxPainel + delta));
+    },
+    irPainelAzul(){
+      if(!st || jogoAtivo !== 2) return;
+      const pAzul = st.paineis.find(p => p.estado === 'azul');
+      if(pAzul) st.idxPainel = pAzul.idx;
+    },
+    chamarTI,
+    acaoJogo3
+  };
+})();
+
 /* ---------- início ---------- */
 try { desenharCenario(); } catch(e){ console.error('Erro em desenharCenario:', e); }
 try { carregarDemo(); } catch(e){ console.error('Erro em carregarDemo:', e); }
@@ -3661,6 +4964,9 @@ setInterval(() => sincronizarSkinsNuvem(true), 35000);
   }
 })();
 
+const qArc = new URLSearchParams(window.location.search).get('arcade');
+if(qArc === 'hub') { ArcadeNaHora.abrir(); }
+else if(['1','2','3'].includes(qArc)) { ArcadeNaHora.abrir(); ArcadeNaHora.iniciar(parseInt(qArc, 10)); }
 requestAnimationFrame(frame);
 </script>
 </body>
